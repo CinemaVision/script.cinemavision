@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.cinemavision"
+     name="CinemaVision"
+  version="0.0.10"
+  provider-name="CinemaVision">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.simplejson" version="3.3.0"/>
+    </requires>
+    <extension point="xbmc.python.script" library="addon.py"/>
+    <extension point="xbmc.service" library="service.py" start="login"/>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Create a Cinema Experience in the comfort of your own home!</summary>
+        <summary lang="es">Crear una experiencia de cine en la comodidad de su propia casa!</summary>
+        <summary lang="br">Crie uma experiência de cinema no conforto da sua própria casa!</summary>
+        <summary lang="de">Erstellen Sie einen Cinema Experience in den Komfort des eigenen Heims!</summary>
+        <disclaimer lang="en">This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License. See "Licenses.pdf" for details.</disclaimer>
+        <disclaimer lang="es">Esta obra está bajo una licencia Creative Commons Atribución-Compartir Igual 4.0 Licencia Internacional. Consulte "Licenses.pdf" para más detalles.</disclaimer>
+        <disclaimer lang="br">Esta obra está licenciada sob uma Licença Creative Commons Atribuição-Compartilhamento pela mesma licença 4.0 Licença Internacional. Consulte "Licenses.pdf" para detalhes.</disclaimer>
+        <disclaimer lang="de">Diese Seite ist unter einer Creative Commons Attribution-ShareAlike 4.0 Internationale lizensiert. Siehe "Licenses.pdf" für Details.</disclaimer>
+        <description lang="en">Create a Cinema Experience in the comfort of your own home! Entertain your audience before (and after) your feature with introduction, outro and intermission videos, still & motion trivia, movie trailers and more!</description>
+        <description lang="es">Crear una experiencia de cine en la comodidad de su propia casa! Entretener a su audiencia antes (y después) de su función con introducción, outro y vídeos de intermedio, aún y trivia movimiento, trailers de películas y mucho más!</description>
+        <description lang="br">Crie uma experiência de cinema no conforto da sua própria casa! Entreter o seu público antes (e depois) o seu recurso com a introdução, Outro e vídeos de intervalo, ainda & trivia movimento, trailers de filmes e muito mais!</description>
+        <description lang="de">Erstellen Sie einen Cinema Experience in den Komfort des eigenen Heims! Unterhalten Sie Ihre Zielgruppe vor (und nach) Ihre Funktion mit Einführung, Outro und Pause Videos, Stand & Bewegung trivia, Filmtrailer und vieles mehr!</description>
+        <website>http://www.cinemavision.org/</website>
+        <source>https://github.com/CinemaVision/script.cinemavision</source>
+        <forum></forum>
+        <email></email>
+    </extension>
+</addon>

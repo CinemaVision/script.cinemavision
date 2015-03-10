@@ -1,0 +1,4 @@
+1.0.10
+- add       - something added to the script
+- fix       - fix of an existing (broken) process
+- change    - modification of an existing process
