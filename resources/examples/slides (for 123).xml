@@ -1,8 +1,0 @@
-<slides>
-    <slide>
-        <slide rating="">
-        <question format=".([0-9]{1,3})+_q.jpg" />
-        <clue format=".([0-9]{1,3})+_c.jpg" />
-        <answer format=".([0-9]{1,2})+_a.jpg" />
-    </slide>
-</slides>
