@@ -5,8 +5,8 @@ try:
     import xbmc
     import stat
 
-    def pathJoin(p1, p2):
-        return xbmc.validatePath(p1 + '/' + p2)
+    def pathJoin(*args):
+        return xbmc.validatePath('/'.join(args))
 
     def isDir(path):
         vstat = vfs.stat(path)
@@ -75,8 +75,8 @@ except:
 
     vfs.listdir = listdir
 
-    def pathJoin(p1, p2):
-        return os.path.join(p1, p2)
+    def pathJoin(*args):
+        return os.path.join(*args)
 
     def isDir(path):
         return os.path.isdir(path)
