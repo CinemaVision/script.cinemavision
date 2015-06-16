@@ -1,5 +1,7 @@
 DEBUG = True
 
+STORAGE_PATH = '/home/ruuk/tmp/content'
+
 try:
     import xbmcvfs as vfs
     import xbmc
