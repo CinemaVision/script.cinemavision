@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<window>
+    <defaultcontrol>200</defaultcontrol>
+    <coordinates>
+        <system>1</system>
+        <posx>0</posx>
+        <posy>0</posy>
+    </coordinates>
+    <controls>
+
+        <control type="image">
+            <posx>0</posx>
+            <posy>505</posy>
+            <width>1920</width>
+            <height>575</height>
+            <texture>script.cinemavision-white_square.png</texture>
+            <colordiffuse>FF202020</colordiffuse>
+            <aspectratio>stretch</aspectratio>
+        </control>
+
+        <control type="image">
+            <posx>30</posx>
+            <posy>535</posy>
+            <width>900</width>
+            <height>515</height>
+            <texture>script.cinemavision-white_square.png</texture>
+            <colordiffuse>FF101010</colordiffuse>
+            <aspectratio>stretch</aspectratio>
+        </control>
+
+        <control type="group">
+            <visible>!IsEmpty(Container(201).ListItem.Label)</visible>
+            <posx>60</posx>
+            <posy>565</posy>
+            <width>780</width>
+            <height>395</height>
+            <control type="label">
+                <width>780</width>
+                <height>40</height>
+                <font>font20</font>
+                <textcolor>white</textcolor>
+                <align>left</align>
+                <aligny>top</aligny>
+                <label>[B]$INFO[Container(201).ListItem.Label][/B]</label>
+            </control>
+
+            <control type="grouplist">
+                <left>0</left>
+                <top>80</top>
+                <itemgap>10</itemgap>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>Setting: [COLOR FFAAAAFF]Info about Setting[/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>Setting2: [COLOR FFAAAAFF]Info about Setting2[/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>Setting3: [COLOR FFAAAAFF]Info about Setting3[/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>Setting4: [COLOR FFAAAAFF]Info about Setting4[/COLOR]</label>
+                </control>
+            </control>
+
+        </control>
+
+        <control type="group" id="200">
+            <posx>-30</posx>
+            <posy>0</posy>
+            <defaultcontrol>201</defaultcontrol>
+
+            <control type="group">
+<!--                 <animation effect="slide" end="80" time="1" condition="StringCompare(Container(201).Position,1)">Conditional</animation>
+                <animation effect="slide" end="160" time="1" condition="StringCompare(Container(201).Position,2)">Conditional</animation>
+                <animation effect="slide" end="240" time="1" condition="StringCompare(Container(201).Position,3)">Conditional</animation>
+                <animation effect="slide" end="320" time="1" condition="StringCompare(Container(201).Position,4)">Conditional</animation>
+                <animation effect="slide" end="400" time="1" condition="StringCompare(Container(201).Position,5)">Conditional</animation>
+                <animation effect="slide" end="480" time="1" condition="StringCompare(Container(201).Position,6)">Conditional</animation>
+                <animation effect="slide" end="560" time="1" condition="StringCompare(Container(201).Position,7)">Conditional</animation>
+                <animation effect="slide" end="640" time="1" condition="StringCompare(Container(201).Position,8)">Conditional</animation>
+                <animation effect="slide" end="720" time="1" condition="StringCompare(Container(201).Position,9)">Conditional</animation>
+                <animation effect="slide" end="800" time="1" condition="StringCompare(Container(201).Position,10)">Conditional</animation>
+                <animation effect="slide" end="880" time="1" condition="StringCompare(Container(201).Position,11)">Conditional</animation>
+                <animation effect="slide" end="960" time="1" condition="StringCompare(Container(201).Position,12)">Conditional</animation>
+                <animation effect="slide" end="1040" time="1" condition="StringCompare(Container(201).Position,13)">Conditional</animation>
+                <animation effect="slide" end="1120" time="1" condition="StringCompare(Container(201).Position,14)">Conditional</animation>
+                <animation effect="slide" end="1200" time="1" condition="StringCompare(Container(201).Position,15)">Conditional</animation>
+                <animation effect="slide" end="1280" time="1" condition="StringCompare(Container(201).Position,16)">Conditional</animation>
+                <animation effect="slide" end="1360" time="1" condition="StringCompare(Container(201).Position,17)">Conditional</animation>
+                <animation effect="slide" end="1440" time="1" condition="StringCompare(Container(201).Position,18)">Conditional</animation>
+                <animation effect="slide" end="1520" time="1" condition="StringCompare(Container(201).Position,19)">Conditional</animation>
+                <animation effect="slide" end="1600" time="1" condition="StringCompare(Container(201).Position,20)">Conditional</animation>
+                <animation effect="slide" end="1680" time="1" condition="StringCompare(Container(201).Position,21)">Conditional</animation> -->
+                <posx>960</posx>
+                <posy>300</posy>
+
+                <control type="group">
+                    <visible>IsEmpty(Container(201).ListItem.property(type))</visible>
+                    <posx>40</posx>
+                    <posy>68</posy>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,0)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>205</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>205</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,1)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>285</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>285</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,2)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>365</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>365</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,3)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>445</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>445</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,4)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>525</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>525</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(202).Position,5)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>605</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>605</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+                    <control type="list" id="202">
+                        <posx>0</posx>
+                        <posy>172</posy>
+                        <width>800</width>
+                        <height>538</height>
+                        <scrolltime>200</scrolltime>
+                        <orientation>vertical</orientation>
+                        <onleft>201</onleft>
+                        <onright>201</onright>
+                        <ondown>203</ondown>
+                        <onup>201</onup>
+
+                        <itemlayout height="80">
+                            <control type="image">
+                                <posx>25</posx>
+                                <posy>5</posy>
+                                <width>60</width>
+                                <height>60</height>
+                                <texture>$INFO[ListItem.Thumb]</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="label">
+                                <left>100</left>
+                                <top>0</top>
+                                <width>800</width>
+                                <height>80</height>
+                                <font>font20</font>
+                                <textcolor>FF909090</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>$INFO[ListItem.Label]</label>
+                            </control>
+                        </itemlayout>
+
+                        <focusedlayout height="80">
+                            <control type="group">
+                                <posx>20</posx>
+                                <posy>0</posy>
+                                <control type="image">
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>70</width>
+                                    <height>70</height>
+                                    <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <posx>5</posx>
+                                    <posy>5</posy>
+                                    <width>60</width>
+                                    <height>60</height>
+                                    <texture>$INFO[ListItem.Thumb]</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="label">
+                                    <left>80</left>
+                                    <top>0</top>
+                                    <width>800</width>
+                                    <height>80</height>
+                                    <font>font20</font>
+                                    <textcolor>white</textcolor>
+                                    <align>left</align>
+                                    <aligny>center</aligny>
+                                    <label>$INFO[ListItem.Label]</label>
+                                </control>
+                            </control>
+
+                        </focusedlayout>
+                    </control>
+
+                </control>
+
+                <control type="group">
+                    <visible>!IsEmpty(Container(201).ListItem.property(type))</visible>
+                    <posx>40</posx>
+                    <posy>68</posy>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,0)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>205</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>205</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,1)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>285</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>285</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,2)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>365</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>365</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,3)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>445</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>445</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,4)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>525</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>525</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                    <control type="group">
+                        <visible>StringCompare(Container(203).Position,5)</visible>
+                        <control type="image">
+                            <width>4</width>
+                            <height>605</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <posy>605</posy>
+                            <width>20</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+                    <control type="list" id="203">
+                        <posx>0</posx>
+                            <posy>172</posy>
+                            <width>800</width>
+                            <height>538</height>
+                            <scrolltime>200</scrolltime>
+                            <orientation>vertical</orientation>
+                            <onleft>201</onleft>
+                            <onright>201</onright>
+                            <ondown>203</ondown>
+                            <onup>201</onup>
+
+                        <itemlayout height="80">
+                            <control type="image">
+                                <posx>25</posx>
+                                <posy>5</posy>
+                                <width>60</width>
+                                <height>60</height>
+                                <texture>$INFO[ListItem.Thumb]</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="label">
+                                <left>100</left>
+                                <top>0</top>
+                                <width>800</width>
+                                <height>80</height>
+                                <font>font20</font>
+                                <textcolor>FF909090</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>$INFO[ListItem.Label]</label>
+                            </control>
+                        </itemlayout>
+
+                        <focusedlayout height="80">
+                            <control type="group">
+                                <posx>20</posx>
+                                <posy>0</posy>
+                                <control type="image">
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>70</width>
+                                    <height>70</height>
+                                    <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <posx>5</posx>
+                                    <posy>5</posy>
+                                    <width>60</width>
+                                    <height>60</height>
+                                    <texture>$INFO[ListItem.Thumb]</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="label">
+                                    <left>80</left>
+                                    <top>0</top>
+                                    <width>800</width>
+                                    <height>80</height>
+                                    <font>font20</font>
+                                    <textcolor>white</textcolor>
+                                    <align>left</align>
+                                    <aligny>center</aligny>
+                                    <label>$INFO[ListItem.Label]</label>
+                                </control>
+                            </control>
+                        </focusedlayout>
+
+                    </control>
+                </control>
+            </control>
+
+            <control type="fixedlist" id="201">
+                <focusposition>13</focusposition>
+                <posx>-80</posx>
+                <posy>0</posy>
+                <width>2160</width>
+                <height>520</height>
+                <scrolltime>200</scrolltime>
+                <orientation>horizontal</orientation>
+                <onleft>200</onleft>
+                <onright>200</onright>
+                <ondown>202</ondown>
+
+                <!-- ITEM LAYOUT ########################################## -->
+                <itemlayout width="80">
+                    <control type="label">
+                        <left>40</left>
+                        <top>130</top>
+                        <width>400</width>
+                        <height>300</height>
+                        <angle>45</angle>
+                        <font>font20</font>
+                        <textcolor>white</textcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                    </control>
+
+                    <control type="group">
+                        <posx>0</posx>
+                        <posy>380</posy>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
+                            <posx>35</posx>
+                            <posy>35</posy>
+                            <width>4</width>
+                            <height>50</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.start))</visible>
+                            <posx>35</posx>
+                            <posy>85</posy>
+                            <width>125</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.end))</visible>
+                            <posx>0</posx>
+                            <posy>85</posy>
+                            <width>39</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.join))</visible>
+                            <posx>0</posx>
+                            <posy>85</posy>
+                            <width>160</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+                    <control type="group">
+                        <posx>-30</posx>
+                        <posy>300</posy>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>120</width>
+                            <height>120</height>
+                            <texture>script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>IsEmpty(ListItem.Property(type)) + IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
+                            <posx>48</posx>
+                            <posy>68</posy>
+                            <width>44</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+                </itemlayout>
+
+                <!-- FOCUSED LAYOUT ####################################### -->
+                <focusedlayout width="80">
+                    <control type="label">
+                        <left>40</left>
+                        <top>130</top>
+                        <width>400</width>
+                        <height>300</height>
+                        <angle>45</angle>
+                        <font>font20</font>
+                        <textcolor>white</textcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                    </control>
+
+                    <control type="group">
+                        <posx>0</posx>
+                        <posy>380</posy>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
+                            <posx>35</posx>
+                            <posy>35</posy>
+                            <width>4</width>
+                            <height>50</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.start))</visible>
+                            <posx>35</posx>
+                            <posy>85</posy>
+                            <width>125</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.end))</visible>
+                            <posx>0</posx>
+                            <posy>85</posy>
+                            <width>39</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.join))</visible>
+                            <posx>0</posx>
+                            <posy>85</posy>
+                            <width>160</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+                    <control type="group">
+                        <posx>-30</posx>
+                        <posy>300</posy>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <posx>0</posx>
+                            <posy>0</posy>
+                            <width>140</width>
+                            <height>140</height>
+                            <texture>script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <posx>10</posx>
+                            <posy>10</posy>
+                            <width>120</width>
+                            <height>120</height>
+                            <texture>script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="group">
+                            <visible>IsEmpty(ListItem.Property(type))</visible>
+                            <control type="image">
+                                <visible>IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
+                                <posx>48</posx>
+                                <posy>68</posy>
+                                <width>44</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(first))</visible>
+                                <posx>72</posx>
+                                <posy>68</posy>
+                                <width>22</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(last))</visible>
+                                <posx>48</posx>
+                                <posy>68</posy>
+                                <width>22</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                        </control>
+                    </control>
+                </focusedlayout>
+            </control>
+
+        </control>
+    </controls>
+</window>
