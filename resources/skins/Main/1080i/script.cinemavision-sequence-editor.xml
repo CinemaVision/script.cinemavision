@@ -221,20 +221,20 @@
 
                     <control type="list" id="202">
                         <posx>0</posx>
-                        <posy>172</posy>
+                        <posy>170</posy>
                         <width>800</width>
                         <height>538</height>
                         <scrolltime>200</scrolltime>
                         <orientation>vertical</orientation>
-                        <onleft>201</onleft>
+                        <!-- <onleft>201</onleft>
                         <onright>201</onright>
                         <ondown>203</ondown>
-                        <onup>201</onup>
+                        <onup>201</onup> -->
 
                         <itemlayout height="80">
                             <control type="image">
                                 <posx>25</posx>
-                                <posy>5</posy>
+                                <posy>7</posy>
                                 <width>60</width>
                                 <height>60</height>
                                 <texture>$INFO[ListItem.Thumb]</texture>
@@ -242,7 +242,7 @@
                             </control>
                             <control type="label">
                                 <left>100</left>
-                                <top>0</top>
+                                <top>2</top>
                                 <width>800</width>
                                 <height>80</height>
                                 <font>font20</font>
@@ -256,12 +256,12 @@
                         <focusedlayout height="80">
                             <control type="group">
                                 <posx>20</posx>
-                                <posy>0</posy>
+                                <posy>2</posy>
                                 <control type="image">
-                                    <posx>0</posx>
-                                    <posy>0</posy>
-                                    <width>70</width>
-                                    <height>70</height>
+                                    <posx>-2.5</posx>
+                                    <posy>-2.5</posy>
+                                    <width>75</width>
+                                    <height>75</height>
                                     <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
@@ -399,10 +399,10 @@
                             <height>538</height>
                             <scrolltime>200</scrolltime>
                             <orientation>vertical</orientation>
-                            <onleft>201</onleft>
+                            <!-- <onleft>201</onleft>
                             <onright>201</onright>
-                            <ondown>203</ondown>
-                            <onup>201</onup>
+                            <ondown>200</ondown>
+                            <onup>201</onup> -->
 
                         <itemlayout height="80">
                             <control type="image">
@@ -430,14 +430,27 @@
                             <control type="group">
                                 <posx>20</posx>
                                 <posy>0</posy>
+
                                 <control type="image">
-                                    <posx>0</posx>
-                                    <posy>0</posy>
-                                    <width>70</width>
-                                    <height>70</height>
+                                    <visible>IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                                    <posx>-2.5</posx>
+                                    <posy>-2.5</posy>
+                                    <width>75</width>
+                                    <height>75</height>
                                     <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
+                                <control type="image">
+                                    <visible>!IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                                    <posx>-2.5</posx>
+                                    <posy>-2.5</posy>
+                                    <width>75</width>
+                                    <height>75</height>
+                                    <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
+                                    <colordiffuse>FF00FF00</colordiffuse>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+
                                 <control type="image">
                                     <posx>5</posx>
                                     <posy>5</posy>
@@ -472,9 +485,9 @@
                 <height>520</height>
                 <scrolltime>200</scrolltime>
                 <orientation>horizontal</orientation>
-                <onleft>200</onleft>
+                <!-- <onleft>200</onleft>
                 <onright>200</onright>
-                <ondown>202</ondown>
+                <ondown>202</ondown> -->
 
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout width="80">
@@ -545,14 +558,14 @@
                             <posy>10</posy>
                             <width>120</width>
                             <height>120</height>
-                            <texture>script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                            <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
                             <visible>IsEmpty(ListItem.Property(type)) + IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
-                            <posx>48</posx>
+                            <posx>46</posx>
                             <posy>68</posy>
-                            <width>44</width>
+                            <width>48</width>
                             <height>4</height>
                             <texture>script.cinemavision-white_square.png</texture>
                             <aspectratio>stretch</aspectratio>
@@ -623,31 +636,47 @@
                     <control type="group">
                         <posx>-30</posx>
                         <posy>300</posy>
-                        <control type="image">
+                        <control type="group">
                             <visible>!IsEmpty(ListItem.Property(type))</visible>
-                            <posx>0</posx>
-                            <posy>0</posy>
-                            <width>140</width>
-                            <height>140</height>
-                            <texture>script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
-                            <aspectratio>stretch</aspectratio>
+                            <posx>-5</posx>
+                            <posy>-5</posy>
+                            <control type="image">
+                                <visible>IsEmpty(ListItem.Property(moving))</visible>
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>150</width>
+                                <height>150</height>
+                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(moving))</visible>
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>150</width>
+                                <height>150</height>
+                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
+                                <colordiffuse>FF00FF00</colordiffuse>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
                         </control>
+
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(type))</visible>
                             <posx>10</posx>
                             <posy>10</posy>
                             <width>120</width>
                             <height>120</height>
-                            <texture>script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                            <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="group">
                             <visible>IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
                                 <visible>IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
-                                <posx>48</posx>
+                                <posx>46</posx>
                                 <posy>68</posy>
-                                <width>44</width>
+                                <width>48</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
@@ -663,9 +692,9 @@
                             </control>
                             <control type="image">
                                 <visible>!IsEmpty(ListItem.Property(last))</visible>
-                                <posx>48</posx>
+                                <posx>46</posx>
                                 <posy>68</posy>
-                                <width>22</width>
+                                <width>24</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>

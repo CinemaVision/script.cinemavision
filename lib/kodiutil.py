@@ -23,7 +23,7 @@ def DEBUG_LOG(msg):
         LOG(msg)
 
 
-def ERROR(msg):
+def ERROR(msg=''):
     if msg:
         LOG(msg)
     import traceback
