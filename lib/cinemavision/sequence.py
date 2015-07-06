@@ -12,6 +12,12 @@ class Item:
     displayName = ''
     typeChar = ''
 
+    def _set(self, attr, value):
+        conv = self.elementData('type')
+        if conv:
+            value = conv(value)
+        setattr(self, attr, value)
+
     @property
     def fileChar(self):
         return self.typeChar
@@ -19,9 +25,9 @@ class Item:
     def toNode(self):
         item = ET.Element(self._tag)
         item.set('type', self._type)
-        for e, conv in self._elements:
-            sub = ET.Element(e)
-            sub.text = str(getattr(self, e))
+        for e in self._elements:
+            sub = ET.Element(e['attr'])
+            sub.text = str(getattr(self, e['attr']))
             item.append(sub)
         return item
 
@@ -34,11 +40,34 @@ class Item:
     @classmethod
     def _fromNode(cls, node):
         new = cls()
-        for e, conv in new._elements:
-            sub = node.find(e[0])
-            if sub:
-                setattr(new, e, conv and conv(sub.text) or sub.text)
+        for e in new._elements:
+            sub = node.find(e['attr'])
+            if sub is not None:
+                new._set(e['attr'], sub.text)
         return new
+
+    def elementData(self, element_name):
+        for e in self._elements:
+            if element_name == e['attr']:
+                return e
+
+    def getSettingOptions(self, setting):
+        limits = self.elementData(setting)['limits']
+        return limits or ''
+
+    def setSetting(self, setting, value):
+        setattr(self, setting, value)
+
+    def getSetting(self, setting):
+        return getattr(self, setting)
+
+    def getSettingIndex(self, setting):
+        for i, e in enumerate(self._elements):
+            if e['attr'] == setting:
+                return i
+
+    def display(self):
+        return self.displayName
 
 
 ################################################################################
@@ -55,7 +84,12 @@ class Feature(Item):
 ################################################################################
 class Trivia(Item):
     _type = 'trivia'
-    _elements = (('count', int), ('qDuration', int), ('cDuration', int), ('aDuration', int))
+    _elements = (
+        {'attr': 'count',       'type': int, 'limits': (1, 10), 'name': 'Count'},
+        {'attr': 'qDuration',   'type': int, 'limits': (1, 60), 'name': 'Question Duration'},
+        {'attr': 'cDuration',   'type': int, 'limits': (1, 60), 'name': 'Clue Duration'},
+        {'attr': 'aDuration',   'type': int, 'limits': (1, 60), 'name': 'Answer Duration'}
+    )
     displayName = 'Trivia Slide'
     typeChar = 'Q'
 
@@ -71,7 +105,10 @@ class Trivia(Item):
 ################################################################################
 class Trailer(Item):
     _type = 'trailer'
-    _elements = (('count', int), ('source', None))
+    _elements = (
+        {'attr': 'count',  'type': int,  'limits': (1, 10), 'name': 'Count'},
+        {'attr': 'source', 'type': None, 'limits': None,    'name': 'Source'}
+    )
     displayName = 'Trailer'
     typeChar = 'T'
 
@@ -79,14 +116,21 @@ class Trailer(Item):
         self.count = 1
         self.source = ''
 
+    def display(self):
+        if self.count > 1:
+            return '{0} x {1}'.format(self.displayName, self.count)
+        return self.displayName
+
 
 ################################################################################
 # VIDEO
 ################################################################################
 class Video(Item):
     _type = 'video'
-    _elements = (('source', None), )
-    displayName = 'Video'
+    _elements = (
+        {'attr': 'source', 'type': None, 'limits': None,    'name': 'Source'},
+    )
+    displayName = 'Video Bumper'
     typeChar = 'V'
 
     def __init__(self):
@@ -117,8 +161,71 @@ class Action(Item):
 ################################################################################
 class Command(Item):
     _type = 'command'
+    _elements = (
+        {
+            'attr': 'command',
+            'type': None,
+            'limits': ['back', ],
+            'name': 'Command'
+        },
+        {
+            'attr': 'arg',
+            'type': None,
+            'limits': None,
+            'name': 'Argument'
+        },
+        {
+            'attr': 'condition',
+            'type': None,
+            'limits': ['feature.queue=full', 'none'],
+            'name': 'Condition'
+        }
+    )
     displayName = 'Command'
     typeChar = 'C'
+
+    def _set(self, attr, value):
+        if self.command == 'back':
+            if attr == 'arg':
+                value = int(value)
+        Item._set(self, attr, value)
+
+    def __init__(self):
+        self.command = ''
+        self.arg = ''
+        self.condition = ''
+
+    def getSettingOptions(self, setting):
+        if setting == 'command':
+            return self.elementData('command')['limits']
+        elif setting == 'condition':
+            return self.elementData('condition')['limits']
+        elif setting == 'arg':
+            if self.command == 'back':
+                return (0, 99)
+
+    def setSetting(self, setting, value):
+        Item.setSetting(self, setting, value)
+
+        if setting == 'command':
+            if self.command == 'back':
+                if not self.condition:
+                    self.condition = 'feature.queue=full'
+                if not self.arg:
+                    self.arg = 2
+            else:
+                self.condition = ''
+
+    def getSetting(self, setting):
+        if self.command == 'back':
+            if setting == 'arg':
+                if not self.arg:
+                    self.arg = 2
+        return Item.getSetting(self, setting)
+
+    def display(self):
+        command = self.command and ' ({0}:{1})'.format(self.command, self.arg) or ''
+        return '{0}{1}'.format(self.displayName, command)
 
 
 CONTENT_CLASSES = {

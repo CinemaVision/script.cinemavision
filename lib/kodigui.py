@@ -306,6 +306,8 @@ class ManagedControlList(object):
 
     def getSelectedItem(self):
         pos = self.control.getSelectedPosition()
+        if pos < 0:
+            return None
         return self.getListItem(pos)
 
     def removeItem(self, index):
@@ -323,7 +325,7 @@ class ManagedControlList(object):
     def insertItem(self, index, managed_item):
         pos = self.getSelectedPosition() + 1
 
-        if index >= self.size():
+        if index >= self.size() or index < 0:
             self.addItem(managed_item)
         else:
             self.items.insert(index, managed_item)

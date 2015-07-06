@@ -55,7 +55,7 @@
                     <textcolor>white</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>Setting: [COLOR FFAAAAFF]Info about Setting[/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting0_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting0)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>780</width>
@@ -64,7 +64,7 @@
                     <textcolor>white</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>Setting2: [COLOR FFAAAAFF]Info about Setting2[/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting1_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting1)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>780</width>
@@ -73,7 +73,7 @@
                     <textcolor>white</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>Setting3: [COLOR FFAAAAFF]Info about Setting3[/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting2_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting2)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>780</width>
@@ -82,7 +82,43 @@
                     <textcolor>white</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>Setting4: [COLOR FFAAAAFF]Info about Setting4[/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting3_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting3)][/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>$INFO[Container(201).ListItem.Property(setting4_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting4)][/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>$INFO[Container(201).ListItem.Property(setting5_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting5)][/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>$INFO[Container(201).ListItem.Property(setting6_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting6)][/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>780</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>$INFO[Container(201).ListItem.Property(setting7_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting7)][/COLOR]</label>
                 </control>
             </control>
 
@@ -91,7 +127,6 @@
         <control type="group" id="200">
             <posx>-30</posx>
             <posy>0</posy>
-            <defaultcontrol>201</defaultcontrol>
 
             <control type="group">
 <!--                 <animation effect="slide" end="80" time="1" condition="StringCompare(Container(201).Position,1)">Conditional</animation>
@@ -485,6 +520,7 @@
                 <height>520</height>
                 <scrolltime>200</scrolltime>
                 <orientation>horizontal</orientation>
+                <hitrect x="0" y="0" w="0" h="0" />
                 <!-- <onleft>200</onleft>
                 <onright>200</onright>
                 <ondown>202</ondown> -->
