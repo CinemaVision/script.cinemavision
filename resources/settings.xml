@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <category label="General">
+    <setting id="content.path" label="Content path" type="folder" sources="files" option="writeable" value="" />
+  </category>
+</settings>

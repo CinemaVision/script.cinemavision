@@ -41,7 +41,7 @@
                 <textcolor>white</textcolor>
                 <align>left</align>
                 <aligny>top</aligny>
-                <label>[B]$INFO[Container(201).ListItem.Label][/B]</label>
+                <label>[B]$INFO[Container(201).ListItem.Property(type.name)][/B]</label>
             </control>
 
             <control type="grouplist">
@@ -157,6 +157,26 @@
                     <visible>IsEmpty(Container(201).ListItem.property(type))</visible>
                     <posx>40</posx>
                     <posy>68</posy>
+
+                    <control type="image">
+                        <visible>!IsEmpty(Container(201).ListItem.property(last))</visible>
+                        <posx>-60</posx>
+                        <posy>0</posy>
+                        <width>60</width>
+                        <height>4</height>
+                        <texture>script.cinemavision-white_square.png</texture>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+                    <control type="image">
+                        <visible>!IsEmpty(Container(201).ListItem.property(first))</visible>
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>60</width>
+                        <height>4</height>
+                        <texture>script.cinemavision-white_square.png</texture>
+                        <aspectratio>stretch</aspectratio>
+                    </control>
+
                     <control type="group">
                         <visible>StringCompare(Container(202).Position,0)</visible>
                         <control type="image">
@@ -541,7 +561,7 @@
                     </control>
 
                     <control type="group">
-                        <posx>0</posx>
+                        <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
@@ -586,17 +606,95 @@
                     </control>
 
                     <control type="group">
-                        <posx>-30</posx>
-                        <posy>300</posy>
+                        <posx>3</posx>
+                        <posy>380</posy>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(type))</visible>
-                            <posx>10</posx>
-                            <posy>10</posy>
-                            <width>120</width>
-                            <height>120</height>
-                            <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.start)) | !IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <posx>35</posx>
+                            <posy>35</posy>
+                            <width>4</width>
+                            <height>70</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
                             <aspectratio>stretch</aspectratio>
                         </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.start))</visible>
+                            <posx>35</posx>
+                            <posy>105</posy>
+                            <width>125</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <posx>0</posx>
+                            <posy>105</posy>
+                            <width>39</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.join))</visible>
+                            <posx>0</posx>
+                            <posy>105</posy>
+                            <width>160</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+
+                    <control type="group">
+                        <posx>-30</posx>
+                        <posy>300</posy>
+                        <control type="group">
+                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <control type="image">
+                                <visible>IsEmpty(ListItem.Property(almost.last)) + IsEmpty(ListItem.Property(second))</visible>
+                                <posx>0</posx>
+                                <posy>68</posy>
+                                <width>130</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(almost.last))</visible>
+                                <posx>0</posx>
+                                <posy>68</posy>
+                                <width>65</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(second))</visible>
+                                <posx>65</posx>
+                                <posy>68</posy>
+                                <width>65</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+
+                            <control type="image">
+                                <posx>10</posx>
+                                <posy>10</posy>
+                                <width>120</width>
+                                <height>120</height>
+                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+
+                        </control>
+
                         <control type="image">
                             <visible>IsEmpty(ListItem.Property(type)) + IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
                             <posx>46</posx>
@@ -625,7 +723,7 @@
                     </control>
 
                     <control type="group">
-                        <posx>0</posx>
+                        <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
@@ -670,8 +768,85 @@
                     </control>
 
                     <control type="group">
+                        <posx>3</posx>
+                        <posy>380</posy>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.start)) | !IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <posx>35</posx>
+                            <posy>35</posy>
+                            <width>4</width>
+                            <height>70</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.start))</visible>
+                            <posx>35</posx>
+                            <posy>105</posy>
+                            <width>125</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <posx>0</posx>
+                            <posy>105</posy>
+                            <width>39</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(connect.skip.join))</visible>
+                            <posx>0</posx>
+                            <posy>105</posy>
+                            <width>160</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>60FFFFFF</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                    </control>
+
+                    <control type="group">
                         <posx>-30</posx>
                         <posy>300</posy>
+
+                        <control type="group">
+                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <control type="image">
+                                <visible>IsEmpty(ListItem.Property(almost.last)) + IsEmpty(ListItem.Property(second))</visible>
+                                <posx>0</posx>
+                                <posy>68</posy>
+                                <width>130</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(almost.last))</visible>
+                                <posx>0</posx>
+                                <posy>68</posy>
+                                <width>65</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <visible>!IsEmpty(ListItem.Property(second))</visible>
+                                <posx>65</posx>
+                                <posy>68</posy>
+                                <width>65</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                        </control>
+
                         <control type="group">
                             <visible>!IsEmpty(ListItem.Property(type))</visible>
                             <posx>-5</posx>
@@ -706,6 +881,7 @@
                             <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
                             <aspectratio>stretch</aspectratio>
                         </control>
+
                         <control type="group">
                             <visible>IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
@@ -717,24 +893,7 @@
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
                             </control>
-                            <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(first))</visible>
-                                <posx>72</posx>
-                                <posy>68</posy>
-                                <width>22</width>
-                                <height>4</height>
-                                <texture>script.cinemavision-white_square.png</texture>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                            <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(last))</visible>
-                                <posx>46</posx>
-                                <posy>68</posy>
-                                <width>24</width>
-                                <height>4</height>
-                                <texture>script.cinemavision-white_square.png</texture>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
+
                         </control>
                     </control>
                 </focusedlayout>

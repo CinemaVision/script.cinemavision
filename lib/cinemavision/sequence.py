@@ -128,22 +128,61 @@ class Trailer(Item):
 class Video(Item):
     _type = 'video'
     _elements = (
-        {'attr': 'source', 'type': None, 'limits': None,    'name': 'Source'},
+        {
+            'attr': 'vtype',
+            'type': None,
+            'limits': [
+                'trivia.intro',
+                'trivia.outro',
+                'theater.intro',
+                'theater.outro',
+                'coming.attractions.intro',
+                'coming.attractions.outro',
+                'countdown',
+                'feature.intro',
+                'feature.outro',
+                'intermission'
+            ],
+            'name': 'Type'
+        },
+        {
+            'attr': 'source',
+            'type': None,
+            'limits': None,
+            'name': 'Source'
+        }
     )
     displayName = 'Video Bumper'
     typeChar = 'V'
 
     def __init__(self):
+        self.vtype = ''
         self.source = ''
+
+    def display(self):
+        if not self.vtype:
+            return self.displayName
+        return self.vtype.replace('.', ' ').title()
 
 
 ################################################################################
 # AUDIOFORMAT
 ################################################################################
-class AudioFormat(Video):
+class AudioFormat(Item):
     _type = 'audioformat'
+    _elements = (
+        {
+            'attr': 'source',
+            'type': None,
+            'limits': None,
+            'name': 'Source'
+        },
+    )
     displayName = 'Audio Format Bumper'
     typeChar = 'A'
+
+    def __init__(self):
+        self.source = ''
 
 
 ################################################################################
@@ -165,7 +204,7 @@ class Command(Item):
         {
             'attr': 'command',
             'type': None,
-            'limits': ['back', ],
+            'limits': ['back', 'skip'],
             'name': 'Command'
         },
         {
@@ -177,7 +216,7 @@ class Command(Item):
         {
             'attr': 'condition',
             'type': None,
-            'limits': ['feature.queue=full', 'none'],
+            'limits': ['feature.queue=full', 'feature.queue=empty', 'none'],
             'name': 'Condition'
         }
     )
@@ -185,7 +224,7 @@ class Command(Item):
     typeChar = 'C'
 
     def _set(self, attr, value):
-        if self.command == 'back':
+        if self.command in ('back', 'skip'):
             if attr == 'arg':
                 value = int(value)
         Item._set(self, attr, value)
@@ -201,7 +240,7 @@ class Command(Item):
         elif setting == 'condition':
             return self.elementData('condition')['limits']
         elif setting == 'arg':
-            if self.command == 'back':
+            if self.command in ('back', 'skip'):
                 return (0, 99)
 
     def setSetting(self, setting, value):
@@ -213,11 +252,16 @@ class Command(Item):
                     self.condition = 'feature.queue=full'
                 if not self.arg:
                     self.arg = 2
+            elif self.command == 'skip':
+                if not self.condition:
+                    self.condition = 'feature.queue=empty'
+                if not self.arg:
+                    self.arg = 2
             else:
                 self.condition = ''
 
     def getSetting(self, setting):
-        if self.command == 'back':
+        if self.command in ('back', 'skip'):
             if setting == 'arg':
                 if not self.arg:
                     self.arg = 2

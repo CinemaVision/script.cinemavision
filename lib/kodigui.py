@@ -306,6 +306,9 @@ class ManagedControlList(object):
 
     def getSelectedItem(self):
         pos = self.control.getSelectedPosition()
+        if not self.positionIsValid(pos):
+            pos = self.size() - 1
+
         if pos < 0:
             return None
         return self.getListItem(pos)

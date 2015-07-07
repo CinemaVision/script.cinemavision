@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<sequence>
+	<item type="video">
+		<vtype>trivia.intro</vtype>
+		<source>None</source>
+	</item>
+	<item type="trivia">
+		<count>1</count>
+		<qDuration>10</qDuration>
+		<cDuration>10</cDuration>
+		<aDuration>10</aDuration>
+	</item>
+	<item type="video">
+		<vtype>trivia.outro</vtype>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>theater.intro</vtype>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>coming.attractions.intro</vtype>
+		<source>None</source>
+	</item>
+	<item type="trailer">
+		<count>1</count>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>coming.attractions.outro</vtype>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>countdown</vtype>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>feature.intro</vtype>
+		<source>None</source>
+	</item>
+	<item type="audioformat">
+		<source>None</source>
+	</item>
+	<item type="feature"/>
+	<item type="command">
+		<command>skip</command>
+		<arg>5</arg>
+		<condition>feature.queue=empty</condition>
+	</item>
+	<item type="video">
+		<vtype>intermission</vtype>
+		<source>None</source>
+	</item>
+	<item type="audioformat">
+		<source>None</source>
+	</item>
+	<item type="feature"/>
+	<item type="command">
+		<command>back</command>
+		<arg>3</arg>
+		<condition>feature.queue=full</condition>
+	</item>
+	<item type="video">
+		<vtype>feature.outro</vtype>
+		<source>None</source>
+	</item>
+	<item type="video">
+		<vtype>theater.outro</vtype>
+		<source>None</source>
+	</item>
+</sequence>
