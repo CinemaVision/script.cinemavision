@@ -45,8 +45,8 @@ class UserContent:
     def __init__(self, content_dir=None, callback=None):
         self._callback = callback
         self.setupDB()
-        self.musicHandler = MusicHandler(self.log)
-        self.triviaDirectoryHandler = TriviaDirectoryHandler(self.log)
+        self.musicHandler = MusicHandler(self.db, self.log)
+        self.triviaDirectoryHandler = TriviaDirectoryHandler(self.db, self.log)
         self.setContentDirectoryPath(content_dir)
         self.setupContentDirectory()
         self.loadContent()
@@ -105,7 +105,7 @@ class UserContent:
         self.loadMusic()
         self.loadTrivia()
         self.loadAudioFormatBumpers()
-        self.loadCinemaSpots()
+        self.loadVideoBumpers()
         self.loadRatingsBumpers()
 
     def loadMusic(self):
@@ -146,12 +146,12 @@ class UserContent:
 
         self.createBumpers(basePath, self.db.AudioFormatBumpers, 'format')
 
-    def loadCinemaSpots(self):
-        self.logHeading('LOADING CINEAM SPOTS')
+    def loadVideoBumpers(self):
+        self.logHeading('LOADING VIDEO BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Videos', 'Cinema Spots')
 
-        self.createBumpers(basePath, self.db.CinemaSpots, 'type')
+        self.createBumpers(basePath, self.db.VideoBumpers, 'type')
 
     def loadRatingsBumpers(self):
         self.logHeading('LOADING RATINGS BUMPERS')
@@ -187,7 +187,8 @@ class UserContent:
 class MusicHandler:
     _extensions = ('.mp3', '.wav')
 
-    def __init__(self, callback=None):
+    def __init__(self, db, callback=None):
+        self.db = db
         self._callback = callback
 
     def __call__(self, base, path):
@@ -211,7 +212,8 @@ class TriviaDirectoryHandler:
 
     _imageExtensions = ('.jpg', '.png')
 
-    def __init__(self, callback=None):
+    def __init__(self, db, callback=None):
+        self.db = db
         self._callback = callback
 
     def __call__(self, basePath):

@@ -11,6 +11,7 @@ try:
     import xbmc
     import xbmcaddon
     import stat
+    import time
 
     STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
 
@@ -27,9 +28,22 @@ try:
     old_listdir = vfs.listdir
 
     def vfs_listdir(path):
-        return old_listdir(path)[0]
+        lists = old_listdir(path)
+        return lists[0] + lists[1]
 
     vfs.listdir = vfs_listdir
+
+    try:
+        xbmc.Monitor().waitForAbort
+
+        def wait(timeout):
+            return xbmc.Monitor().waitForAbort(timeout)
+    except:
+        def wait(timeout):
+            start = time.time()
+            while not xbmc.abortRequested and time.time() - start < timeout:
+                xbmc.sleep(100)
+            return xbmc.abortRequested
 
 except:
     import zipfile
@@ -100,6 +114,10 @@ except:
 
     def LOG(msg):
         print 'CinemaVison (API): {0}'.format(msg)
+
+    def wait(timeout):
+        time.sleep(timeout)
+        return False
 
 
 def DEBUG_LOG(msg):

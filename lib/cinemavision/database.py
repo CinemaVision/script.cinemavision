@@ -67,7 +67,7 @@ RatingsBumpers.create_table(fail_silently=True)
 util.callback(' - CinemaSpots')
 
 
-class CinemaSpots(ContentBase):
+class VideoBumpers(ContentBase):
     type = peewee.CharField()
     is3D = peewee.BooleanField()
 
@@ -77,6 +77,6 @@ class CinemaSpots(ContentBase):
 
     path = peewee.CharField(unique=True)
 
-CinemaSpots.create_table(fail_silently=True)
+VideoBumpers.create_table(fail_silently=True)
 
 util.callback(None, 'Database created')

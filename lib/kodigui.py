@@ -12,25 +12,32 @@ class BaseFunctions:
     res = '720p'
 
     def __init__(self):
-        self.open = True
+        self.isOpen = True
 
     @classmethod
     def open(cls, **kwargs):
-        window = cls(cls.xmlFile, cls.path, cls.theme, cls.res)
+        window = cls(cls.xmlFile, cls.path, cls.theme, cls.res, **kwargs)
         window.modal()
         return window
 
+    @classmethod
+    def create(cls, **kwargs):
+        window = cls(cls.xmlFile, cls.path, cls.theme, cls.res, **kwargs)
+        window.show()
+        window.isOpen = True
+        return window
+
     def modal(self):
-        self.open = True
+        self.isOpen = True
         self.doModal()
-        self.open = False
+        self.isOpen = False
 
 
 class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
     def __init__(self, *args, **kwargs):
         BaseFunctions.__init__(self)
         self._closing = False
-        self._winID = ''
+        self._winID = None
         self.started = False
 
     def onInit(self):
@@ -49,11 +56,16 @@ class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
     def setProperty(self, key, value):
         if self._closing:
             return
+
+        if not self._winID:
+            self._winID = xbmcgui.getCurrentWindowId()
+
         xbmcgui.Window(self._winID).setProperty(key, value)
         xbmcgui.WindowXML.setProperty(self, key, value)
 
     def doClose(self):
         self._closing = True
+        self.isOpen = False
         self.close()
 
     def onClosed(self): pass
@@ -82,6 +94,10 @@ class BaseDialog(xbmcgui.WindowXMLDialog, BaseFunctions):
     def setProperty(self, key, value):
         if self._closing:
             return
+
+        if not self._winID:
+            self._winID = xbmcgui.getCurrentWindowId()
+
         xbmcgui.Window(self._winID).setProperty(key, value)
         xbmcgui.WindowXMLDialog.setProperty(self, key, value)
 

@@ -339,6 +339,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         options.append(('save', 'Save'))
         options.append(('saveas', 'Save As...'))
         options.append(('load', 'Load...'))
+        options.append(('test', 'Test'))
         idx = xbmcgui.Dialog().select('Options', [o[1] for o in options])
         if idx < 0:
             return
@@ -352,6 +353,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.save(as_new=True)
         elif option == 'load':
             self.load()
+        elif option == 'test':
+            self.test()
+
+    def test(self):
+        import experience
+        e = experience.ExperiencePlayer().create(self.savePath())
+        e.start()
 
     def new(self):
         if self.modified:

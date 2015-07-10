@@ -1,8 +1,10 @@
+import time
+import json
+import binascii
+
 import xbmc
 import xbmcgui
 import xbmcaddon
-import json
-import binascii
 
 ADDON_ID = 'script.cinemavision'
 ADDON = xbmcaddon.Addon(ADDON_ID)
@@ -67,6 +69,18 @@ def _processSettingForWrite(value):
     elif isinstance(value, bool):
         value = value and 'true' or 'false'
     return str(value)
+
+try:
+    xbmc.Monitor().waitForAbort
+
+    def wait(timeout):
+        return xbmc.Monitor().waitForAbort(timeout)
+except:
+    def wait(timeout):
+        start = time.time()
+        while not xbmc.abortRequested and time.time() - start < timeout:
+            xbmc.sleep(100)
+        return xbmc.abortRequested
 
 
 class Progress(object):

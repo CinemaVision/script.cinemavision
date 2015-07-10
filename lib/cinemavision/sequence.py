@@ -27,7 +27,10 @@ class Item:
         item.set('type', self._type)
         for e in self._elements:
             sub = ET.Element(e['attr'])
-            sub.text = str(getattr(self, e['attr']))
+            attr = getattr(self, e['attr'])
+            if not attr:
+                continue
+            sub.text = str(attr)
             item.append(sub)
         return item
 
@@ -43,7 +46,7 @@ class Item:
         for e in new._elements:
             sub = node.find(e['attr'])
             if sub is not None:
-                new._set(e['attr'], sub.text)
+                new._set(e['attr'], e['type'] and e['type'](sub.text) or sub.text)
         return new
 
     def elementData(self, element_name):
@@ -75,8 +78,14 @@ class Item:
 ################################################################################
 class Feature(Item):
     _type = 'feature'
+    _elements = (
+        {'attr': 'count',  'type': int,  'limits': (1, 10), 'name': 'Count'},
+    )
     displayName = 'Feature'
     typeChar = 'F'
+
+    def __init__(self):
+        self.count = 1
 
 
 ################################################################################
@@ -172,6 +181,12 @@ class AudioFormat(Item):
     _type = 'audioformat'
     _elements = (
         {
+            'attr': 'format',
+            'type': None,
+            'limits': ['Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital'],
+            'name': 'Format'
+        },
+        {
             'attr': 'source',
             'type': None,
             'limits': None,
@@ -182,6 +197,7 @@ class AudioFormat(Item):
     typeChar = 'A'
 
     def __init__(self):
+        self.format = ''
         self.source = ''
 
 
@@ -321,3 +337,12 @@ def getItemsFromString(xml_string):
     for node in e.findall('item'):
         items.append(Item.fromNode(node))
     return items
+
+
+def loadSequence(path):
+    print path
+    import xbmcvfs
+    f = xbmcvfs.File(path, 'r')
+    xmlString = f.read().decode('utf-8')
+    f.close()
+    return getItemsFromString(xmlString)
