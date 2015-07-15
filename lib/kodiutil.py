@@ -70,6 +70,14 @@ def _processSettingForWrite(value):
         value = value and 'true' or 'false'
     return str(value)
 
+
+def setGlobalProperty(key, val):
+    xbmcgui.Window(10000).setProperty('script.cinemavision.{0}'.format(key), val)
+
+
+def getGlobalProperty(key):
+    return xbmc.getInfoLabel('Window(10000).Property(script.cinemavision.{0})'.format(key))
+
 try:
     xbmc.Monitor().waitForAbort
 

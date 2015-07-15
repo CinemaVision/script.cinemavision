@@ -12,6 +12,10 @@ class Item:
     displayName = ''
     typeChar = ''
 
+    def __init__(self):
+        self.enabled = True
+        self.name = ''
+
     def _set(self, attr, value):
         conv = self.elementData('type')
         if conv:
@@ -25,6 +29,10 @@ class Item:
     def toNode(self):
         item = ET.Element(self._tag)
         item.set('type', self._type)
+        item.set('enabled', str(self.enabled))
+        if self.name:
+            item.set('name', self.name)
+
         for e in self._elements:
             sub = ET.Element(e['attr'])
             attr = getattr(self, e['attr'])
@@ -43,6 +51,8 @@ class Item:
     @classmethod
     def _fromNode(cls, node):
         new = cls()
+        new.enabled = node.attrib.get('enabled') == 'True'
+        new.name = node.attrib.get('name') or ''
         for e in new._elements:
             sub = node.find(e['attr'])
             if sub is not None:
@@ -85,6 +95,7 @@ class Feature(Item):
     typeChar = 'F'
 
     def __init__(self):
+        Item.__init__(self)
         self.count = 1
 
 
@@ -103,6 +114,7 @@ class Trivia(Item):
     typeChar = 'Q'
 
     def __init__(self):
+        Item.__init__(self)
         self.count = 1
         self.qDuration = 10
         self.cDuration = 10
@@ -122,6 +134,7 @@ class Trailer(Item):
     typeChar = 'T'
 
     def __init__(self):
+        Item.__init__(self)
         self.count = 1
         self.source = ''
 
@@ -141,16 +154,20 @@ class Video(Item):
             'attr': 'vtype',
             'type': None,
             'limits': [
-                'trivia.intro',
-                'trivia.outro',
-                'theater.intro',
-                'theater.outro',
-                'coming.attractions.intro',
-                'coming.attractions.outro',
+                '3D.intro',
+                '3D.outro',
                 'countdown',
+                'courtesy',
                 'feature.intro',
                 'feature.outro',
-                'intermission'
+                'intermission',
+                'short.film',
+                'theater.intro',
+                'theater.outro',
+                'trailers.intro',
+                'trailers.outro',
+                'trivia.intro',
+                'trivia.outro'
             ],
             'name': 'Type'
         },
@@ -165,6 +182,7 @@ class Video(Item):
     typeChar = 'V'
 
     def __init__(self):
+        Item.__init__(self)
         self.vtype = ''
         self.source = ''
 
@@ -197,6 +215,7 @@ class AudioFormat(Item):
     typeChar = 'A'
 
     def __init__(self):
+        Item.__init__(self)
         self.format = ''
         self.source = ''
 
@@ -246,6 +265,7 @@ class Command(Item):
         Item._set(self, attr, value)
 
     def __init__(self):
+        Item.__init__(self)
         self.command = ''
         self.arg = ''
         self.condition = ''

@@ -1,3 +1,4 @@
+import re
 import time
 
 import xbmc
@@ -7,6 +8,21 @@ import kodijsonrpc
 import kodigui
 import kodiutil
 from cinemavision import sequenceprocessor
+
+AUDIO_FORMATS = {
+    "dts":       "DTS",
+    "dca":       "DTS",
+    "dtsma":     "DTS-HD",
+    "dtshd_ma":  "DTS-HD",
+    "dtshd_hra": "DTS-HD",
+    "dtshr":     "DTS-HD",
+    "ac3":       "Dolby Digital",
+    "eac3":      "Dolby Digital Plus",
+    "a_truehd":  "Dolby TrueHD",
+    "truehd":    "Dolby TrueHD"
+}
+
+TAGS_3D = '3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU| HOU | OU |HALF-TAB'
 
 
 class ExperienceWindow(kodigui.BaseWindow):
@@ -72,12 +88,34 @@ class ExperiencePlayer(xbmc.Player):
         self.window = None
         self.rpc = kodijsonrpc.KodiJSONRPC()
 
-        result = self.rpc.Playlist.GetItems(playlistid=1, properties=['file'])  # Get video playlist
+        result = self.rpc.Playlist.GetItems(playlistid=1, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
         for r in result['result'].get('items', []):
-            self.processor.addFeature(r['file'])
+            feature = sequenceprocessor.Feature(r['file'])
+            feature.title = r.get('title') or r.get('label', '')
+            ratingSplit = r.get('mpaa', ' ').split()
+            feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
+            feature.ratingFormat = 'MPAA'
+            feature.genres = r.get('genre', [])
+
+            try:
+                stereomode = r['streamdetails']['video'][0]['stereomode']
+            except:
+                stereomode = ''
+
+            if stereomode not in ('mono', ''):
+                feature.is3D = True
+            else:
+                feature.is3D = bool(re.findall(TAGS_3D, r['file']))
+
+            try:
+                feature.audioFormat = AUDIO_FORMATS.get(r['streamdetails']['audio'][0]['codec'])
+            except:
+                pass
+
+            self.processor.addFeature(feature)
 
     def start(self):
-        self.log('Started -----------------------')
+        self.log('[ -- Started --------------------------------------------------------------- ]')
         self.openWindow()
         self.processor.process()
         self.next()
@@ -87,17 +125,18 @@ class ExperiencePlayer(xbmc.Player):
         kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
 
     def openWindow(self):
+        kodiutil.setGlobalProperty('slide', '')
         self.window = ExperienceWindow.create()
 
     def waitLoop(self):
         while not kodiutil.wait(0.1):
             if self.processor.empty() or not self.window.isOpen:
                 break
-        self.log('Finished ----------------------')
+        self.log('[ -- Finished -------------------------------------------------------------- ]')
         self.window.doClose()
 
     def showImage(self, image):
-        self.window.setProperty('slide', image.path)
+        kodiutil.setGlobalProperty('slide', image.path)
 
         start = time.time()
         while not kodiutil.wait(0.1) and time.time() - start < image.duration:
@@ -105,11 +144,16 @@ class ExperiencePlayer(xbmc.Player):
                 self.abort()
                 break
 
-        self.window.setProperty('slide', '')
+        kodiutil.setGlobalProperty('slide', '')
         self.next()
 
     def showVideo(self, video):
-        self.play(video.path)
+        path = video.path
+
+        if video.userAgent:
+            path += '|User-Agent=' + video.userAgent
+
+        self.play(path)
 
     def next(self):
         if self.processor.empty():
@@ -124,7 +168,7 @@ class ExperiencePlayer(xbmc.Player):
 
         if playable.type == 'IMAGE':
             self.showImage(playable)
-        elif playable.type == 'VIDEO':
+        elif playable.type in ('VIDEO', 'FEATURE'):
             self.showVideo(playable)
         else:
             self.log('NOT PLAYING: {0}'.format(playable))
@@ -132,3 +176,4 @@ class ExperiencePlayer(xbmc.Player):
 
     def abort(self):
         self.log('ABORT')
+        self.window.doClose()

@@ -1,44 +1,65 @@
-import util
-
 import os
 import re
 from xml.etree import ElementTree as ET
 
+import util
+
+TYPE_IDS = {
+    '3D Intro':       '3D.intro',
+    '3D Outro':       '3D.outro',
+    'Countdown':      'countdown',
+    'Courtesy':       'courtesy',
+    'Feature Intro':  'feature.intro',
+    'Feature Outro':  'feature.outro',
+    'Intermission':   'intermission',
+    'Short Film':     'short.film',
+    'Theater Intro':  'theater.intro',
+    'Theater Outro':  'theater.outro',
+    'Trailers Intro': 'trailers.intro',
+    'Trailers Outro': 'trailers.outro',
+    'Trivia Intro':   'trivia.intro',
+    'Trivia Outro':   'trivia.outro'
+}
+
 
 class UserContent:
     _tree = (
+        ('Audio Format Bumpers', (
+            'Auro-3D',
+            'Dolby Atmos',
+            'Dolby Digital',
+            'Dolby Digital Plus',
+            'Dolby TrueHD',
+            'DTS',
+            'DTS-HD Master Audio',
+            'DTS-X',
+            'Other',
+            'THX'
+        )),
         'Music',
-        'Trivia',
-        ('Videos', (
-            ('Audio Format Bumpers', (
-                'Auro 3D Audio Bumpers',
-                'Dolby Atmos Bumpers',
-                'Dolby Digital Bumpers',
-                'Dolby Digital Plus Bumpers',
-                'Dolby TrueHD Bumpers',
-                'DTS Bumpers',
-                'DTS-HD Master Audio Bumpers',
-                'DTS-X Bumpers',
-                'Other',
-                'THX Bumpers'
-            )),
-            ('Cinema Spots', (
-                '3D',
-                'Coming Attractions',
-                'Countdowns',
-                'Courtesy',
-                'Feature Presentation',
-                'Intermissions',
-                'Theater',
-                'Trivia'
-
-            )),
-            ('Ratings Bumpers', (
-                'MPAA',
-                'BBFC',
-                'DEJUS',
-                'FSK'
-            )),
+        ('Ratings Bumpers', (
+            'MPAA',
+            'BBFC',
+            'DEJUS',
+            'FSK'
+        )),
+        'Trailers',
+        'Trivia Slides',
+        ('Video Bumpers', (
+            '3D Intro',
+            '3D Outro',
+            'Countdown',
+            'Courtesy',
+            'Feature Intro',
+            'Feature Outro',
+            'Intermission',
+            'Short Film',
+            'Theater Intro',
+            'Theater Outro',
+            'Trailers Intro',
+            'Trailers Outro',
+            'Trivia Intro',
+            'Trivia Outro'
         ))
     )
 
@@ -120,7 +141,7 @@ class UserContent:
     def loadTrivia(self):
         self.logHeading('LOADING TRIVIA')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Trivia')
+        basePath = util.pathJoin(self._contentDirectory, 'Trivia Slides')
         paths = util.vfs.listdir(basePath)
 
         for sub in paths:
@@ -142,21 +163,21 @@ class UserContent:
     def loadAudioFormatBumpers(self):
         self.logHeading('LOADING AUDIO FORMAT BUMPERS')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Videos', 'Audio Format Bumpers')
+        basePath = util.pathJoin(self._contentDirectory, 'Audio Format Bumpers')
 
         self.createBumpers(basePath, self.db.AudioFormatBumpers, 'format')
 
     def loadVideoBumpers(self):
         self.logHeading('LOADING VIDEO BUMPERS')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Videos', 'Cinema Spots')
+        basePath = util.pathJoin(self._contentDirectory, 'Video Bumpers')
 
         self.createBumpers(basePath, self.db.VideoBumpers, 'type')
 
     def loadRatingsBumpers(self):
         self.logHeading('LOADING RATINGS BUMPERS')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Videos', 'Ratings Bumpers')
+        basePath = util.pathJoin(self._contentDirectory, 'Ratings Bumpers')
 
         self.createBumpers(basePath, self.db.RatingsBumpers, 'system')
 
@@ -177,7 +198,7 @@ class UserContent:
                 model.get_or_create(
                     path=os.path.join(path, v),
                     defaults={
-                        type_name: type_,
+                        type_name: TYPE_IDS.get(type_, type_),
                         'name': name,
                         'is3D': '3D' in v
                     }

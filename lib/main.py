@@ -119,13 +119,24 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             item.setProperty('thumb.focus', 'small/script.cinemavision-{0}_selected.png'.format(i[2]))
             self.addItemControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Remove', thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
+        item = kodigui.ManagedListItem('Disable', 'Enable', thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
-        item = kodigui.ManagedListItem('Move', thumbnailImage='small/script.cinemavision-move.png', data_source='move')
+        item = kodigui.ManagedListItem('Remove', 'Remove', thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-minus.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
-        item = kodigui.ManagedListItem('Edit', thumbnailImage='small/script.cinemavision-edit.png', data_source='edit')
+        item = kodigui.ManagedListItem('Move', 'Move', thumbnailImage='small/script.cinemavision-move.png', data_source='move')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-move.png')
+        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        self.itemOptionsControl.addItem(item)
+        item = kodigui.ManagedListItem('Edit', 'Edit', thumbnailImage='small/script.cinemavision-edit.png', data_source='edit')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-edit.png')
+        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        self.itemOptionsControl.addItem(item)
+        item = kodigui.ManagedListItem('Rename', 'Rename', thumbnailImage='small/script.cinemavision-rename.png', data_source='rename')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-rename.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
@@ -147,10 +158,15 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.insertItem(sItem, pos)
 
     def insertItem(self, sItem, pos):
-        mli = kodigui.ManagedListItem(sItem.display(), data_source=sItem)
+        mli = kodigui.ManagedListItem(sItem.name or sItem.display(), data_source=sItem)
         mli.setProperty('type', sItem.fileChar)
         mli.setProperty('type.name', sItem.displayName)
+        mli.setProperty('enabled', sItem.enabled and '1' or '')
+
         ct = 0
+        mli.setProperty('setting{0}'.format(ct), str(sItem.enabled and 'Yes' or 'No'))
+        mli.setProperty('setting{0}_name'.format(ct), 'Enabled')
+        ct += 1
         for e in sItem._elements:
             mli.setProperty('setting{0}'.format(ct), str(getattr(sItem, e['attr'])))
             mli.setProperty('setting{0}_name'.format(ct), e['name'])
@@ -191,9 +207,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not sItem:
                 continue
 
-            i.setLabel(sItem.display())
+            i.setLabel(sItem.name or sItem.display())
 
-            if sItem._type == 'command':
+            if sItem.enabled and sItem._type == 'command':
                 if sItem.command == 'back':
                     pos = i.pos()
                     all = range(1, (sItem.arg * 2) + 1)
@@ -241,7 +257,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not item:
             return
 
-        if item.dataSource == 'remove':
+        if item.dataSource == 'enable':
+            self.toggleItemEnabled()
+        elif item.dataSource == 'remove':
             self.removeItem()
             self.updateFocus()
         elif item.dataSource == 'move':
@@ -249,8 +267,22 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif item.dataSource == 'edit':
             self.editItem()
             self.updateFocus()
+        elif item.dataSource == 'rename':
+            self.renameItem()
 
         self.updateSpecials()
+
+    def toggleItemEnabled(self):
+        item = self.sequenceControl.getSelectedItem()
+        if not item:
+            return
+
+        sItem = item.dataSource
+        sItem.enabled = not sItem.enabled
+        item.setProperty('enabled', sItem.enabled and '1' or '')
+        self.updateItemSettings(sItem, item)
+
+        self.modified = True
 
     def removeItem(self):
         if not xbmcgui.Dialog().yesno('Confirm', '', 'Do you really want to remove this item?'):
@@ -321,13 +353,35 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem.setSetting(attr, value)
         self.modified = True
 
+        self.updateItemSettings(sItem, item)
+
+        return True
+
+    def updateItemSettings(self, sItem, item):
         ct = 0
+        item.setProperty('setting{0}'.format(ct), str(sItem.enabled and 'Yes' or 'No'))
+        item.setProperty('setting{0}_name'.format(ct), 'Enabled')
+        ct += 1
         for e in sItem._elements:
             item.setProperty('setting{0}'.format(ct), str(sItem.getSetting(e['attr'])))
             item.setProperty('setting{0}_name'.format(ct), e['name'])
             ct += 1
 
-        return True
+    def renameItem(self):
+        item = self.sequenceControl.getSelectedItem()
+        if not item:
+            return
+
+        sItem = item.dataSource
+
+        name = xbmcgui.Dialog().input('Enter a name for this item', sItem.name)
+
+        if name == sItem.name:
+            return
+
+        sItem.name = name or ''
+
+        self.modified = True
 
     def focusedOnItem(self):
         item = self.sequenceControl.getSelectedItem()

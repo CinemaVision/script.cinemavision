@@ -2,6 +2,7 @@
 <addon id="script.cinemavision" name="CinemaVision" version="0.0.11" provider-name="CinemaVision">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.beautifulsoup" version="3.0.8"/>
     </requires>
     <extension point="xbmc.python.script" library="addon.py">
         <provides>executable</provides>

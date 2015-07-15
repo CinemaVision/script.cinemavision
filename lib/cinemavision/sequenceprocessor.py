@@ -2,9 +2,10 @@ import random
 import database as DB
 import sequence
 import util
+import scrapers
 
 
-# Playabe is implemented a s dict to be easily serializable to JSON
+# Playabe is implemented as a dict to be easily serializable to JSON
 class Playable(dict):
     type = None
 
@@ -34,8 +35,191 @@ class Image(Playable):
 class Video(Playable):
     type = 'VIDEO'
 
-    def __init__(self, path):
+    def __init__(self, path, user_agent=''):
         self['path'] = path
+        self['userAgent'] = user_agent
+
+    @property
+    def userAgent(self):
+        return self['userAgent']
+
+
+class Feature(Video):
+    type = 'FEATURE'
+
+    def __repr__(self):
+        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating ({2}): {3}\n    Genres: {4}\n    3D: {5}\n    Audio: {6}'.format(
+            self.title,
+            self.path,
+            self.ratingFormat,
+            self.rating,
+            ', '.join(self.genres),
+            self.is3D and 'Yes' or 'No',
+            self.audioFormat
+        )
+
+    @property
+    def title(self):
+        return self.get('title', '')
+
+    @title.setter
+    def title(self, val):
+        self['title'] = val
+
+    @property
+    def rating(self):
+        return self.get('rating', '')
+
+    @rating.setter
+    def rating(self, val):
+        self['rating'] = val
+
+    @property
+    def ratingFormat(self):
+        return self.get('ratingFormat', '')
+
+    @ratingFormat.setter
+    def ratingFormat(self, val):
+        self['ratingFormat'] = val
+
+    @property
+    def genres(self):
+        return self.get('genres', [])
+
+    @genres.setter
+    def genres(self, val):
+        self['genres'] = val
+
+    @property
+    def is3D(self):
+        return self.get('is3D', False)
+
+    @is3D.setter
+    def is3D(self, val):
+        self['is3D'] = val
+
+    @property
+    def audioFormat(self):
+        return self.get('audioFormat', '')
+
+    @audioFormat.setter
+    def audioFormat(self, val):
+        self['audioFormat'] = val
+
+
+class TriviaHandler:
+    def __call__(self, caller, sItem):
+        trivias = random.sample([x for x in DB.Trivia.select()], sItem.count)
+        ret = []
+        durations = (sItem.qDuration, sItem.cDuration, sItem.cDuration, sItem.cDuration, sItem.aDuration)
+        for trivia in trivias:
+            slides = (trivia.questionPath, trivia.cluePath1, trivia.cluePath2, trivia.cluePath3, trivia.answerPath)
+            for i, d in zip(slides, durations):
+                if i:
+                    ret.append(Image(i, d))
+        return ret
+
+
+class TrailerHandler:
+    def __init__(self):
+        self.trailers = scrapers.getTrailers()
+        self.caller = None
+
+    def __call__(self, caller, sItem):
+        self.caller = caller
+        filtered = self.filter(self.trailers)
+
+        trailers = random.sample(filtered, sItem.count)
+
+        return [Video(t.getPlayableURL(), t.userAgent) for t in trailers]
+
+    def filter(self, trailers):
+        filtered = trailers
+
+        if self.caller.ratings:
+            filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
+
+        if self.caller.genres:
+            filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
+
+        return filtered
+
+
+class VideoBumperHandler:
+    def __init__(self):
+        self.caller = None
+        self.handlers = {
+            '3D.intro': self._3DIntro,
+            '3D.outro': self._3DOutro,
+            'countdown': self.countdown,
+            'courtesy': self.courtesy,
+            'feature.intro': self.featureIntro,
+            'feature.outro': self.featureOutro,
+            'intermission': self.intermission,
+            'short.film': self.shortFilm,
+            'theater.intro': self.theaterIntro,
+            'theater.outro': self.theaterOutro,
+            'trailers.intro': self.trailersIntro,
+            'trailers.outro': self.trailersOutro,
+            'trivia.intro': self.triviaIntro,
+            'trivia.outro': self.triviaOutro
+        }
+
+    def __call__(self, caller, sItem):
+        self.caller = caller
+        return self.handlers[sItem.vtype](sItem)
+
+    def defaultHandler(self, sItem):
+        is3D = self.caller.currentFeature.is3D
+
+        try:
+            bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
+            return [Video(bumper.path)]
+        except IndexError:
+            pass
+        return []
+
+    def _3DIntro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def _3DOutro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def countdown(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def courtesy(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def featureIntro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def featureOutro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def intermission(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def shortFilm(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def theaterIntro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def theaterOutro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def trailersIntro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def trailersOutro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def triviaIntro(self, sItem):
+        return self.defaultHandler(sItem)
+
+    def triviaOutro(self, sItem):
+        return self.defaultHandler(sItem)
 
 
 class SequenceProcessor:
@@ -43,38 +227,27 @@ class SequenceProcessor:
         self.sequence = []
         self.featureQueue = []
         self.playables = []
+        self.ratings = []
+        self.genres = []
         self.loadSequence(sequence_path)
 
     def empty(self):
         return not self.playables
 
-    def addFeature(self, path):
-        self.featureQueue.append(Video(path))
+    @property
+    def currentFeature(self):
+        return self.featureQueue and self.featureQueue[0] or Feature('')
 
-    # SEQUENCE ITEM HANDLERS
-    def videoHandler(self, sItem):
-        # 'trivia.intro',
-        # 'trivia.outro',
-        # 'theater.intro',
-        # 'theater.outro',
-        # 'coming.attractions.intro',
-        # 'coming.attractions.outro',
-        # 'countdown',
-        # 'feature.intro',
-        # 'feature.outro',
-        # 'intermission'
-        return [Playable({'path': sItem.display()})]
+    def addFeature(self, feature):
+        if feature.rating:
+            rating = '{0}:{1}'.format(feature.ratingFormat, feature.rating)
+            if rating not in self.ratings:
+                self.ratings.append(rating)
 
-    def triviaHandler(self, sItem):
-        trivia = random.choice([x for x in DB.Trivia.select()])
-        ret = []
-        for i in (trivia.questionPath, trivia.cluePath1, trivia.cluePath2, trivia.cluePath3, trivia.answerPath):
-            if i:
-                ret.append(Image(i))
-        return ret
+        if feature.genres:
+            self.genres += feature.genres
 
-    def trailerHandler(self, sItem):
-        return []
+        self.featureQueue.append(feature)
 
     def featureHandler(self, sItem):
         playables = self.featureQueue[:sItem.count]
@@ -84,9 +257,26 @@ class SequenceProcessor:
     def audioformatHandler(self, sItem):
         if sItem.source:
             return [sItem.source]
-        elif sItem.format:
-            bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == sItem.format)])
-        return [Video(bumper.path)]
+        bumper = None
+
+        if self.currentFeature.audioFormat:
+            try:
+                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == self.currentFeature.audioFormat)])
+                util.DEBUG_LOG('Using bumper based on feature codec info ({0})'.format(self.currentFeature.title))
+            except IndexError:
+                pass
+
+        if sItem.format:
+            try:
+                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == sItem.format)])
+                util.DEBUG_LOG('Using bumper based on setting ({0})'.format(self.currentFeature.title))
+            except IndexError:
+                pass
+
+        if bumper:
+            return [Video(bumper.path)]
+
+        return []
 
     def actionHandler(self, sItem):
         return []
@@ -104,9 +294,9 @@ class SequenceProcessor:
     # SEQUENCE PROCESSING
     handlers = {
         'feature': featureHandler,
-        'trivia': triviaHandler,
-        'trailer': trailerHandler,
-        'video': videoHandler,
+        'trivia': TriviaHandler(),
+        'trailer': TrailerHandler(),
+        'video': VideoBumperHandler(),
         'audioformat': audioformatHandler,
         'action': actionHandler,
         'command': commandHandler
@@ -114,10 +304,21 @@ class SequenceProcessor:
 
     def process(self):
         util.DEBUG_LOG('Processing sequence...')
+        util.DEBUG_LOG('Feature count: {0}'.format(len(self.featureQueue)))
+        util.DEBUG_LOG('Ratings: {0}'.format(', '.join(self.ratings)))
+        util.DEBUG_LOG('Genres: {0}'.format(', '.join(self.genres)))
+
+        util.DEBUG_LOG('\n\n' + '\n\n'.join([str(f) for f in self.featureQueue]))
+
         self.playables = []
         pos = 0
         while pos < len(self.sequence):
             sItem = self.sequence[pos]
+
+            if not sItem.enabled:
+                pos += 1
+                continue
+
             handler = self.handlers.get(sItem._type)
             if handler:
                 if sItem._type == 'command':
