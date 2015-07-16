@@ -94,7 +94,7 @@ class ExperiencePlayer(xbmc.Player):
             feature.title = r.get('title') or r.get('label', '')
             ratingSplit = r.get('mpaa', ' ').split()
             feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
-            feature.ratingFormat = 'MPAA'
+            feature.ratingSystem = 'MPAA'
             feature.genres = r.get('genre', [])
 
             try:

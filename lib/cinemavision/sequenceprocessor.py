@@ -51,7 +51,7 @@ class Feature(Video):
         return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating ({2}): {3}\n    Genres: {4}\n    3D: {5}\n    Audio: {6}'.format(
             self.title,
             self.path,
-            self.ratingFormat,
+            self.ratingSystem,
             self.rating,
             ', '.join(self.genres),
             self.is3D and 'Yes' or 'No',
@@ -75,12 +75,12 @@ class Feature(Video):
         self['rating'] = val
 
     @property
-    def ratingFormat(self):
-        return self.get('ratingFormat', '')
+    def ratingSystem(self):
+        return self.get('ratingSystem', '')
 
-    @ratingFormat.setter
-    def ratingFormat(self, val):
-        self['ratingFormat'] = val
+    @ratingSystem.setter
+    def ratingSystem(self, val):
+        self['ratingSystem'] = val
 
     @property
     def genres(self):
@@ -105,6 +105,34 @@ class Feature(Video):
     @audioFormat.setter
     def audioFormat(self, val):
         self['audioFormat'] = val
+
+
+class FeatureHandler:
+    def getRatingBumper(self, feature):
+        try:
+            return random.choice(
+                [
+                    x for x in DB.RatingsBumpers.select().where(
+                        (DB.RatingsBumpers.system == feature.ratingSystem) &
+                        (DB.RatingsBumpers.name == feature.rating) &
+                        (DB.RatingsBumpers.is3D == feature.is3D)
+                    )
+                ]
+            )
+        except IndexError:
+            return None
+
+    def __call__(self, caller, sItem):
+        features = caller.featureQueue[:sItem.count]
+        caller.featureQueue = caller.featureQueue[sItem.count:]
+        playables = []
+        for f in features:
+            bumper = self.getRatingBumper(f)
+            if bumper:
+                playables.append(Video(bumper.path))
+            playables.append(f)
+
+        return playables
 
 
 class TriviaHandler:
@@ -240,7 +268,7 @@ class SequenceProcessor:
 
     def addFeature(self, feature):
         if feature.rating:
-            rating = '{0}:{1}'.format(feature.ratingFormat, feature.rating)
+            rating = '{0}:{1}'.format(feature.ratingSystem, feature.rating)
             if rating not in self.ratings:
                 self.ratings.append(rating)
 
@@ -248,11 +276,6 @@ class SequenceProcessor:
             self.genres += feature.genres
 
         self.featureQueue.append(feature)
-
-    def featureHandler(self, sItem):
-        playables = self.featureQueue[:sItem.count]
-        self.featureQueue = self.featureQueue[sItem.count:]
-        return playables
 
     def audioformatHandler(self, sItem):
         if sItem.source:
@@ -293,7 +316,7 @@ class SequenceProcessor:
 
     # SEQUENCE PROCESSING
     handlers = {
-        'feature': featureHandler,
+        'feature': FeatureHandler(),
         'trivia': TriviaHandler(),
         'trailer': TrailerHandler(),
         'video': VideoBumperHandler(),

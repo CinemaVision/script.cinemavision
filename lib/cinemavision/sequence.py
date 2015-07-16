@@ -2,6 +2,10 @@ from xml.etree import ElementTree as ET
 import xml.dom.minidom as minidom
 
 
+def strToBool(val):
+    return val == 'True'
+
+
 ################################################################################
 # BASE class for all content items
 ################################################################################
@@ -89,7 +93,8 @@ class Item:
 class Feature(Item):
     _type = 'feature'
     _elements = (
-        {'attr': 'count',  'type': int,  'limits': (1, 10), 'name': 'Count'},
+        {'attr': 'count',             'type': int,        'limits': (1, 10), 'name': 'Count'},
+        {'attr': 'showRatingBumper',  'type': strToBool,  'limits': None,    'name': 'Show Rating Bumper'}
     )
     displayName = 'Feature'
     typeChar = 'F'
@@ -97,6 +102,7 @@ class Feature(Item):
     def __init__(self):
         Item.__init__(self)
         self.count = 1
+        self.showRatingBumper = True
 
 
 ################################################################################
@@ -110,7 +116,7 @@ class Trivia(Item):
         {'attr': 'cDuration',   'type': int, 'limits': (1, 60), 'name': 'Clue Duration'},
         {'attr': 'aDuration',   'type': int, 'limits': (1, 60), 'name': 'Answer Duration'}
     )
-    displayName = 'Trivia Slide'
+    displayName = 'Trivia Slides'
     typeChar = 'Q'
 
     def __init__(self):
@@ -323,7 +329,7 @@ ITEM_TYPES = [
     ('A', 'Audio Format Bumper', 'A', AudioFormat),
     ('C', 'Command', 'C', Command),
     ('F', 'Feature', 'F', Feature),
-    ('Q', 'Trivia Slide', 'Q', Trivia),
+    ('Q', 'Trivia Slides', 'Q', Trivia),
     ('T', 'Trailer', 'T', Trailer),
     ('V', 'Video Bumper', 'V', Video),
 ]
