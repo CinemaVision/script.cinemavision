@@ -1,6 +1,33 @@
 from xml.etree import ElementTree as ET
 import xml.dom.minidom as minidom
 
+LIMIT_FILE = 0
+LIMIT_BOOL = 1
+
+
+SETTINGS_DISPLAY = {
+    '3D.intro': '3D Intro',
+    '3D.outro': '3D Outro',
+    'countdown': 'Countdown',
+    'courtesy': 'Courtesy',
+    'feature.intro': 'Feature Intro',
+    'feature.outro': 'Feature Outro',
+    'intermission': 'Intermission',
+    'short.film': 'Short Film',
+    'theater.intro': 'Theater Intro',
+    'theater.outro': 'Theater Outro',
+    'trailers.intro': 'Trailers Intro',
+    'trailers.outro': 'Trailers Outro',
+    'trivia.intro': 'Trivia Intro',
+    'trivia.outro': 'Trivia Outro',
+    'back': 'Back',
+    'skip': 'Skip',
+    'feature.queue=full': 'Feature queue is full',
+    'feature.queue=empty': 'Feature queue is empty',
+    True: 'Yes',
+    False: 'No'
+}
+
 
 def strToBool(val):
     return val == 'True'
@@ -70,7 +97,9 @@ class Item:
 
     def getSettingOptions(self, setting):
         limits = self.elementData(setting)['limits']
-        return limits or ''
+        if isinstance(limits, list):
+            limits = [(x, SETTINGS_DISPLAY.get(x, x)) for x in limits]
+        return limits
 
     def setSetting(self, setting, value):
         setattr(self, setting, value)
@@ -83,8 +112,20 @@ class Item:
             if e['attr'] == setting:
                 return i
 
+    def getLimits(self, idx):
+        return self._elements[idx]['limits']
+
+    def getType(self, idx):
+        return self._elements[idx]['type']
+
     def display(self):
         return self.displayName
+
+    def getSettingDisplay(self, setting):
+        val = getattr(self, setting)
+        if val in SETTINGS_DISPLAY:
+            return SETTINGS_DISPLAY[val]
+        return str(val)
 
 
 ################################################################################
@@ -93,8 +134,8 @@ class Item:
 class Feature(Item):
     _type = 'feature'
     _elements = (
-        {'attr': 'count',             'type': int,        'limits': (1, 10), 'name': 'Count'},
-        {'attr': 'showRatingBumper',  'type': strToBool,  'limits': None,    'name': 'Show Rating Bumper'}
+        {'attr': 'count',             'type': int,        'limits': (1, 10),    'name': 'Count'},
+        {'attr': 'showRatingBumper',  'type': strToBool,  'limits': LIMIT_BOOL, 'name': 'Show Rating Bumper'}
     )
     displayName = 'Feature'
     typeChar = 'F'
@@ -112,9 +153,9 @@ class Trivia(Item):
     _type = 'trivia'
     _elements = (
         {'attr': 'count',       'type': int, 'limits': (1, 10), 'name': 'Count'},
-        {'attr': 'qDuration',   'type': int, 'limits': (1, 60), 'name': 'Question Duration'},
-        {'attr': 'cDuration',   'type': int, 'limits': (1, 60), 'name': 'Clue Duration'},
-        {'attr': 'aDuration',   'type': int, 'limits': (1, 60), 'name': 'Answer Duration'}
+        {'attr': 'qDuration',   'type': int, 'limits': (1, 30), 'name': 'Question Duration'},
+        {'attr': 'cDuration',   'type': int, 'limits': (1, 30), 'name': 'Clue Duration'},
+        {'attr': 'aDuration',   'type': int, 'limits': (1, 30), 'name': 'Answer Duration'}
     )
     displayName = 'Trivia Slides'
     typeChar = 'Q'
@@ -134,7 +175,7 @@ class Trailer(Item):
     _type = 'trailer'
     _elements = (
         {'attr': 'count',  'type': int,  'limits': (1, 10), 'name': 'Count'},
-        {'attr': 'source', 'type': None, 'limits': None,    'name': 'Source'}
+        {'attr': 'source', 'type': None, 'limits': LIMIT_FILE,    'name': 'Source'}
     )
     displayName = 'Trailer'
     typeChar = 'T'
@@ -180,7 +221,7 @@ class Video(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': None,
+            'limits': LIMIT_FILE,
             'name': 'Source'
         }
     )
@@ -213,7 +254,7 @@ class AudioFormat(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': None,
+            'limits': LIMIT_FILE,
             'name': 'Source'
         },
     )
@@ -276,14 +317,26 @@ class Command(Item):
         self.arg = ''
         self.condition = ''
 
+    def getLimits(self, idx):
+        e = self._elements[idx]
+        if not e['attr'] == 'arg' or self.command not in ('skip', 'back'):
+            return Item.getLimits(self, idx)
+
+        return (1, 20)
+
+    def getType(self, idx):
+        e = self._elements[idx]
+        if not e['attr'] == 'arg' or self.command not in ('skip', 'back'):
+            return Item.getType(self, idx)
+
+        return int
+
     def getSettingOptions(self, setting):
-        if setting == 'command':
-            return self.elementData('command')['limits']
-        elif setting == 'condition':
-            return self.elementData('condition')['limits']
-        elif setting == 'arg':
+        if setting == 'arg':
             if self.command in ('back', 'skip'):
                 return (0, 99)
+        else:
+            return Item.getSettingOptions(self, setting)
 
     def setSetting(self, setting, value):
         Item.setSetting(self, setting, value)

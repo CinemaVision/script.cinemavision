@@ -164,6 +164,10 @@ class ExperiencePlayer(xbmc.Player):
             return
 
         playable = self.processor.next()
+        if not playable:
+            self.window.doClose()
+            return
+
         self.log('Playing next item: {0}'.format(playable))
 
         if playable.type == 'IMAGE':

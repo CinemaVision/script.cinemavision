@@ -12,6 +12,174 @@ from lib import cinemavision
 API_LEVEL = 1
 
 
+class ItemSettingsWindow(kodigui.BaseDialog):
+    xmlFile = 'script.cinemavision-sequence-item-settings.xml'
+    path = kodiutil.ADDON_PATH
+    theme = 'Main'
+    res = '1080i'
+
+    SETTINGS_LIST_ID = 300
+    SLIDER_ID = 401
+
+    def __init__(self, *args, **kwargs):
+        kodigui.BaseDialog.__init__(self, *args, **kwargs)
+        self.main = kwargs['main']
+        self.item = kwargs['item']
+        self.modified = False
+
+    def onFirstInit(self):
+        self.settingsList = kodigui.ManagedControlList(self, self.SETTINGS_LIST_ID, 10)
+        self.sliderControl = self.getControl(self.SLIDER_ID)
+        self.fillSettingsList()
+        self.updateItem()
+
+    def fillSettingsList(self):
+        item = self.item
+
+        sItem = item.dataSource
+
+        items = []
+        for i, e in enumerate(sItem._elements):
+            mli = kodigui.ManagedListItem(e['name'], str(sItem.getSettingDisplay(e['attr'])), data_source=e['attr'])
+            if sItem.getType(i) == int:
+                mli.setProperty('type', 'integer')
+            elif sItem.getLimits(i) == cinemavision.sequence.LIMIT_BOOL:
+                mli.setLabel2(sItem.getSetting(e['attr']) and 'Yes' or 'No')
+            items.append(mli)
+
+        self.settingsList.addItems(items)
+        self.setFocusId(self.SETTINGS_LIST_ID)
+
+    def onAction(self, action):
+        try:
+            # print action.getId()
+            if action == xbmcgui.ACTION_MOVE_LEFT:
+                self.moveLeft()
+            elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                self.moveRight()
+            elif action == xbmcgui.ACTION_MOUSE_DRAG:
+                self.dragSlider()
+            else:
+                self.updateItem()
+
+        except:
+            kodiutil.ERROR()
+            kodigui.BaseDialog.onAction(self, action)
+            return
+
+        kodigui.BaseDialog.onAction(self, action)
+
+    def onClick(self, controlID):
+        if not controlID == self.SETTINGS_LIST_ID:
+            return
+
+        self.editItemSetting()
+
+    def dragSlider(self):
+        item = self.settingsList.getSelectedItem()
+        if not item or not item.getProperty('type') == 'integer':
+            return
+        pos = item.pos()
+
+        pct = self.sliderControl.getPercent()
+
+        sItem = self.item.dataSource
+        e = sItem._elements[pos]
+        limits = sItem.getLimits(pos)
+        total = limits[1] - limits[0]
+        val = int(round(((pct/100.0) * total) + limits[0]))
+        sItem.setSetting(e['attr'], val)
+
+        item.setLabel2(str(val))
+
+        self.modified = True
+
+        self.main.updateSpecials()
+        self.main.updateItemSettings(sItem, self.item)
+
+    def updateItem(self):
+        item = self.settingsList.getSelectedItem()
+        if not item or not item.getProperty('type') == 'integer':
+            return
+        pos = item.pos()
+
+        sItem = self.item.dataSource
+        e = sItem._elements[pos]
+        if item.getProperty('type') == 'integer':
+            val = sItem.getSetting(e['attr'])
+            self.updateSlider(val, *reversed(sItem.getLimits(pos)))
+
+        self.main.updateItemSettings(sItem, self.item)
+
+    def moveLeft(self):
+        self.moveLR(-1)
+
+    def moveRight(self):
+        self.moveLR(1)
+
+    def moveLR(self, offset):
+        item = self.settingsList.getSelectedItem()
+        if not item or not item.getProperty('type') == 'integer':
+            return
+        pos = item.pos()
+
+        sItem = self.item.dataSource
+        e = sItem._elements[pos]
+        val = sItem.getSetting(e['attr'])
+        val += offset
+        limits = sItem.getLimits(pos)
+        if not limits[0] <= val <= limits[1]:
+            return
+
+        sItem.setSetting(e['attr'], val)
+        self.updateSlider(val, *reversed(limits))
+        item.setLabel2(str(val))
+
+        self.modified = True
+
+        self.main.updateSpecials()
+        self.main.updateItemSettings(sItem, self.item)
+
+    def updateSlider(self, val, max_val, min_val=0):
+        total = max_val - min_val
+        val = val - min_val
+        pct = (val/float(total)) * 100
+        self.sliderControl.setPercent(pct)
+
+    def editItemSetting(self):
+        item = self.settingsList.getSelectedItem()
+        if not item or item.getProperty('type') == 'integer':
+            return
+
+        sItem = self.item.dataSource
+        pos = item.pos()
+
+        e = sItem._elements[pos]
+        attr = e['attr']
+
+        options = sItem.getSettingOptions(attr)
+        if options == cinemavision.sequence.LIMIT_FILE:
+            value = xbmcgui.Dialog().browse(1, 'Select Save Directory', 'files')
+            if not value:
+                return
+        elif options == cinemavision.sequence.LIMIT_BOOL:
+            value = not sItem.getSetting(attr)
+        elif isinstance(options, list):
+            idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
+            if idx < 0:
+                return False
+            value = options[idx][0]
+        else:
+            return False
+
+        sItem.setSetting(attr, value)
+        item.setLabel2(str(sItem.getSettingDisplay(attr)))
+
+        self.modified = True
+
+        self.main.updateItemSettings(sItem, self.item)
+
+
 class SequenceEditorWindow(kodigui.BaseWindow):
     xmlFile = 'script.cinemavision-sequence-editor.xml'
     path = kodiutil.ADDON_PATH
@@ -102,7 +270,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.fillOptions()
         self.fillSequence()
         self.loadDefault()
-        self.setFocusId(self.ADD_ITEM_LIST_ID)
 
     def loadContent(self):
         contentPath = kodiutil.getSetting('content.path')
@@ -163,14 +330,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         mli.setProperty('type.name', sItem.displayName)
         mli.setProperty('enabled', sItem.enabled and '1' or '')
 
-        ct = 0
-        mli.setProperty('setting{0}'.format(ct), str(sItem.enabled and 'Yes' or 'No'))
-        mli.setProperty('setting{0}_name'.format(ct), 'Enabled')
-        ct += 1
-        for e in sItem._elements:
-            mli.setProperty('setting{0}'.format(ct), str(getattr(sItem, e['attr'])))
-            mli.setProperty('setting{0}_name'.format(ct), e['name'])
-            ct += 1
+        self.updateItemSettings(sItem, mli)
 
         self.sequenceControl.insertItem(pos, mli)
         self.sequenceControl.insertItem(pos, kodigui.ManagedListItem())
@@ -316,54 +476,22 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         item = self.sequenceControl.getSelectedItem()
         if not item:
             return
+        isw = ItemSettingsWindow.open(main=self, item=item)
 
         sItem = item.dataSource
-
-        while True:
-            options = []
-
-            for e in sItem._elements:
-                options.append((e['attr'], e['name']))
-
-            idx = xbmcgui.Dialog().select('Settings', [o[1] for o in options])
-
-            if idx < 0:
-                return
-
-            option = options[idx][0]
-            self.editItemSetting(item, option)
-
-    def editItemSetting(self, item, attr):
-        sItem = item.dataSource
-        options = sItem.getSettingOptions(attr)
-        if isinstance(options, basestring):
-            value = xbmcgui.Dialog().input('Enter Value', str(sItem.getSetting(attr)))
-            if value is None:
-                return False
-        elif isinstance(options, tuple):
-            value = int(xbmcgui.Dialog().numeric(0, 'Enter Value', str(sItem.getSetting(attr))))
-        elif isinstance(options, list):
-            idx = xbmcgui.Dialog().select('Option', options)
-            if idx < 0:
-                return False
-            value = options[idx]
-        else:
-            return False
-
-        sItem.setSetting(attr, value)
-        self.modified = True
 
         self.updateItemSettings(sItem, item)
-
-        return True
+        if not self.modified:
+            self.modified = isw.modified
 
     def updateItemSettings(self, sItem, item):
         ct = 0
         item.setProperty('setting{0}'.format(ct), str(sItem.enabled and 'Yes' or 'No'))
         item.setProperty('setting{0}_name'.format(ct), 'Enabled')
         ct += 1
-        for e in sItem._elements:
-            item.setProperty('setting{0}'.format(ct), str(sItem.getSetting(e['attr'])))
+        for i, e in enumerate(sItem._elements):
+            disp = sItem.getSettingDisplay(e['attr'])
+            item.setProperty('setting{0}'.format(ct), disp)
             item.setProperty('setting{0}_name'.format(ct), e['name'])
             ct += 1
 
@@ -484,6 +612,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if self.sequenceControl.positionIsValid(1):
             self.sequenceControl.selectItem(1)
+        self.updateFocus(pre=True)
 
     def saveDefault(self):
         if not self.name or not self.path:
@@ -508,6 +637,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 self.name = ''
                 if not xbmcvfs.exists(self.path):
                     self.path = ''
+                self.setFocusId(self.ADD_ITEM_LIST_ID)
                 return
 
         kodiutil.DEBUG_LOG('Loading previous save: {0}'.format(savePath))

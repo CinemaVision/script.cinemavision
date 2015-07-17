@@ -279,7 +279,7 @@ class SequenceProcessor:
 
     def audioformatHandler(self, sItem):
         if sItem.source:
-            return [sItem.source]
+            return [Video(sItem.source)]
         bumper = None
 
         if self.currentFeature.audioFormat:

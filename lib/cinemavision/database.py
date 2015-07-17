@@ -64,7 +64,7 @@ class RatingsBumpers(ContentBase):
 
 RatingsBumpers.create_table(fail_silently=True)
 
-util.callback(' - CinemaSpots')
+util.callback(' - VideoBumpers')
 
 
 class VideoBumpers(ContentBase):

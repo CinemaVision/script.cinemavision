@@ -129,27 +129,6 @@
             <posy>0</posy>
 
             <control type="group">
-<!--                 <animation effect="slide" end="80" time="1" condition="StringCompare(Container(201).Position,1)">Conditional</animation>
-                <animation effect="slide" end="160" time="1" condition="StringCompare(Container(201).Position,2)">Conditional</animation>
-                <animation effect="slide" end="240" time="1" condition="StringCompare(Container(201).Position,3)">Conditional</animation>
-                <animation effect="slide" end="320" time="1" condition="StringCompare(Container(201).Position,4)">Conditional</animation>
-                <animation effect="slide" end="400" time="1" condition="StringCompare(Container(201).Position,5)">Conditional</animation>
-                <animation effect="slide" end="480" time="1" condition="StringCompare(Container(201).Position,6)">Conditional</animation>
-                <animation effect="slide" end="560" time="1" condition="StringCompare(Container(201).Position,7)">Conditional</animation>
-                <animation effect="slide" end="640" time="1" condition="StringCompare(Container(201).Position,8)">Conditional</animation>
-                <animation effect="slide" end="720" time="1" condition="StringCompare(Container(201).Position,9)">Conditional</animation>
-                <animation effect="slide" end="800" time="1" condition="StringCompare(Container(201).Position,10)">Conditional</animation>
-                <animation effect="slide" end="880" time="1" condition="StringCompare(Container(201).Position,11)">Conditional</animation>
-                <animation effect="slide" end="960" time="1" condition="StringCompare(Container(201).Position,12)">Conditional</animation>
-                <animation effect="slide" end="1040" time="1" condition="StringCompare(Container(201).Position,13)">Conditional</animation>
-                <animation effect="slide" end="1120" time="1" condition="StringCompare(Container(201).Position,14)">Conditional</animation>
-                <animation effect="slide" end="1200" time="1" condition="StringCompare(Container(201).Position,15)">Conditional</animation>
-                <animation effect="slide" end="1280" time="1" condition="StringCompare(Container(201).Position,16)">Conditional</animation>
-                <animation effect="slide" end="1360" time="1" condition="StringCompare(Container(201).Position,17)">Conditional</animation>
-                <animation effect="slide" end="1440" time="1" condition="StringCompare(Container(201).Position,18)">Conditional</animation>
-                <animation effect="slide" end="1520" time="1" condition="StringCompare(Container(201).Position,19)">Conditional</animation>
-                <animation effect="slide" end="1600" time="1" condition="StringCompare(Container(201).Position,20)">Conditional</animation>
-                <animation effect="slide" end="1680" time="1" condition="StringCompare(Container(201).Position,21)">Conditional</animation> -->
                 <posx>960</posx>
                 <posy>300</posy>
 
@@ -598,6 +577,7 @@
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout width="80">
                     <control type="label">
+                        <visible>!IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <width>400</width>
@@ -605,6 +585,19 @@
                         <angle>45</angle>
                         <font>font20</font>
                         <textcolor>white</textcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                    </control>
+                    <control type="label">
+                        <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                        <left>40</left>
+                        <top>130</top>
+                        <width>400</width>
+                        <height>300</height>
+                        <angle>45</angle>
+                        <font>font20</font>
+                        <textcolor>FF606060</textcolor>
                         <align>left</align>
                         <aligny>center</aligny>
                         <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
@@ -771,6 +764,7 @@
                 <!-- FOCUSED LAYOUT ####################################### -->
                 <focusedlayout width="80">
                     <control type="label">
+                        <visible>!IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <width>400</width>
@@ -778,6 +772,19 @@
                         <angle>45</angle>
                         <font>font20</font>
                         <textcolor>white</textcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                    </control>
+                    <control type="label">
+                        <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                        <left>40</left>
+                        <top>130</top>
+                        <width>400</width>
+                        <height>300</height>
+                        <angle>45</angle>
+                        <font>font20</font>
+                        <textcolor>FF606060</textcolor>
                         <align>left</align>
                         <aligny>center</aligny>
                         <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>

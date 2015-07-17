@@ -245,6 +245,7 @@ class TriviaDirectoryHandler:
         f = util.vfs.File(slideXML, 'r')
         xml = f.read()
         f.close()
+        xml = xml.replace('">', '" />')  # Clean broken slide tags
         slides = ET.fromstring(xml)
         slide = slides.find('slide')
         if slide is None:
