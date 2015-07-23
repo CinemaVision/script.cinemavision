@@ -12,10 +12,10 @@ from cinemavision import sequenceprocessor
 AUDIO_FORMATS = {
     "dts":       "DTS",
     "dca":       "DTS",
-    "dtsma":     "DTS-HD",
-    "dtshd_ma":  "DTS-HD",
-    "dtshd_hra": "DTS-HD",
-    "dtshr":     "DTS-HD",
+    "dtsma":     "DTS-HD Master Audio",
+    "dtshd_ma":  "DTS-HD Master Audio",
+    "dtshd_hra": "DTS-HD Master Audio",
+    "dtshr":     "DTS-HD Master Audio",
     "ac3":       "Dolby Digital",
     "eac3":      "Dolby Digital Plus",
     "a_truehd":  "Dolby TrueHD",
@@ -108,9 +108,11 @@ class ExperiencePlayer(xbmc.Player):
                 feature.is3D = bool(re.findall(TAGS_3D, r['file']))
 
             try:
-                feature.audioFormat = AUDIO_FORMATS.get(r['streamdetails']['audio'][0]['codec'])
+                codec = r['streamdetails']['audio'][0]['codec']
+                feature.audioFormat = AUDIO_FORMATS.get(codec)
+                kodiutil.DEBUG_LOG('CODEC ({0}): {1}'.format(feature.title, codec))
             except:
-                pass
+                kodiutil.DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(feature.title))
 
             self.processor.addFeature(feature)
 

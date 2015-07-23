@@ -24,9 +24,18 @@ SETTINGS_DISPLAY = {
     'skip': 'Skip',
     'feature.queue=full': 'Feature queue is full',
     'feature.queue=empty': 'Feature queue is empty',
-    True: 'Yes',
-    False: 'No'
+    'True': 'Yes',
+    'False': 'No'
 }
+
+
+def settingDisplay(setting):
+    try:
+        return SETTINGS_DISPLAY.get(str(setting), setting)
+    except:
+        pass
+
+    return setting
 
 
 def strToBool(val):
@@ -98,7 +107,7 @@ class Item:
     def getSettingOptions(self, setting):
         limits = self.elementData(setting)['limits']
         if isinstance(limits, list):
-            limits = [(x, SETTINGS_DISPLAY.get(x, x)) for x in limits]
+            limits = [(x, settingDisplay(x)) for x in limits]
         return limits
 
     def setSetting(self, setting, value):
@@ -123,9 +132,7 @@ class Item:
 
     def getSettingDisplay(self, setting):
         val = getattr(self, setting)
-        if val in SETTINGS_DISPLAY:
-            return SETTINGS_DISPLAY[val]
-        return str(val)
+        return str(settingDisplay(val))
 
 
 ################################################################################
