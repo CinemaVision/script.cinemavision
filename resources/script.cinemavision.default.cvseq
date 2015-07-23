@@ -2,45 +2,36 @@
 <sequence>
 	<item enabled="True" type="video">
 		<vtype>trivia.intro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="trivia">
-		<count>1</count>
-		<qDuration>10</qDuration>
-		<cDuration>10</cDuration>
-		<aDuration>10</aDuration>
+		<duration>1</duration>
+		<qDuration>8</qDuration>
+		<cDuration>6</cDuration>
+		<aDuration>6</aDuration>
+		<sDuration>10</sDuration>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>trivia.outro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>theater.intro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>trailers.intro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="trailer">
 		<count>1</count>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>trailers.outro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>countdown</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>feature.intro</vtype>
-		<source>None</source>
 	</item>
-	<item enabled="True" type="audioformat">
-		<source>None</source>
-	</item>
+	<item enabled="True" type="audioformat"/>
 	<item enabled="True" type="feature">
 		<count>1</count>
 		<showRatingBumper>True</showRatingBumper>
@@ -52,11 +43,8 @@
 	</item>
 	<item enabled="True" type="video">
 		<vtype>intermission</vtype>
-		<source>None</source>
 	</item>
-	<item enabled="True" type="audioformat">
-		<source>None</source>
-	</item>
+	<item enabled="True" type="audioformat"/>
 	<item enabled="True" type="feature">
 		<count>1</count>
 		<showRatingBumper>True</showRatingBumper>
@@ -68,10 +56,8 @@
 	</item>
 	<item enabled="True" type="video">
 		<vtype>feature.outro</vtype>
-		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>theater.outro</vtype>
-		<source>None</source>
 	</item>
 </sequence>
