@@ -31,6 +31,10 @@ class Image(Playable):
     def duration(self):
         return self['duration']
 
+    @duration.setter
+    def duration(self, val):
+        self['duration'] = val
+
 
 class Video(Playable):
     type = 'VIDEO'
@@ -137,14 +141,25 @@ class FeatureHandler:
 
 class TriviaHandler:
     def __call__(self, caller, sItem):
-        trivias = random.sample([x for x in DB.Trivia.select()], sItem.count)
+        durationLimit = sItem.duration * 60
+        totalDuration = 0
         ret = []
         durations = (sItem.qDuration, sItem.cDuration, sItem.cDuration, sItem.cDuration, sItem.aDuration)
-        for trivia in trivias:
-            slides = (trivia.questionPath, trivia.cluePath1, trivia.cluePath2, trivia.cluePath3, trivia.answerPath)
-            for i, d in zip(slides, durations):
-                if i:
-                    ret.append(Image(i, d))
+        for trivia in DB.Trivia.select().order_by(DB.fn.Random()):
+            paths = (trivia.questionPath, trivia.cluePath1, trivia.cluePath2, trivia.cluePath3, trivia.answerPath)
+            slides = []
+            for p, d in zip(paths, durations):
+                if p:
+                    slides.append(Image(p, d))
+                    totalDuration += d
+            if len(slides) == 1:  # This is a still set duration accordingly
+                totalDuration -= slides[0].duration
+                totalDuration += sItem.sDuration
+                slides[0].duration = sItem.sDuration
+            ret += slides
+            if totalDuration >= durationLimit:
+                break
+
         return ret
 
 
@@ -258,13 +273,21 @@ class SequenceProcessor:
         self.ratings = []
         self.genres = []
         self.loadSequence(sequence_path)
+        self.createDefaultFeature()
 
     def empty(self):
         return not self.playables
 
     @property
     def currentFeature(self):
-        return self.featureQueue and self.featureQueue[0] or Feature('')
+        return self.featureQueue and self.featureQueue[0] or self.defaultFeature
+
+    def createDefaultFeature(self):
+        self.defaultFeature = Feature('')
+        self.defaultFeature.title = 'Default Feature'
+        self.defaultFeature.rating = 'NR'
+        self.defaultFeature.ratingSystem = 'MPAA'
+        self.defaultFeature.audioFormat = 'THX'
 
     def addFeature(self, feature):
         if feature.rating:
@@ -281,6 +304,8 @@ class SequenceProcessor:
         if sItem.source:
             return [Video(sItem.source)]
         bumper = None
+
+        print self.currentFeature
 
         if self.currentFeature.audioFormat:
             try:
@@ -353,6 +378,7 @@ class SequenceProcessor:
                     self.playables += handler(self, sItem)
 
             pos += 1
+        self.playables.append(None)  # Keeps it from being empty until AFTER the last item
         util.DEBUG_LOG('Sequence processing finished')
 
     def loadSequence(self, sequence_path):

@@ -1,3 +1,4 @@
+import os
 import re
 import time
 
@@ -31,20 +32,35 @@ class ExperienceWindow(kodigui.BaseWindow):
     theme = 'Main'
     res = '1080i'
 
+    def __init__(self, *args, **kwargs):
+        kodigui.BaseWindow.__init__(self, *args, **kwargs)
+        self.action = None
+
     def onAction(self, action):
+        # print action.getId()
         try:
-            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK or action == xbmcgui.ACTION_STOP:
                 self.doClose()
+            elif action == xbmcgui.ACTION_PAGE_UP or action == xbmcgui.ACTION_NEXT_ITEM:
+                self.action = 'SKIP'
         except:
             kodiutil.ERROR()
             return kodigui.BaseWindow.onAction(self, action)
 
         kodigui.BaseWindow.onAction(self, action)
 
+    def skip(self):
+        if self.action == 'SKIP':
+            self.action = None
+            return True
+        return False
+
 
 class ExperiencePlayer(xbmc.Player):
     def create(self, sequence_path):
         # xbmc.Player.__init__(self)
+        self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+        self.fakeFile = os.path.join(kodiutil.ADDON_PATH, 'resources', 'dummy.mp4')
         self.playStatus = 0
         self.processor = sequenceprocessor.SequenceProcessor(sequence_path)
         self.init()
@@ -69,12 +85,22 @@ class ExperiencePlayer(xbmc.Player):
         self.log('PLAYBACK RESUMED')
 
     def onPlayBackStarted(self):
-        self.playStatus = 1
-        self.log('PLAYBACK STARTED')
+        if self.playlist.getposition() > 0:
+            self.playStatus = -1
+            self.stop()
+            return
+        else:
+            self.log('PLAYBACK STARTED')
+
+        self.playStatus = time.time()
 
     def onPlayBackStopped(self):
         if self.playStatus == 0:
             return self.onPlayBackFailed()
+        elif self.playStatus == -1:
+            self.log('PLAYBACK INTERRUPTED')
+            self.next()
+            return
         self.playStatus = 0
         self.log('PLAYBACK STOPPED')
         self.abort()
@@ -116,6 +142,15 @@ class ExperiencePlayer(xbmc.Player):
 
             self.processor.addFeature(feature)
 
+    def isPlayingMinimized(self):
+        if not self.isPlayingVideo():
+            return False
+
+        if self.playStatus > 0 and time.time() - self.playStatus < 1:  # Give it a second to make sure fullscreen has happened
+            return False
+
+        return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
+
     def start(self):
         self.log('[ -- Started --------------------------------------------------------------- ]')
         self.openWindow()
@@ -134,8 +169,14 @@ class ExperiencePlayer(xbmc.Player):
         while not kodiutil.wait(0.1):
             if self.processor.empty() or not self.window.isOpen:
                 break
+
+            if self.isPlayingMinimized():
+                kodiutil.DEBUG_LOG('Fullscreen video closed - stopping')
+                self.stop()
+
         self.log('[ -- Finished -------------------------------------------------------------- ]')
         self.window.doClose()
+        self.rpc.Playlist.Clear(playlistid=1)
 
     def showImage(self, image):
         kodiutil.setGlobalProperty('slide', image.path)
@@ -144,6 +185,8 @@ class ExperiencePlayer(xbmc.Player):
         while not kodiutil.wait(0.1) and time.time() - start < image.duration:
             if not self.window.isOpen:
                 self.abort()
+                break
+            elif self.window.skip():
                 break
 
         kodiutil.setGlobalProperty('slide', '')
@@ -154,8 +197,14 @@ class ExperiencePlayer(xbmc.Player):
 
         if video.userAgent:
             path += '|User-Agent=' + video.userAgent
+        self.playlist.clear()
 
-        self.play(path)
+        if kodiutil.getSetting('allow.video.skip', True):
+            self.playlist.add(path)
+            self.playlist.add(self.fakeFile)
+            self.play(self.playlist)
+        else:
+            self.play(path)
 
     def next(self):
         if self.processor.empty():

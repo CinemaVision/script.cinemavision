@@ -25,6 +25,10 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
         self.main = kwargs['main']
         self.item = kwargs['item']
+        self.pos = self.item.pos()
+        seqSize = self.main.sequenceControl.size() - 1
+        self.leftOffset = int((self.pos + 1) / 2) - 1
+        self.rightOffset = int((seqSize - (self.pos + 1)) / 2)
         self.modified = False
 
     def onFirstInit(self):
@@ -47,6 +51,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 mli.setLabel2(sItem.getSetting(e['attr']) and 'Yes' or 'No')
             items.append(mli)
 
+        self.settingsList.reset()
         self.settingsList.addItems(items)
         self.setFocusId(self.SETTINGS_LIST_ID)
 
@@ -85,7 +90,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
         sItem = self.item.dataSource
         e = sItem._elements[pos]
-        limits = sItem.getLimits(pos)
+        limits = self.getLimits(sItem, pos)
         total = limits[1] - limits[0]
         val = int(round(((pct/100.0) * total) + limits[0]))
         sItem.setSetting(e['attr'], val)
@@ -107,7 +112,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         e = sItem._elements[pos]
         if item.getProperty('type') == 'integer':
             val = sItem.getSetting(e['attr'])
-            self.updateSlider(val, *reversed(sItem.getLimits(pos)))
+            self.updateSlider(val, *reversed(self.getLimits(sItem, pos)))
 
         self.main.updateItemSettings(sItem, self.item)
 
@@ -127,7 +132,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         e = sItem._elements[pos]
         val = sItem.getSetting(e['attr'])
         val += offset
-        limits = sItem.getLimits(pos)
+        limits = self.getLimits(sItem, pos)
         if not limits[0] <= val <= limits[1]:
             return
 
@@ -145,6 +150,16 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         val = val - min_val
         pct = (val/float(total)) * 100
         self.sliderControl.setPercent(pct)
+
+    def getLimits(self, sItem, pos):
+        limits = sItem.getLimits(pos)
+        if sItem._type == 'command':
+            if sItem.command == 'back':
+                return (limits[0], min(limits[1], self.leftOffset))
+            elif sItem.command == 'skip':
+                return (limits[0], min(limits[1], self.rightOffset))
+
+        return limits
 
     def editItemSetting(self):
         item = self.settingsList.getSelectedItem()
@@ -178,6 +193,10 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.modified = True
 
         self.main.updateItemSettings(sItem, self.item)
+
+        if sItem._type == 'command' and attr == 'command':
+            self.fillSettingsList()
+            self.main.updateSpecials()
 
 
 class SequenceEditorWindow(kodigui.BaseWindow):
@@ -290,8 +309,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
-        item = kodigui.ManagedListItem('Remove', 'Remove', thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-minus.png')
+        item = kodigui.ManagedListItem('Copy', 'Copy', thumbnailImage='small/script.cinemavision-copy.png', data_source='copy')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-copy.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
         item = kodigui.ManagedListItem('Move', 'Move', thumbnailImage='small/script.cinemavision-move.png', data_source='move')
@@ -304,6 +323,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.itemOptionsControl.addItem(item)
         item = kodigui.ManagedListItem('Rename', 'Rename', thumbnailImage='small/script.cinemavision-rename.png', data_source='rename')
         item.setProperty('alt.thumb', 'small/script.cinemavision-rename.png')
+        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        self.itemOptionsControl.addItem(item)
+        item = kodigui.ManagedListItem('Remove', 'Remove', thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
+        item.setProperty('alt.thumb', 'small/script.cinemavision-minus.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
@@ -422,6 +445,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif item.dataSource == 'remove':
             self.removeItem()
             self.updateFocus()
+        elif item.dataSource == 'copy':
+            self.copyItem()
+            self.updateFocus()
         elif item.dataSource == 'move':
             self.moveItem()
         elif item.dataSource == 'edit':
@@ -445,7 +471,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = True
 
     def removeItem(self):
-        if not xbmcgui.Dialog().yesno('Confirm', '', 'Do you really want to remove this item?'):
+        if not xbmcgui.Dialog().yesno('Confirm', '', 'Do you really want to remove this module?'):
             return
 
         pos = self.sequenceControl.getSelectedPosition()
@@ -457,6 +483,15 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.updateFirstLast()
 
         self.modified = True
+
+    def copyItem(self):
+        item = self.sequenceControl.getSelectedItem()
+        if not item:
+            return
+
+        sItem = item.dataSource.copy()
+
+        self.insertItem(sItem, item.pos() + 1)
 
     def moveItem(self):
         item = self.sequenceControl.getSelectedItem()
@@ -517,11 +552,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def doMenu(self):
         options = []
-        options.append(('new', 'New'))
-        options.append(('save', 'Save'))
-        options.append(('saveas', 'Save As...'))
-        options.append(('load', 'Load...'))
-        options.append(('test', 'Test'))
+        options.append(('new', 'New Sequence'))
+        options.append(('save', 'Save Sequence'))
+        options.append(('saveas', 'Save Sequence As...'))
+        options.append(('load', 'Load Sequence...'))
+        options.append(('test', 'Play Sequence'))
         idx = xbmcgui.Dialog().select('Options', [o[1] for o in options])
         if idx < 0:
             return
@@ -540,7 +575,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def test(self):
         import experience
-        e = experience.ExperiencePlayer().create(self.savePath())
+        if self.name == 'script.cinemavision.default' and not self.path:
+            path = os.path.join(kodiutil.ADDON_PATH, 'resources') + '/'
+            savePath = self.savePath(path)
+        else:
+            savePath = self.savePath()
+
+        e = experience.ExperiencePlayer().create(savePath)
         e.start()
 
     def new(self):

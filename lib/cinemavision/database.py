@@ -3,6 +3,8 @@ import util
 
 DB = peewee.SqliteDatabase(util.pathJoin(util.STORAGE_PATH, 'content.db'))
 
+fn = peewee.fn
+
 util.callback(None, 'Creating/updating database...')
 
 

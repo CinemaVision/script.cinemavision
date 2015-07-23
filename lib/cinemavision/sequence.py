@@ -62,6 +62,14 @@ class Item:
             value = conv(value)
         setattr(self, attr, value)
 
+    def copy(self):
+        new = self.__class__()
+        new.enabled = self.enabled
+        new.name = self.name
+        for e in self._elements:
+            setattr(new, e['attr'], getattr(self, e['attr']))
+        return new
+
     @property
     def fileChar(self):
         return self.typeChar
@@ -159,20 +167,22 @@ class Feature(Item):
 class Trivia(Item):
     _type = 'trivia'
     _elements = (
-        {'attr': 'count',       'type': int, 'limits': (1, 10), 'name': 'Count'},
-        {'attr': 'qDuration',   'type': int, 'limits': (1, 30), 'name': 'Question Duration'},
-        {'attr': 'cDuration',   'type': int, 'limits': (1, 30), 'name': 'Clue Duration'},
-        {'attr': 'aDuration',   'type': int, 'limits': (1, 30), 'name': 'Answer Duration'}
+        {'attr': 'duration',    'type': int, 'limits': (1, 60), 'name': 'Duration (minutes)'},
+        {'attr': 'qDuration',   'type': int, 'limits': (1, 60), 'name': 'Question Duration (seconds)'},
+        {'attr': 'cDuration',   'type': int, 'limits': (1, 60), 'name': 'Clue Duration (seconds)'},
+        {'attr': 'aDuration',   'type': int, 'limits': (1, 60), 'name': 'Answer Duration (seconds)'},
+        {'attr': 'sDuration',   'type': int, 'limits': (1, 60), 'name': 'Still Duration (seconds)'}
     )
     displayName = 'Trivia Slides'
     typeChar = 'Q'
 
     def __init__(self):
         Item.__init__(self)
-        self.count = 1
-        self.qDuration = 10
-        self.cDuration = 10
-        self.aDuration = 10
+        self.duration = 15
+        self.qDuration = 8
+        self.cDuration = 6
+        self.aDuration = 6
+        self.sDuration = 10
 
 
 ################################################################################

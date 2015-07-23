@@ -19,7 +19,7 @@
 		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
-		<vtype>coming.attractions.intro</vtype>
+		<vtype>trailers.intro</vtype>
 		<source>None</source>
 	</item>
 	<item enabled="True" type="trailer">
@@ -27,7 +27,7 @@
 		<source>None</source>
 	</item>
 	<item enabled="True" type="video">
-		<vtype>coming.attractions.outro</vtype>
+		<vtype>trailers.outro</vtype>
 		<source>None</source>
 	</item>
 	<item enabled="True" type="video">

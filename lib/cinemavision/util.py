@@ -23,7 +23,7 @@ try:
         return stat.S_ISDIR(vstat.st_mode())
 
     def LOG(msg):
-        xbmc.log('CinemaVison (API): {0}'.format(msg))
+        xbmc.log('[- CinemaVison -] (API): {0}'.format(msg))
 
     old_listdir = vfs.listdir
 
@@ -113,7 +113,7 @@ except:
         return os.path.isdir(path)
 
     def LOG(msg):
-        print 'CinemaVison (API): {0}'.format(msg)
+        print '[- CinemaVison -] (API): {0}'.format(msg)
 
     def wait(timeout):
         time.sleep(timeout)

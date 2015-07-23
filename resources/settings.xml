@@ -2,5 +2,6 @@
 <settings>
   <category label="General">
     <setting id="content.path" label="Content path" type="folder" sources="files" option="writeable" value="" />
+    <setting id="allow.video.skip" type="bool" label="Allow Video Skipping" default="true" />
   </category>
 </settings>

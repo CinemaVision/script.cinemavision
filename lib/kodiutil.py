@@ -20,7 +20,7 @@ ADDON_PATH = translatePath(ADDON.getAddonInfo('path'))
 
 
 def LOG(msg):
-    xbmc.log('CinemaVison: {0}'.format(msg))
+    xbmc.log('[- CinemaVison -]: {0}'.format(msg))
 
 
 def DEBUG_LOG(msg):
