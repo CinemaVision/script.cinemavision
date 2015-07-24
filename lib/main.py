@@ -575,11 +575,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def test(self):
         import experience
-        if self.name == 'script.cinemavision.default' and not self.path:
-            path = os.path.join(kodiutil.ADDON_PATH, 'resources') + '/'
-            savePath = self.savePath(path)
-        else:
-            savePath = self.savePath()
+        savePath = self.savePath()
+        if not savePath:
+            savePath = self.defaultSavePath()
 
         e = experience.ExperiencePlayer().create(savePath)
         e.start()
@@ -593,7 +591,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.fillSequence()
 
     def savePath(self, path=None, name=None):
-        return cinemavision.util.pathJoin(path or self.path, name or self.name) + '.cvseq'
+        path = path or self.path
+        name = name or self.name
+        if not name or not path:
+            return None
+
+        return cinemavision.util.pathJoin(path, name) + '.cvseq'
 
     def defaultSavePath(self):
         path = os.path.join(kodiutil.ADDON_PATH, 'resources')
