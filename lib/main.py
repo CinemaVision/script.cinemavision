@@ -592,8 +592,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.sequenceControl.reset()
         self.fillSequence()
 
-    def savePath(self, path=None):
-        return xbmc.translatePath('{0}{1}.cvseq'.format(path or self.path, self.name))
+    def savePath(self, path=None, name=None):
+        return cinemavision.util.pathJoin(path or self.path, name or self.name) + '.cvseq'
+
+    def defaultSavePath(self):
+        path = os.path.join(kodiutil.ADDON_PATH, 'resources')
+        return self.savePath(path, 'script.cinemavision.default')
 
     def save(self, as_new=False):
         items = [li.dataSource for li in self.sequenceControl if li.dataSource]
@@ -632,6 +636,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not path or path == self.path:
             return
 
+        self._load(path)
+
+        sep = cinemavision.util.getSep(path)
+
+        self.path, name = path.rsplit(sep, 1)
+        self.path += sep
+        self.name = name.rsplit('.', 1)[0]
+
+        self.saveDefault()
+
+    def _load(self, path):
         f = xbmcvfs.File(path, 'r')
         xmlString = f.read().decode('utf-8')
         f.close()
@@ -641,55 +656,49 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         for sItem in sItems:
             self.insertItem(sItem, -1)
 
-        sep = '/'
-        if '\\' in path:
-            sep = '\\'
-        self.path, name = path.rsplit(sep, 1)
-        self.path += sep
-        self.name = name.rsplit('.', 1)[0]
-        self.modified = False
-
-        self.saveDefault()
-
         if self.sequenceControl.positionIsValid(1):
             self.sequenceControl.selectItem(1)
         self.updateFocus(pre=True)
 
-    def saveDefault(self):
-        if not self.name or not self.path:
+        self.modified = False
+
+    def saveDefault(self, force=True):
+        if (not self.name or not self.path) and not force:
             return
         kodiutil.setSetting('save.name', self.name)
         kodiutil.setSetting('save.path', self.path)
 
     def loadDefault(self):
         self.name = kodiutil.getSetting('save.name', '')
+        self.path = kodiutil.getSetting('save.path', '')
 
-        clearPath = False
-
-        if self.name == 'script.cinemavision.default' and not self.path:
-            path = os.path.join(kodiutil.ADDON_PATH, 'resources') + '/'
-            savePath = self.savePath(path)
-            clearPath = True
+        if not self.name and not self.path:
+            savePath = self.defaultSavePath()
         else:
-            self.path = kodiutil.getSetting('save.path', '')
             savePath = self.savePath()
-
-            if not self.name or not self.path or not xbmcvfs.exists(savePath):
+            if not xbmcvfs.exists(savePath):
+                self.path = ''
                 self.name = ''
-                if not xbmcvfs.exists(self.path):
-                    self.path = ''
-                self.setFocusId(self.ADD_ITEM_LIST_ID)
-                return
+                self.saveDefault(force=True)
+                new = xbmcgui.Dialog().yesno('Missing', 'Previous save not found.', '', 'Load the default or start a new sequence?', 'Default', 'New')
+                if new:
+                    self.name = ''
+                    if not xbmcvfs.exists(self.path):
+                        self.path = ''
+                    self.setFocusId(self.ADD_ITEM_LIST_ID)
+                    return
+                else:
+                    savePath = self.defaultSavePath()
 
         kodiutil.DEBUG_LOG('Loading previous save: {0}'.format(savePath))
-        self.load(savePath)
-        if clearPath:  # Don't want our save directory to be set in the addon path
-            self.path = ''
+
+        self._load(savePath)
+
         kodiutil.DEBUG_LOG('Previous save loaded')
 
 
 def firstRun():
-    kodiutil.setSetting('save.name', 'script.cinemavision.default')
+    kodiutil.LOG('FIRST RUN')
 
 
 def checkAPILevel():

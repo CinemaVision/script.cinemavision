@@ -15,8 +15,22 @@ try:
 
     STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
 
+    def getSep(path):
+        if '\\' not in path:
+            return '/'
+        if '/' not in path:
+            return '\\'
+        if path.rindex('\\') > path.rindex('/'):
+            return '\\'
+        return '/'
+
     def pathJoin(*args):
-        return xbmc.translatePath(os.path.join(*args))
+        args = list(args)
+        sep = getSep(args[0])
+        ret = [args.pop(0).rstrip('/\\')]
+        for a in args:
+            ret.append(a.strip('/\\'))
+        return sep.join(ret)
 
     def isDir(path):
         vstat = vfs.Stat(path)
@@ -46,6 +60,7 @@ try:
             return xbmc.abortRequested
 
 except:
+    raise
     import zipfile
 
     STORAGE_PATH = '/home/ruuk/tmp/content'
