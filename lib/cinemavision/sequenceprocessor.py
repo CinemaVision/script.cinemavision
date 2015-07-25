@@ -13,6 +13,10 @@ class Playable(dict):
     def path(self):
         return self['path']
 
+    @property
+    def isSkipPoint(self):
+        return self.get('isSkipPoint', False)
+
     def __repr__(self):
         return '{0}: {1}'.format(self.type, self.path)
 
@@ -159,6 +163,9 @@ class TriviaHandler:
             ret += slides
             if totalDuration >= durationLimit:
                 break
+        if ret:
+            ret[0]['isSkipPoint'] = -1
+            ret[-1]['isSkipPoint'] = 1
 
         return ret
 
@@ -267,6 +274,8 @@ class VideoBumperHandler:
 
 class SequenceProcessor:
     def __init__(self, sequence_path):
+        self.pos = -1
+        self.size = 0
         self.sequence = []
         self.featureQueue = []
         self.playables = []
@@ -275,8 +284,8 @@ class SequenceProcessor:
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 
-    def empty(self):
-        return not self.playables
+    def atEnd(self):
+        return self.pos >= self.end
 
     @property
     def currentFeature(self):
@@ -304,8 +313,6 @@ class SequenceProcessor:
         if sItem.source:
             return [Video(sItem.source)]
         bumper = None
-
-        print self.currentFeature
 
         if self.currentFeature.audioFormat:
             try:
@@ -379,13 +386,60 @@ class SequenceProcessor:
 
             pos += 1
         self.playables.append(None)  # Keeps it from being empty until AFTER the last item
+        self.end = len(self.playables) - 1
         util.DEBUG_LOG('Sequence processing finished')
 
     def loadSequence(self, sequence_path):
         self.sequence = sequence.loadSequence(sequence_path)
 
     def next(self):
-        if not self.playables:
+        if self.atEnd():
             return None
 
-        return self.playables.pop(0)
+        self.pos += 1
+        playable = self.playables[self.pos]
+
+        return playable
+
+    def setNext(self):
+        playable = self.playables[self.pos]
+        if playable.isSkipPoint == 1:
+            self.pos -= 1
+
+    def setPrev(self):
+        playable = self.playables[self.pos]
+        if playable.isSkipPoint == -1:
+            self.pos -= 1
+            return
+
+        self._prev()
+
+    def _prev(self):
+        self.pos -= 2
+        if self.pos < 0:
+            self.pos = -1
+
+    def skip(self):
+        playable = self.playables[self.pos]
+        if playable.isSkipPoint == 1:
+            return
+
+        ptype = playable.type
+        while playable and playable.type == ptype and not playable.isSkipPoint == 1:
+            playable = self.next()
+
+        if not playable or not playable.isSkipPoint == 1:
+            self._prev()
+
+    def back(self):
+        playable = self.playables[self.pos]
+        if playable.isSkipPoint == -1:
+            return self._prev()
+
+        ptype = playable.type
+        while playable and playable.type == ptype and not playable.isSkipPoint == -1:
+            self.pos -= 1
+            playable = self.playables[self.pos]
+
+        if playable and playable.isSkipPoint == -1:
+            self.pos -= 1

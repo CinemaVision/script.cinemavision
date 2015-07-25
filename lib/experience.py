@@ -41,8 +41,16 @@ class ExperienceWindow(kodigui.BaseWindow):
         try:
             if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK or action == xbmcgui.ACTION_STOP:
                 self.doClose()
+            elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                if self.action != 'SKIP':
+                    self.action = 'NEXT'
+            elif action == xbmcgui.ACTION_MOVE_LEFT:
+                if self.action != 'BACK':
+                    self.action = 'PREV'
             elif action == xbmcgui.ACTION_PAGE_UP or action == xbmcgui.ACTION_NEXT_ITEM:
                 self.action = 'SKIP'
+            elif action == xbmcgui.ACTION_PAGE_DOWN or action == xbmcgui.ACTION_PREV_ITEM:
+                self.action = 'BACK'
         except:
             kodiutil.ERROR()
             return kodigui.BaseWindow.onAction(self, action)
@@ -51,6 +59,24 @@ class ExperienceWindow(kodigui.BaseWindow):
 
     def skip(self):
         if self.action == 'SKIP':
+            self.action = None
+            return True
+        return False
+
+    def back(self):
+        if self.action == 'BACK':
+            self.action = None
+            return True
+        return False
+
+    def next(self):
+        if self.action == 'NEXT':
+            self.action = None
+            return True
+        return False
+
+    def prev(self):
+        if self.action == 'PREV':
             self.action = None
             return True
         return False
@@ -75,7 +101,11 @@ class ExperiencePlayer(xbmc.Player):
         if self.playStatus == 0:
             return self.onPlayBackFailed()
         self.playStatus = 0
-        self.log('PLAYBACK ENDED')
+        if self.playlist.getposition() != -1:
+            self.log('PLAYBACK ENDED')
+            if self.playlist.size():
+                return
+
         self.next()
 
     def onPlayBackPaused(self):
@@ -109,6 +139,12 @@ class ExperiencePlayer(xbmc.Player):
         self.playStatus = 0
         self.log('PLAYBACK FAILED')
         self.next()
+
+    def onPlayBackSeek(self, seek_time, offset):
+        if seek_time == 0:
+            self.playStatus = -1
+            self.processor.setPrev()
+            self.stop()
 
     def init(self):
         self.window = None
@@ -167,7 +203,7 @@ class ExperiencePlayer(xbmc.Player):
 
     def waitLoop(self):
         while not kodiutil.wait(0.1):
-            if self.processor.empty() or not self.window.isOpen:
+            if self.processor.atEnd() or not self.window.isOpen:
                 break
 
             if self.isPlayingMinimized():
@@ -181,15 +217,24 @@ class ExperiencePlayer(xbmc.Player):
     def showImage(self, image):
         kodiutil.setGlobalProperty('slide', image.path)
 
-        start = time.time()
-        while not kodiutil.wait(0.1) and time.time() - start < image.duration:
-            if not self.window.isOpen:
-                self.abort()
-                break
-            elif self.window.skip():
-                break
+        try:
+            start = time.time()
+            while not kodiutil.wait(0.1) and time.time() - start < image.duration:
+                if not self.window.isOpen:
+                    self.abort()
+                    break
+                elif self.window.action:
+                    if self.window.next():
+                        return 'NEXT'
+                    elif self.window.prev():
+                        return 'PREV'
+                    elif self.window.skip():
+                        return 'SKIP'
+                    elif self.window.back():
+                        return 'BACK'
+        finally:
+            kodiutil.setGlobalProperty('slide', '')
 
-        kodiutil.setGlobalProperty('slide', '')
         self.next()
 
     def showVideo(self, video):
@@ -198,6 +243,7 @@ class ExperiencePlayer(xbmc.Player):
         if video.userAgent:
             path += '|User-Agent=' + video.userAgent
         self.playlist.clear()
+        self.rpc.Playlist.Clear(playlistid=1)
 
         if kodiutil.getSetting('allow.video.skip', True):
             self.playlist.add(path)
@@ -207,7 +253,7 @@ class ExperiencePlayer(xbmc.Player):
             self.play(path)
 
     def next(self):
-        if self.processor.empty():
+        if self.processor.atEnd():
             return
 
         if not self.window.isOpen:
@@ -222,7 +268,17 @@ class ExperiencePlayer(xbmc.Player):
         self.log('Playing next item: {0}'.format(playable))
 
         if playable.type == 'IMAGE':
-            self.showImage(playable)
+            action = self.showImage(playable)
+            if action:
+                if action == 'NEXT':
+                    self.processor.setNext()
+                elif action == 'PREV':
+                    self.processor.setPrev()
+                elif action == 'SKIP':
+                    self.processor.skip()
+                elif action == 'BACK':
+                    self.processor.back()
+                self.next()
         elif playable.type in ('VIDEO', 'FEATURE'):
             self.showVideo(playable)
         else:
