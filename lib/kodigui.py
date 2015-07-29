@@ -64,6 +64,8 @@ class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
         xbmcgui.WindowXML.setProperty(self, key, value)
 
     def doClose(self):
+        if not self.isOpen:
+            return
         self._closing = True
         self.isOpen = False
         self.close()

@@ -1,16 +1,34 @@
+import time
+import datetime
+
+try:
+    datetime.datetime.strptime('0', '%H')
+except TypeError:
+    # Fix for datetime issues with XBMC/Kodi
+    class new_datetime(datetime.datetime):
+        @classmethod
+        def strptime(cls, dstring, dformat):
+            return datetime.datetime(*(time.strptime(dstring, dformat)[0:6]))
+
+    datetime.datetime = new_datetime
+
 from peewee import peewee
 import util
-
-DB = peewee.SqliteDatabase(util.pathJoin(util.STORAGE_PATH, 'content.db'))
 
 fn = peewee.fn
 
 util.callback(None, 'Creating/updating database...')
 
 
+###########################################################################################
+# Watched Database
+###########################################################################################
+DB = peewee.SqliteDatabase(util.pathJoin(util.STORAGE_PATH, 'content.db'))
+
+
 class ContentBase(peewee.Model):
     name = peewee.CharField()
-    accessed = peewee.IntegerField(default=0)
+    accessed = peewee.DateTimeField(null=True)
     pack = peewee.TextField(null=True)
 
     class Meta:
@@ -33,6 +51,8 @@ util.callback(' - Tivia')
 
 class Trivia(ContentBase):
     type = peewee.CharField()
+
+    TID = peewee.CharField(unique=True)
 
     rating = peewee.CharField(null=True)
     genre = peewee.CharField(null=True)
@@ -80,5 +100,45 @@ class VideoBumpers(ContentBase):
     path = peewee.CharField(unique=True)
 
 VideoBumpers.create_table(fail_silently=True)
+
+
+###########################################################################################
+# Watched Database
+###########################################################################################
+W_DB = peewee.SqliteDatabase(util.pathJoin(util.STORAGE_PATH, 'watched.db'))
+
+
+class WatchedBase(peewee.Model):
+    WID = peewee.CharField(unique=True)
+    watched = peewee.BooleanField(default=False)
+    date = peewee.DateTimeField(default=datetime.date(1900, 1, 1))
+
+    class Meta:
+        database = W_DB
+
+
+util.callback(' - Trailers (watched status)')
+
+
+class WatchedTrailers(WatchedBase):
+    source = peewee.CharField()
+    rating = peewee.CharField()
+    genres = peewee.CharField()
+    title = peewee.CharField()
+    url = peewee.CharField()
+    userAgent = peewee.CharField()
+
+
+WatchedTrailers.create_table(fail_silently=True)
+
+
+util.callback(' - Trailers (watched status)')
+
+
+class WatchedTrivia(WatchedBase):
+    pass
+
+
+WatchedTrivia.create_table(fail_silently=True)
 
 util.callback(None, 'Database created')

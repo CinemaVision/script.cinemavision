@@ -1,6 +1,5 @@
 import os
 
-import xbmc
 import xbmcgui
 import xbmcvfs
 
@@ -38,17 +37,18 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.updateItem()
 
     def fillSettingsList(self):
-        item = self.item
-
-        sItem = item.dataSource
+        sItem = self.item.dataSource
 
         items = []
         for i, e in enumerate(sItem._elements):
-            mli = kodigui.ManagedListItem(e['name'], str(sItem.getSettingDisplay(e['attr'])), data_source=e['attr'])
-            if sItem.getType(i) == int:
+            if not sItem.elementVisible(e):
+                continue
+            attr = e['attr']
+            mli = kodigui.ManagedListItem(e['name'], unicode(sItem.getSettingDisplay(attr)), data_source=attr)
+            if sItem.getType(attr) == int:
                 mli.setProperty('type', 'integer')
-            elif sItem.getLimits(i) == cinemavision.sequence.LIMIT_BOOL:
-                mli.setLabel2(sItem.getSetting(e['attr']) and 'Yes' or 'No')
+            elif sItem.getLimits(attr) == cinemavision.sequence.LIMIT_BOOL:
+                mli.setLabel2(sItem.getSetting(attr) and 'Yes' or 'No')
             items.append(mli)
 
         self.settingsList.reset()
@@ -84,16 +84,15 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         item = self.settingsList.getSelectedItem()
         if not item or not item.getProperty('type') == 'integer':
             return
-        pos = item.pos()
 
         pct = self.sliderControl.getPercent()
 
         sItem = self.item.dataSource
-        e = sItem._elements[pos]
-        limits = self.getLimits(sItem, pos)
+        attr = item.dataSource
+        limits = self.getLimits(sItem, attr)
         total = limits[1] - limits[0]
         val = int(round(((pct/100.0) * total) + limits[0]))
-        sItem.setSetting(e['attr'], val)
+        sItem.setSetting(attr, val)
 
         item.setLabel2(str(val))
 
@@ -106,13 +105,12 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         item = self.settingsList.getSelectedItem()
         if not item or not item.getProperty('type') == 'integer':
             return
-        pos = item.pos()
 
         sItem = self.item.dataSource
-        e = sItem._elements[pos]
+        attr = item.dataSource
         if item.getProperty('type') == 'integer':
-            val = sItem.getSetting(e['attr'])
-            self.updateSlider(val, *reversed(self.getLimits(sItem, pos)))
+            val = sItem.getSetting(attr)
+            self.updateSlider(val, *reversed(self.getLimits(sItem, attr)))
 
         self.main.updateItemSettings(sItem, self.item)
 
@@ -126,17 +124,16 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         item = self.settingsList.getSelectedItem()
         if not item or not item.getProperty('type') == 'integer':
             return
-        pos = item.pos()
 
         sItem = self.item.dataSource
-        e = sItem._elements[pos]
-        val = sItem.getSetting(e['attr'])
+        attr = item.dataSource
+        val = sItem.getSetting(attr)
         val += offset
-        limits = self.getLimits(sItem, pos)
+        limits = self.getLimits(sItem, attr)
         if not limits[0] <= val <= limits[1]:
             return
 
-        sItem.setSetting(e['attr'], val)
+        sItem.setSetting(attr, val)
         self.updateSlider(val, *reversed(limits))
         item.setLabel2(str(val))
 
@@ -151,8 +148,8 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         pct = (val/float(total)) * 100
         self.sliderControl.setPercent(pct)
 
-    def getLimits(self, sItem, pos):
-        limits = sItem.getLimits(pos)
+    def getLimits(self, sItem, attr):
+        limits = sItem.getLimits(attr)
         if sItem._type == 'command':
             if sItem.command == 'back':
                 return (limits[0], min(limits[1], self.leftOffset))
@@ -162,21 +159,29 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         return limits
 
     def editItemSetting(self):
+        self._editItemSetting()
+        self.fillSettingsList()
+
+    def _editItemSetting(self):
         item = self.settingsList.getSelectedItem()
         if not item or item.getProperty('type') == 'integer':
             return
 
         sItem = self.item.dataSource
-        pos = item.pos()
 
-        e = sItem._elements[pos]
-        attr = e['attr']
+        attr = item.dataSource
 
         options = sItem.getSettingOptions(attr)
         if options == cinemavision.sequence.LIMIT_FILE:
-            value = xbmcgui.Dialog().browse(1, 'Select Save Directory', 'files')
+            value = xbmcgui.Dialog().browse(1, 'Select File', 'files')
             if not value:
                 return
+            value = value.decode('utf-8')
+        elif options == cinemavision.sequence.LIMIT_DIR:
+            value = xbmcgui.Dialog().browse(0, 'Select Directory', 'files')
+            if not value:
+                return
+            value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_BOOL:
             value = not sItem.getSetting(attr)
         elif isinstance(options, list):
@@ -188,7 +193,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             return False
 
         sItem.setSetting(attr, value)
-        item.setLabel2(str(sItem.getSettingDisplay(attr)))
+        item.setLabel2(unicode(sItem.getSettingDisplay(attr)))
 
         self.modified = True
 
@@ -521,10 +526,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def updateItemSettings(self, sItem, item):
         ct = 0
-        item.setProperty('setting{0}'.format(ct), str(sItem.enabled and 'Yes' or 'No'))
+        item.setProperty('setting{0}'.format(ct), sItem.enabled and 'Yes' or 'No')
         item.setProperty('setting{0}_name'.format(ct), 'Enabled')
         ct += 1
         for i, e in enumerate(sItem._elements):
+            if not sItem.elementVisible(e):
+                continue
             disp = sItem.getSettingDisplay(e['attr'])
             item.setProperty('setting{0}'.format(ct), disp)
             item.setProperty('setting{0}_name'.format(ct), e['name'])
@@ -624,7 +631,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.DEBUG_LOG('Saving to: {0}'.format(fullPath))
 
         f = xbmcvfs.File(fullPath, 'w')
-        f.write(xmlString.encode('utf-8'))
+        f.write(xmlString)
         f.close()
 
         self.modified = False

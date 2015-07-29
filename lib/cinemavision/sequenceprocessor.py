@@ -1,4 +1,6 @@
 import random
+import time
+import datetime
 import database as DB
 import sequence
 import util
@@ -13,23 +15,26 @@ class Playable(dict):
     def path(self):
         return self['path']
 
-    @property
-    def isSkipPoint(self):
-        return self.get('isSkipPoint', False)
-
     def __repr__(self):
-        return '{0}: {1}'.format(self.type, self.path)
+        return '{0}: {1}'.format(self.type, repr(self.path))
 
 
 class Image(Playable):
     type = 'IMAGE'
 
-    def __init__(self, path, duration=10):
+    def __init__(self, path, duration=10, set_number=0, set_id=None, *args, **kwargs):
+        Playable.__init__(self, *args, **kwargs)
         self['path'] = path
         self['duration'] = duration
+        self['setNumber'] = set_number
+        self['setID'] = set_id
 
     def __repr__(self):
         return 'IMAGE ({0}s): {1}'.format(self.duration, self.path)
+
+    @property
+    def setID(self):
+        return self['setID']
 
     @property
     def duration(self):
@@ -38,6 +43,109 @@ class Image(Playable):
     @duration.setter
     def duration(self, val):
         self['duration'] = val
+
+    @property
+    def setNumber(self):
+        return self['setNumber']
+
+
+class ImageQueue(dict):
+    type = 'IMAGE.QUEUE'
+
+    def __init__(self, handler, s_item, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self._handler = handler
+        self.sItem = s_item
+        self.pos = -1
+
+    def __iadd__(self, other):
+        for o in other:
+            self.duration += o.duration
+
+        self.queue += other
+        return self
+
+    def __contains__(self, images):
+        paths = [i.path for i in self.queue]
+        if isinstance(images, list):
+            for i in images:
+                if i.path in paths:
+                    return True
+        else:
+            return images.path in paths
+
+        return False
+
+    def __repr__(self):
+        return '{0}: {1}secs'.format(self.type, self.duration)
+
+    def reset(self):
+        self.pos = -1
+
+    def size(self):
+        return len(self.queue)
+
+    @property
+    def duration(self):
+        return self.get('duration', 0)
+
+    @duration.setter
+    def duration(self, val):
+        self['duration'] = val
+
+    @property
+    def queue(self):
+        return self.get('queue', [])
+
+    @queue.setter
+    def queue(self, q):
+        self['queue'] = q
+
+    def current(self):
+        return self.queue[self.pos]
+
+    def add(self, image):
+        self.queue.append(image)
+
+    def next(self, start=0, extend=False):
+        overtime = start and time.time() - start >= self.duration
+        if overtime and not self.current().setNumber:
+            return None
+
+        if self.pos >= self.size() - 1:
+            if extend or not overtime:
+                return self._next()
+            else:
+                return None
+
+        self.pos += 1
+
+        return self.queue[self.pos]
+
+    def _next(self):
+        util.DEBUG_LOG('ImageQueue: Requesting next...')
+        images = self._handler.next(self)
+        if not images:
+            util.DEBUG_LOG('ImageQueue: No next images')
+            return None
+
+        util.DEBUG_LOG('ImageQueue: {0} returned'.format(len(images)))
+        self.queue += images
+        self.pos += 1
+
+        return self.current()
+
+    def prev(self):
+        if self.pos < 1:
+            return None
+        self.pos -= 1
+
+        return self.current()
+
+    def mark(self, image):
+        if not image.setNumber:
+            util.DEBUG_LOG('ImageQueue: Marking image as watched')
+            self._handler.mark(image)
 
 
 class Video(Playable):
@@ -144,55 +252,194 @@ class FeatureHandler:
 
 
 class TriviaHandler:
+    def __init__(self):
+        pass
+
     def __call__(self, caller, sItem):
         durationLimit = sItem.duration * 60
-        totalDuration = 0
-        ret = []
-        durations = (sItem.qDuration, sItem.cDuration, sItem.cDuration, sItem.cDuration, sItem.aDuration)
-        for trivia in DB.Trivia.select().order_by(DB.fn.Random()):
-            paths = (trivia.questionPath, trivia.cluePath1, trivia.cluePath2, trivia.cluePath3, trivia.answerPath)
-            slides = []
-            for p, d in zip(paths, durations):
-                if p:
-                    slides.append(Image(p, d))
-                    totalDuration += d
-            if len(slides) == 1:  # This is a still set duration accordingly
-                totalDuration -= slides[0].duration
-                totalDuration += sItem.sDuration
-                slides[0].duration = sItem.sDuration
-            ret += slides
-            if totalDuration >= durationLimit:
-                break
-        if ret:
-            ret[0]['isSkipPoint'] = -1
-            ret[-1]['isSkipPoint'] = 1
+        queue = ImageQueue(self, sItem)
+        for slides in self.getTriviaImages(sItem):
+            queue += slides
 
-        return ret
+            if queue.duration >= durationLimit:
+                break
+
+        return [queue]
+
+    def getTriviaImages(self, sItem):
+        # Do this each set in reverse so the setNumber counts down
+        durations = (sItem.aDuration, sItem.cDuration, sItem.cDuration, sItem.cDuration, sItem.qDuration)
+        for trivia in DB.Trivia.select().order_by(DB.fn.Random()):
+            try:
+                DB.WatchedTrivia.get((DB.WatchedTrivia.WID == trivia.TID) & DB.WatchedTrivia.watched)
+            except DB.peewee.DoesNotExist:
+                yield self.createTriviaImages(sItem, trivia, durations)
+
+        # Gram the oldest 4 trivias, shuffle and yield... repeat
+        pool = []
+        for watched in DB.WatchedTrivia.select().where(DB.WatchedTrivia.watched).order_by(DB.WatchedTrivia.date):
+            try:
+                trivia = DB.Trivia.get(DB.Trivia.TID == watched.WID)
+            except DB.peewee.DoesNotExist:
+                continue
+            pool.append(trivia)
+
+            if len(pool) > 3:
+                random.shuffle(pool)
+                for t in pool:
+                    yield self.createTriviaImages(sItem, t, durations)
+                pool = []
+
+        if pool:
+            for t in random.shuffle(pool):
+                yield self.createTriviaImages(sItem, t, durations)
+
+    def createTriviaImages(self, sItem, trivia, durations):
+        paths = (trivia.answerPath, trivia.cluePath3, trivia.cluePath2, trivia.cluePath1, trivia.questionPath)
+        slides = []
+        setNumber = 0
+        for p, d in zip(paths, durations):
+            if p:
+                slides.append(Image(p, d, setNumber, trivia.TID))
+                setNumber += 1
+
+        slides.reverse()  # Slides are backwards
+
+        if len(slides) == 1:  # This is a still - set duration accordingly
+            slides[0].duration = sItem.sDuration
+
+        return slides
+
+    def next(self, image_queue):
+        for slides in self.getTriviaImages(image_queue.sItem):
+            if slides not in image_queue:
+                return slides
+        return None
+
+    def mark(self, image):
+        trivia = DB.WatchedTrivia.get_or_create(WID=image.setID)[0]
+        trivia.update(
+            watched=True,
+            date=datetime.datetime.now()
+        ).where(DB.WatchedTrivia.WID == image.setID).execute()
 
 
 class TrailerHandler:
     def __init__(self):
-        self.trailers = scrapers.getTrailers()
         self.caller = None
 
     def __call__(self, caller, sItem):
         self.caller = caller
-        filtered = self.filter(self.trailers)
 
-        trailers = random.sample(filtered, sItem.count)
+        if sItem.source == 'itunes':
+            return self.iTunesHandler(sItem)
+        elif sItem.source == 'dir':
+            return self.dirHandler(sItem)
+        elif sItem.source == 'file':
+            return self.fileHandler(sItem)
+
+        return []
+
+    def filter(self, sItem, trailers):
+        filtered = trailers
+
+        if sItem.limitRating:
+            if self.caller.ratings:
+                filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
+
+        if sItem.limitGenre:
+            if self.caller.genres:
+                filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
+
+        return filtered
+
+    def unwatched(self, trailers):
+        ret = []
+        for t in trailers:
+            try:
+                DB.WatchedTrailers.get((DB.WatchedTrailers.WID == t.ID) & DB.WatchedTrailers.watched)
+            except DB.peewee.DoesNotExist:
+                ret.append(t)
+
+        return ret
+
+    def oldest(self, sItem):
+        util.DEBUG_LOG('All itunes trailers watched - using oldest trailers')
+
+        if sItem.limitRating and self.caller.ratings:
+            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings).order_by(DB.WatchedTrailers.date)]
+        else:
+            trailers = [t for t in DB.WatchedTrailers.select().order_by(DB.WatchedTrailers.date)]
+
+        if not trailers:
+            return []
+        # Take the oldest for count + a few to make the random more random
+        if sItem.limitGenre:
+            if self.caller.genres:
+                trailers = [t for t in trailers if any(x in self.caller.genres for x in (t.genres or '').split(','))]
+        if len(trailers) > sItem.count:
+            trailers = random.sample(trailers[:sItem.count + 5], sItem.count)
+
+        now = datetime.datetime.now()
+
+        for t in trailers:
+            DB.WatchedTrailers.update(
+                source='itunes',
+                watched=True,
+                date=now,
+                title=t.title,
+                url=t.url,
+                userAgent=t.userAgent,
+                rating=t.rating,
+                genres=t.genres
+            ).where(DB.WatchedTrailers.WID == t.WID).execute()
+
+        return [Video(t.url, t.userAgent) for t in trailers]
+
+    def iTunesHandler(self, sItem):
+        trailers = scrapers.getTrailers()
+        trailers = self.filter(sItem, trailers)
+        trailers = self.unwatched(trailers)
+
+        if not trailers:
+            return self.oldest(sItem)
+
+        if len(trailers) > sItem.count:
+            trailers = random.sample(trailers, sItem.count)
+
+        now = datetime.datetime.now()
+
+        for t in trailers:
+            DB.WatchedTrailers.get_or_create(
+                WID=t.ID,
+                source='itunes',
+                watched=True,
+                date=now,
+                title=t.title,
+                url=t.getPlayableURL(),
+                userAgent=t.userAgent,
+                rating=t.fullRating,
+                genres=','.join(t.genres)
+            )
 
         return [Video(t.getPlayableURL(), t.userAgent) for t in trailers]
 
-    def filter(self, trailers):
-        filtered = trailers
+    def dirHandler(self, sItem):
+        if not sItem.dir:
+            return []
 
-        if self.caller.ratings:
-            filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
+        try:
+            files = util.vfs.listdir(sItem.dir)
+            files = random.sample(files, sItem.count)
+            return [Video(util.pathJoin(sItem.dir, p)) for p in files]
+        except:
+            util.ERROR()
+            return []
 
-        if self.caller.genres:
-            filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
-
-        return filtered
+    def fileHandler(self, sItem):
+        if not sItem.file:
+            return []
+        return [Video(sItem.file)]
 
 
 class VideoBumperHandler:
@@ -401,45 +648,10 @@ class SequenceProcessor:
 
         return playable
 
-    def setNext(self):
-        playable = self.playables[self.pos]
-        if playable.isSkipPoint == 1:
+    def prev(self):
+        if self.pos > 0:
             self.pos -= 1
 
-    def setPrev(self):
         playable = self.playables[self.pos]
-        if playable.isSkipPoint == -1:
-            self.pos -= 1
-            return
 
-        self._prev()
-
-    def _prev(self):
-        self.pos -= 2
-        if self.pos < 0:
-            self.pos = -1
-
-    def skip(self):
-        playable = self.playables[self.pos]
-        if playable.isSkipPoint == 1:
-            return
-
-        ptype = playable.type
-        while playable and playable.type == ptype and not playable.isSkipPoint == 1:
-            playable = self.next()
-
-        if not playable or not playable.isSkipPoint == 1:
-            self._prev()
-
-    def back(self):
-        playable = self.playables[self.pos]
-        if playable.isSkipPoint == -1:
-            return self._prev()
-
-        ptype = playable.type
-        while playable and playable.type == ptype and not playable.isSkipPoint == -1:
-            self.pos -= 1
-            playable = self.playables[self.pos]
-
-        if playable and playable.isSkipPoint == -1:
-            self.pos -= 1
+        return playable

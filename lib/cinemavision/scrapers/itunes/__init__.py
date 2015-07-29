@@ -7,6 +7,10 @@ class Trailer:
         self.data = data
 
     @property
+    def ID(self):
+        return 'itunes:{0}'.format(self.data['location'])
+
+    @property
     def title(self):
         return self.data['title']
 
@@ -41,8 +45,13 @@ class Trailer:
             versions = [t for t in all_ if t['title'] == 'Trailer'][0]
         except IndexError:
             versions = all_
+        try:
+            url = [u for u in versions['urls'] if '720p' in u][0]
+        except:
+            import traceback
+            traceback.print_exc()
+            url = None
 
-        url = [u for u in versions['urls'] if '720p' in u][0]
         if not url:
             return versions['urls'][0]
 

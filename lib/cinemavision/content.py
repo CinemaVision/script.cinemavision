@@ -252,6 +252,8 @@ class TriviaDirectoryHandler:
             util.LOG('BAD_SLIDE_FILE')
             return None
 
+        pack = os.path.basename(basePath.rstrip('\\/'))
+
         rating = self.getNodeAttribute(slide, self._ratingNA[0], self._ratingNA[1]) or ''
         questionRE = (self.getNodeAttribute(slide, self._questionNA[0], self._questionNA[1]) or '').replace('N/A', '')
         clueRE = self.getNodeAttribute(slide, self._clueNA[0], self._clueNA[1]) or ''.replace('N/A', '')
@@ -286,6 +288,7 @@ class TriviaDirectoryHandler:
 
             defaults = {
                     'type': 'QA',
+                    'TID': '{0}.{1}'.format(pack, name),
                     'name': name,
                     'rating': rating,
                     'questionPath': questionPath
@@ -302,11 +305,12 @@ class TriviaDirectoryHandler:
             )
 
     def processSimpleDir(self, path):
+        pack = os.path.basename(path.rstrip('\\/'))
         contents = util.vfs.listdir(path)
         for c in contents:
-            self.getSlide(path, c)
+            self.getSlide(path, c, pack)
 
-    def getSlide(self, path, c):
+    def getSlide(self, path, c, pack=''):
         name, ext = os.path.splitext(c)
         if ext not in self._imageExtensions:
             return
@@ -316,6 +320,7 @@ class TriviaDirectoryHandler:
                 answerPath=util.pathJoin(path, c),
                 defaults={
                     'type': 'fact',
+                    'TID': '{0}.{1}'.format(pack, name),
                     'name': name
                 }
             )

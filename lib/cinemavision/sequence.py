@@ -2,7 +2,8 @@ from xml.etree import ElementTree as ET
 import xml.dom.minidom as minidom
 
 LIMIT_FILE = 0
-LIMIT_BOOL = 1
+LIMIT_DIR = 1
+LIMIT_BOOL = 2
 
 
 SETTINGS_DISPLAY = {
@@ -24,6 +25,9 @@ SETTINGS_DISPLAY = {
     'skip': 'Skip',
     'feature.queue=full': 'Feature queue is full',
     'feature.queue=empty': 'Feature queue is empty',
+    'itunes': 'Apple iTunes',
+    'dir': 'Directory',
+    'file': 'Single File',
     'True': 'Yes',
     'False': 'No'
 }
@@ -83,10 +87,10 @@ class Item:
 
         for e in self._elements:
             sub = ET.Element(e['attr'])
-            attr = getattr(self, e['attr'])
-            if not attr:
+            val = getattr(self, e['attr'])
+            if not val:
                 continue
-            sub.text = str(attr)
+            sub.text = unicode(val)
             item.append(sub)
         return item
 
@@ -112,8 +116,8 @@ class Item:
             if element_name == e['attr']:
                 return e
 
-    def getSettingOptions(self, setting):
-        limits = self.elementData(setting)['limits']
+    def getSettingOptions(self, attr):
+        limits = self.elementData(attr)['limits']
         if isinstance(limits, list):
             limits = [(x, settingDisplay(x)) for x in limits]
         return limits
@@ -121,26 +125,32 @@ class Item:
     def setSetting(self, setting, value):
         setattr(self, setting, value)
 
-    def getSetting(self, setting):
-        return getattr(self, setting)
+    def getSetting(self, attr):
+        return getattr(self, attr)
 
-    def getSettingIndex(self, setting):
+    def getSettingIndex(self, attr):
         for i, e in enumerate(self._elements):
-            if e['attr'] == setting:
+            if e['attr'] == attr:
                 return i
 
-    def getLimits(self, idx):
-        return self._elements[idx]['limits']
+    def getElement(self, attr):
+        return self._elements[self.getSettingIndex(attr)]
 
-    def getType(self, idx):
-        return self._elements[idx]['type']
+    def getLimits(self, attr):
+        return self._elements[self.getSettingIndex(attr)]['limits']
+
+    def getType(self, attr):
+        return self._elements[self.getSettingIndex(attr)]['type']
 
     def display(self):
         return self.displayName
 
     def getSettingDisplay(self, setting):
         val = getattr(self, setting)
-        return str(settingDisplay(val))
+        return unicode(settingDisplay(val))
+
+    def elementVisible(self, e):
+        return True
 
 
 ################################################################################
@@ -191,8 +201,42 @@ class Trivia(Item):
 class Trailer(Item):
     _type = 'trailer'
     _elements = (
-        {'attr': 'count',  'type': int,  'limits': (1, 10), 'name': 'Count'},
-        {'attr': 'source', 'type': None, 'limits': LIMIT_FILE,    'name': 'Source'}
+        {
+            'attr': 'source',
+            'type': None,
+            'limits': ['itunes', 'dir', 'file'],
+            'name': 'Source'
+        },
+        {
+            'attr': 'count',
+            'type': int,
+            'limits': (1, 10),
+            'name': 'Count'
+        },
+        {
+            'attr': 'limitRating',
+            'type': None,
+            'limits': LIMIT_BOOL,
+            'name': 'Limit By Rating'
+        },
+        {
+            'attr': 'limitGenre',
+            'type': None,
+            'limits': LIMIT_BOOL,
+            'name': 'Limit By Genre'
+        },
+        {
+            'attr': 'file',
+            'type': None,
+            'limits': LIMIT_FILE,
+            'name': 'Path',
+        },
+        {
+            'attr': 'dir',
+            'type': None,
+            'limits': LIMIT_DIR,
+            'name': 'Path'
+        }
     )
     displayName = 'Trailer'
     typeChar = 'T'
@@ -201,11 +245,31 @@ class Trailer(Item):
         Item.__init__(self)
         self.count = 1
         self.source = ''
+        self.file = ''
+        self.dir = ''
+        self.limitRating = True
+        self.limitGenre = True
 
     def display(self):
         if self.count > 1:
             return '{0} x {1}'.format(self.displayName, self.count)
         return self.displayName
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'file':
+            if self.source != 'file':
+                return False
+        elif attr == 'dir':
+            if self.source != 'dir':
+                return False
+        elif attr == 'count':
+            if self.source not in ['dir', 'itunes']:
+                return False
+        elif attr in ('limitRating', 'limitGenre'):
+            if self.source != 'itunes':
+                return False
+        return True
 
 
 ################################################################################
@@ -334,17 +398,17 @@ class Command(Item):
         self.arg = ''
         self.condition = ''
 
-    def getLimits(self, idx):
-        e = self._elements[idx]
+    def getLimits(self, attr):
+        e = self.getElement(attr)
         if not e['attr'] == 'arg' or self.command not in ('skip', 'back'):
-            return Item.getLimits(self, idx)
+            return Item.getLimits(self, attr)
 
-        return (1, 20)
+        return (1, 99)
 
-    def getType(self, idx):
-        e = self._elements[idx]
+    def getType(self, attr):
+        e = self.getElement(attr)
         if not e['attr'] == 'arg' or self.command not in ('skip', 'back'):
-            return Item.getType(self, idx)
+            return Item.getType(self, attr)
 
         return int
 
@@ -414,9 +478,9 @@ def getItem(token):
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
     """
-    rough_string = ET.tostring(elem, 'utf-8')
+    rough_string = ET.tostring(elem)
     reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="\t")
+    return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
 
 
 def getSaveString(items):
@@ -436,7 +500,6 @@ def getItemsFromString(xml_string):
 
 
 def loadSequence(path):
-    print path
     import xbmcvfs
     f = xbmcvfs.File(path, 'r')
     xmlString = f.read().decode('utf-8')

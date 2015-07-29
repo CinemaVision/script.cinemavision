@@ -131,6 +131,10 @@ class ExperiencePlayer(xbmc.Player):
             self.log('PLAYBACK INTERRUPTED')
             self.next()
             return
+        elif self.playStatus == -2:
+            self.log('SKIP BACK')
+            self.next(prev=True)
+            return
         self.playStatus = 0
         self.log('PLAYBACK STOPPED')
         self.abort()
@@ -142,8 +146,7 @@ class ExperiencePlayer(xbmc.Player):
 
     def onPlayBackSeek(self, seek_time, offset):
         if seek_time == 0:
-            self.playStatus = -1
-            self.processor.setPrev()
+            self.playStatus = -2
             self.stop()
 
     def init(self):
@@ -172,9 +175,9 @@ class ExperiencePlayer(xbmc.Player):
             try:
                 codec = r['streamdetails']['audio'][0]['codec']
                 feature.audioFormat = AUDIO_FORMATS.get(codec)
-                kodiutil.DEBUG_LOG('CODEC ({0}): {1}'.format(feature.title, codec))
+                self.log('CODEC ({0}): {1}'.format(feature.title, codec))
             except:
-                kodiutil.DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(feature.title))
+                self.log('CODEC ({0}): NOT DETECTED'.format(feature.title))
 
             self.processor.addFeature(feature)
 
@@ -207,7 +210,7 @@ class ExperiencePlayer(xbmc.Player):
                 break
 
             if self.isPlayingMinimized():
-                kodiutil.DEBUG_LOG('Fullscreen video closed - stopping')
+                self.log('Fullscreen video closed - stopping')
                 self.stop()
 
         self.log('[ -- Finished -------------------------------------------------------------- ]')
@@ -221,8 +224,7 @@ class ExperiencePlayer(xbmc.Player):
             start = time.time()
             while not kodiutil.wait(0.1) and time.time() - start < image.duration:
                 if not self.window.isOpen:
-                    self.abort()
-                    break
+                    return False
                 elif self.window.action:
                     if self.window.next():
                         return 'NEXT'
@@ -235,7 +237,38 @@ class ExperiencePlayer(xbmc.Player):
         finally:
             kodiutil.setGlobalProperty('slide', '')
 
-        self.next()
+        return True
+
+    def showImageQueue(self, image_queue):
+        image_queue.reset()
+        image = image_queue.next()
+        start = time.time()
+        while image:
+            self.log(' -IMAGE.QUEUE: {0}'.format(image))
+            action = self.showImage(image)
+            if action:
+                if action == 'NEXT':
+                    image = image_queue.next(extend=True) or image
+                    continue
+                elif action == 'PREV':
+                    image = image_queue.prev() or image
+                    continue
+                elif action == 'BACK':
+                    self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                    return False
+                elif action == 'SKIP':
+                    self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                    return True
+                else:
+                    if action is True:
+                        image_queue.mark(image)
+
+                    image = image_queue.next(start)
+            else:
+                return
+
+        self.log(' -IMAGE.QUEUE: Finished after {0}secs'.format(int(time.time() - start)))
+        return True
 
     def showVideo(self, video):
         path = video.path
@@ -252,7 +285,7 @@ class ExperiencePlayer(xbmc.Player):
         else:
             self.play(path)
 
-    def next(self):
+    def next(self, prev=False):
         if self.processor.atEnd():
             return
 
@@ -260,7 +293,11 @@ class ExperiencePlayer(xbmc.Player):
             self.abort()
             return
 
-        playable = self.processor.next()
+        if prev:
+            playable = self.processor.prev()
+        else:
+            playable = self.processor.next()
+
         if not playable:
             self.window.doClose()
             return
@@ -269,16 +306,17 @@ class ExperiencePlayer(xbmc.Player):
 
         if playable.type == 'IMAGE':
             action = self.showImage(playable)
-            if action:
-                if action == 'NEXT':
-                    self.processor.setNext()
-                elif action == 'PREV':
-                    self.processor.setPrev()
-                elif action == 'SKIP':
-                    self.processor.skip()
-                elif action == 'BACK':
-                    self.processor.back()
+            if action == 'BACK':
+                self.next(prev=True)
+            else:
                 self.next()
+
+        elif playable.type == 'IMAGE.QUEUE':
+            if not self.showImageQueue(playable):
+                self.next(prev=True)
+            else:
+                self.next()
+
         elif playable.type in ('VIDEO', 'FEATURE'):
             self.showVideo(playable)
         else:
