@@ -369,7 +369,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.insertItem(sItem, pos)
 
     def insertItem(self, sItem, pos):
-        mli = kodigui.ManagedListItem(sItem.name or sItem.display(), data_source=sItem)
+        mli = kodigui.ManagedListItem(sItem.display(), data_source=sItem)
         mli.setProperty('type', sItem.fileChar)
         mli.setProperty('type.name', sItem.displayName)
         mli.setProperty('enabled', sItem.enabled and '1' or '')
@@ -411,7 +411,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not sItem:
                 continue
 
-            i.setLabel(sItem.name or sItem.display())
+            i.setLabel(sItem.display())
 
             if sItem.enabled and sItem._type == 'command':
                 if sItem.command == 'back':

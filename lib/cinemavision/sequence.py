@@ -170,7 +170,7 @@ class Item:
         return self._elements[self.getSettingIndex(attr)]['type']
 
     def display(self):
-        return self.displayName
+        return self.name or self.displayName
 
     def getSettingDisplay(self, setting):
         val = getattr(self, setting)
@@ -218,6 +218,12 @@ class Feature(Item):
         self.count = 0
         self.showRatingBumper = None
 
+    def display(self):
+        name = self.name or self.displayName
+        if self.count > 1:
+            return '{0} x {1}'.format(name, self.count)
+        return name
+
 
 ################################################################################
 # TRIVIA
@@ -241,6 +247,12 @@ class Trivia(Item):
         self.cDuration = 0
         self.aDuration = 0
         self.sDuration = 0
+
+    def display(self):
+        name = self.name or self.displayName
+        if self.duration > 0:
+            return '{0} ({1}m)'.format(name, self.duration)
+        return name
 
 
 ################################################################################
@@ -313,9 +325,10 @@ class Trailer(Item):
         self.quality = None
 
     def display(self):
+        name = self.name or self.displayName
         if self.count > 1:
-            return '{0} x {1}'.format(self.displayName, self.count)
-        return self.displayName
+            return '{0} x {1}'.format(name, self.count)
+        return name
 
     def elementVisible(self, e):
         attr = e['attr']
@@ -392,8 +405,12 @@ class Video(Item):
         return True
 
     def display(self):
+        if self.name:
+            return self.name
+
         if not self.vtype:
             return self.displayName
+
         return settingDisplay(self.vtype)
 
     def DBChoices(self, attr):
@@ -554,8 +571,9 @@ class Command(Item):
         return Item.getSetting(self, setting)
 
     def display(self):
+        name = self.name or self.displayName
         command = self.command and ' ({0}:{1})'.format(self.command, self.arg) or ''
-        return '{0}{1}'.format(self.displayName, command)
+        return '{0}{1}'.format(name, command)
 
 
 CONTENT_CLASSES = {
