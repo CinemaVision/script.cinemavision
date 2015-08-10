@@ -1,9 +1,14 @@
 from xml.etree import ElementTree as ET
 import xml.dom.minidom as minidom
+import os
+
+import util
 
 LIMIT_FILE = 0
 LIMIT_DIR = 1
-LIMIT_BOOL = 2
+LIMIT_DB_CHOICE = 2
+LIMIT_BOOL = 3
+LIMIT_BOOL_DEFAULT = 4
 
 
 SETTINGS_DISPLAY = {
@@ -28,12 +33,19 @@ SETTINGS_DISPLAY = {
     'itunes': 'Apple iTunes',
     'dir': 'Directory',
     'file': 'Single File',
+    'standard': 'Standard',
+    'af.detect': 'Detect from source',
+    'af.format': 'Choose format',
+    'af.file': 'Choose file',
     'True': 'Yes',
     'False': 'No'
 }
 
 
 def settingDisplay(setting):
+    if setting is None or setting is 0:
+        return 'Default'
+
     try:
         return SETTINGS_DISPLAY.get(str(setting), setting)
     except:
@@ -43,7 +55,13 @@ def settingDisplay(setting):
 
 
 def strToBool(val):
-    return val == 'True'
+    return bool(val == 'True')
+
+
+def strToBoolWithDefault(val):
+    if val is None:
+        return None
+    return bool(val == 'True')
 
 
 ################################################################################
@@ -88,7 +106,7 @@ class Item:
         for e in self._elements:
             sub = ET.Element(e['attr'])
             val = getattr(self, e['attr'])
-            if not val:
+            if not val and val is not False:
                 continue
             sub.text = unicode(val)
             item.append(sub)
@@ -108,7 +126,10 @@ class Item:
         for e in new._elements:
             sub = node.find(e['attr'])
             if sub is not None:
-                new._set(e['attr'], e['type'] and e['type'](sub.text) or sub.text)
+                if e['type']:
+                    new._set(e['attr'], e['type'](sub.text))
+                else:
+                    new._set(e['attr'], sub.text)
         return new
 
     def elementData(self, element_name):
@@ -127,6 +148,12 @@ class Item:
 
     def getSetting(self, attr):
         return getattr(self, attr)
+
+    def getLive(self, attr):
+        val = self.getSetting(attr)
+        if val is None or val is 0:
+            return util.getSettingDefault('{0}.{1}'.format(self._type, attr))
+        return val
 
     def getSettingIndex(self, attr):
         for i, e in enumerate(self._elements):
@@ -147,7 +174,16 @@ class Item:
 
     def getSettingDisplay(self, setting):
         val = getattr(self, setting)
+        limits = self.getLimits(setting)
+        if limits == LIMIT_BOOL_DEFAULT:
+            if val is None:
+                return 'Default'
+            return val is True and 'Yes' or 'No'
+
         return unicode(settingDisplay(val))
+
+    def DBChoices(self, attr):
+        return None
 
     def elementVisible(self, e):
         return True
@@ -159,16 +195,28 @@ class Item:
 class Feature(Item):
     _type = 'feature'
     _elements = (
-        {'attr': 'count',             'type': int,        'limits': (1, 10),    'name': 'Count'},
-        {'attr': 'showRatingBumper',  'type': strToBool,  'limits': LIMIT_BOOL, 'name': 'Show Rating Bumper'}
+        {
+            'attr': 'count',
+            'type': int,
+            'limits': (0, 10),
+            'name': 'Count',
+            'default': 0
+        },
+        {
+            'attr': 'showRatingBumper',
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Show Rating Bumper',
+            'default': None
+        }
     )
     displayName = 'Feature'
     typeChar = 'F'
 
     def __init__(self):
         Item.__init__(self)
-        self.count = 1
-        self.showRatingBumper = True
+        self.count = 0
+        self.showRatingBumper = None
 
 
 ################################################################################
@@ -177,22 +225,22 @@ class Feature(Item):
 class Trivia(Item):
     _type = 'trivia'
     _elements = (
-        {'attr': 'duration',    'type': int, 'limits': (1, 60), 'name': 'Duration (minutes)'},
-        {'attr': 'qDuration',   'type': int, 'limits': (1, 60), 'name': 'Question Duration (seconds)'},
-        {'attr': 'cDuration',   'type': int, 'limits': (1, 60), 'name': 'Clue Duration (seconds)'},
-        {'attr': 'aDuration',   'type': int, 'limits': (1, 60), 'name': 'Answer Duration (seconds)'},
-        {'attr': 'sDuration',   'type': int, 'limits': (1, 60), 'name': 'Still Duration (seconds)'}
+        {'attr': 'duration',    'type': int, 'limits': (0, 60), 'name': 'Duration (minutes)', 'default': 0},
+        {'attr': 'qDuration',   'type': int, 'limits': (0, 60), 'name': 'Question Duration (seconds)', 'default': 0},
+        {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)', 'default': 0},
+        {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)', 'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)', 'default': 0}
     )
     displayName = 'Trivia Slides'
     typeChar = 'Q'
 
     def __init__(self):
         Item.__init__(self)
-        self.duration = 15
-        self.qDuration = 8
-        self.cDuration = 6
-        self.aDuration = 6
-        self.sDuration = 10
+        self.duration = 0
+        self.qDuration = 0
+        self.cDuration = 0
+        self.aDuration = 0
+        self.sDuration = 0
 
 
 ################################################################################
@@ -204,38 +252,51 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': ['itunes', 'dir', 'file'],
-            'name': 'Source'
+            'limits': [None, 'itunes', 'dir', 'file'],
+            'name': 'Source',
+            'default': None
         },
         {
             'attr': 'count',
             'type': int,
-            'limits': (1, 10),
-            'name': 'Count'
+            'limits': (0, 10),
+            'name': 'Count',
+            'default': 0
         },
         {
             'attr': 'limitRating',
-            'type': None,
-            'limits': LIMIT_BOOL,
-            'name': 'Limit By Rating'
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Limit By Rating',
+            'default': None
         },
         {
             'attr': 'limitGenre',
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Limit By Genre',
+            'default': None
+        },
+        {
+            'attr': 'quality',
             'type': None,
-            'limits': LIMIT_BOOL,
-            'name': 'Limit By Genre'
+            'limits': [None, '480p', '720p', '1080p'],
+            'name': 'Quality',
+            'default': None
         },
         {
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE,
             'name': 'Path',
+            'default': ''
         },
         {
             'attr': 'dir',
             'type': None,
             'limits': LIMIT_DIR,
-            'name': 'Path'
+            'name': 'Path',
+            'default': ''
         }
     )
     displayName = 'Trailer'
@@ -243,12 +304,13 @@ class Trailer(Item):
 
     def __init__(self):
         Item.__init__(self)
-        self.count = 1
-        self.source = ''
+        self.count = 0
+        self.source = None
         self.file = ''
         self.dir = ''
-        self.limitRating = True
-        self.limitGenre = True
+        self.limitRating = None
+        self.limitGenre = None
+        self.quality = None
 
     def display(self):
         if self.count > 1:
@@ -266,7 +328,7 @@ class Trailer(Item):
         elif attr == 'count':
             if self.source not in ['dir', 'itunes']:
                 return False
-        elif attr in ('limitRating', 'limitGenre'):
+        elif attr in ('limitRating', 'limitGenre', 'quality'):
             if self.source != 'itunes':
                 return False
         return True
@@ -300,9 +362,15 @@ class Video(Item):
             'name': 'Type'
         },
         {
+            'attr': 'random',
+            'type': strToBool,
+            'limits': LIMIT_BOOL,
+            'name': 'Random'
+        },
+        {
             'attr': 'source',
             'type': None,
-            'limits': LIMIT_FILE,
+            'limits': LIMIT_DB_CHOICE,
             'name': 'Source'
         }
     )
@@ -312,12 +380,25 @@ class Video(Item):
     def __init__(self):
         Item.__init__(self)
         self.vtype = ''
+        self.random = True
         self.source = ''
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'source':
+            print repr(self.random)
+            return not self.random
+
+        return True
 
     def display(self):
         if not self.vtype:
             return self.displayName
-        return self.vtype.replace('.', ' ').title()
+        return settingDisplay(self.vtype)
+
+    def DBChoices(self, attr):
+        import database as DB
+        return [(x.path, os.path.basename(x.path)) for x in DB.VideoBumpers.select().where(DB.VideoBumpers.type == self.vtype)]
 
 
 ################################################################################
@@ -327,25 +408,54 @@ class AudioFormat(Item):
     _type = 'audioformat'
     _elements = (
         {
-            'attr': 'format',
+            'attr': 'method',
             'type': None,
-            'limits': ['Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital'],
-            'name': 'Format'
+            'limits': [None, 'af.detect', 'af.format', 'af.file'],
+            'name': 'Method',
+            'default': None
         },
         {
-            'attr': 'source',
+            'attr': 'fallback',
+            'type': None,
+            'limits': [None, 'af.format', 'af.file'],
+            'name': 'Fallback',
+            'default': None
+        },
+        {
+            'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE,
-            'name': 'Source'
+            'name': 'Path',
+            'default': ''
         },
+        {
+            'attr': 'format',
+            'type': None,
+            'limits': [None, 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'],
+            'name': 'Format',
+            'default': None
+        }
     )
     displayName = 'Audio Format Bumper'
     typeChar = 'A'
 
     def __init__(self):
         Item.__init__(self)
-        self.format = ''
-        self.source = ''
+        self.method = None
+        self.fallback = None
+        self.format = None
+        self.file = ''
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'fallback':
+            return self.method == 'af.detect'
+        elif attr == 'file':
+            return self.method == 'af.file' or (self.method == 'af.detect' and self.fallback == 'af.file')
+        elif attr == 'format':
+            return self.method == 'af.format' or (self.method == 'af.detect' and self.fallback == 'af.format')
+
+        return True
 
 
 ################################################################################
@@ -415,7 +525,7 @@ class Command(Item):
     def getSettingOptions(self, setting):
         if setting == 'arg':
             if self.command in ('back', 'skip'):
-                return (0, 99)
+                return (1, 99)
         else:
             return Item.getSettingOptions(self, setting)
 

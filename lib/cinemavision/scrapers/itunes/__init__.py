@@ -38,24 +38,23 @@ class Trailer:
     def userAgent(self):
         return scraper.USER_AGENT
 
-    def getPlayableURL(self):
+    def getPlayableURL(self, res='720p'):
         ts = scraper.TrailerScraper()
         all_ = [t for t in ts.get_trailers(self.data['location'])]
         try:
-            versions = [t for t in all_ if t['title'] == 'Trailer'][0]
+            versions = [t for t in all_ if t['title'] == 'Trailer']
         except IndexError:
             versions = all_
+
         try:
-            url = [u for u in versions['urls'] if '720p' in u][0]
+            version = [v for v in versions if any(res in u for u in v['urls'])][0]
+            if version:
+                return [u for u in version['urls'] if res in u][0]
+            else:
+                return versions[0]['urls'][0]
         except:
             import traceback
             traceback.print_exc()
-            url = None
-
-        if not url:
-            return versions['urls'][0]
-
-        return url
 
 
 class ItunesTrailerRetriever:

@@ -22,6 +22,16 @@ TYPE_IDS = {
 }
 
 
+def getBumperDir(ID):
+    for dirname, tid in TYPE_IDS.items():
+        if tid == ID:
+            break
+    else:
+        return None
+
+    return ('Video Bumpers', dirname)
+
+
 class UserContent:
     _tree = (
         ('Audio Format Bumpers', (

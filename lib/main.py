@@ -36,7 +36,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.fillSettingsList()
         self.updateItem()
 
-    def fillSettingsList(self):
+    def fillSettingsList(self, update=False):
         sItem = self.item.dataSource
 
         items = []
@@ -47,12 +47,14 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             mli = kodigui.ManagedListItem(e['name'], unicode(sItem.getSettingDisplay(attr)), data_source=attr)
             if sItem.getType(attr) == int:
                 mli.setProperty('type', 'integer')
-            elif sItem.getLimits(attr) == cinemavision.sequence.LIMIT_BOOL:
-                mli.setLabel2(sItem.getSetting(attr) and 'Yes' or 'No')
             items.append(mli)
 
-        self.settingsList.reset()
-        self.settingsList.addItems(items)
+        if update:
+            self.settingsList.replaceItems(items)
+        else:
+            self.settingsList.reset()
+            self.settingsList.addItems(items)
+
         self.setFocusId(self.SETTINGS_LIST_ID)
 
     def onAction(self, action):
@@ -94,7 +96,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         val = int(round(((pct/100.0) * total) + limits[0]))
         sItem.setSetting(attr, val)
 
-        item.setLabel2(str(val))
+        item.setLabel2(sItem.getSettingDisplay(attr))
 
         self.modified = True
 
@@ -135,7 +137,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
         sItem.setSetting(attr, val)
         self.updateSlider(val, *reversed(limits))
-        item.setLabel2(str(val))
+        item.setLabel2(sItem.getSettingDisplay(attr))
 
         self.modified = True
 
@@ -160,7 +162,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
     def editItemSetting(self):
         self._editItemSetting()
-        self.fillSettingsList()
+        self.fillSettingsList(update=True)
 
     def _editItemSetting(self):
         item = self.settingsList.getSelectedItem()
@@ -172,16 +174,31 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         attr = item.dataSource
 
         options = sItem.getSettingOptions(attr)
+
         if options == cinemavision.sequence.LIMIT_FILE:
-            value = xbmcgui.Dialog().browse(1, 'Select File', 'files')
+            value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.defaultDir(attr, kodiutil.getSetting('content.path')))
             if not value:
                 return
             value = value.decode('utf-8')
+        elif options == cinemavision.sequence.LIMIT_DB_CHOICE:
+            options = sItem.DBChoices(attr)
+            idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
+            if idx < 0:
+                return False
+            value = options[idx][0]
         elif options == cinemavision.sequence.LIMIT_DIR:
             value = xbmcgui.Dialog().browse(0, 'Select Directory', 'files')
             if not value:
                 return
             value = value.decode('utf-8')
+        elif options == cinemavision.sequence.LIMIT_BOOL_DEFAULT:
+            curr = sItem.getSetting(attr)
+            if curr is None:
+                value = True
+            elif curr is True:
+                value = False
+            else:
+                value = None
         elif options == cinemavision.sequence.LIMIT_BOOL:
             value = not sItem.getSetting(attr)
         elif isinstance(options, list):
@@ -200,7 +217,6 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.main.updateItemSettings(sItem, self.item)
 
         if sItem._type == 'command' and attr == 'command':
-            self.fillSettingsList()
             self.main.updateSpecials()
 
 
@@ -529,13 +545,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         item.setProperty('setting{0}'.format(ct), sItem.enabled and 'Yes' or 'No')
         item.setProperty('setting{0}_name'.format(ct), 'Enabled')
         ct += 1
-        for i, e in enumerate(sItem._elements):
+        for e in sItem._elements:
             if not sItem.elementVisible(e):
                 continue
             disp = sItem.getSettingDisplay(e['attr'])
             item.setProperty('setting{0}'.format(ct), disp)
             item.setProperty('setting{0}_name'.format(ct), e['name'])
             ct += 1
+        for i in range(ct, 7):
+            item.setProperty('setting{0}'.format(i), '')
+            item.setProperty('setting{0}_name'.format(i), '')
 
     def renameItem(self):
         item = self.sequenceControl.getSelectedItem()

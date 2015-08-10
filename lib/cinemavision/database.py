@@ -122,11 +122,11 @@ util.callback(' - Trailers (watched status)')
 
 class WatchedTrailers(WatchedBase):
     source = peewee.CharField()
-    rating = peewee.CharField()
-    genres = peewee.CharField()
+    rating = peewee.CharField(null=True)
+    genres = peewee.CharField(null=True)
     title = peewee.CharField()
     url = peewee.CharField()
-    userAgent = peewee.CharField()
+    userAgent = peewee.CharField(null=True)
 
 
 WatchedTrailers.create_table(fail_silently=True)

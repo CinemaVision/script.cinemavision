@@ -6,6 +6,17 @@ STORAGE_PATH = None
 
 CALLBACK = None
 
+
+def getSep(path):
+    if '\\' not in path:
+        return '/'
+    if '/' not in path:
+        return '\\'
+    if path.rindex('\\') > path.rindex('/'):
+        return '\\'
+    return '/'
+
+
 try:
     import xbmcvfs as vfs
     import xbmc
@@ -14,15 +25,6 @@ try:
     import time
 
     STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
-
-    def getSep(path):
-        if '\\' not in path:
-            return '/'
-        if '/' not in path:
-            return '\\'
-        if path.rindex('\\') > path.rindex('/'):
-            return '\\'
-        return '/'
 
     def pathJoin(*args):
         args = list(args)
@@ -152,3 +154,26 @@ def callback(msg=None, heading=None):
 
     if CALLBACK:
         CALLBACK(msg, heading)
+
+
+def getSettingDefault(key):
+    defaults = {
+        'feature.count': 1,
+        'feature.showRatingBumper': True,
+        'trivia.duration': 1,
+        'trivia.qDuration': 8,
+        'trivia.cDuration': 6,
+        'trivia.aDuration': 6,
+        'trivia.sDuration': 10,
+        'trailer.source': 'itunes',
+        'trailer.count': 1,
+        'trailer.limitRating': True,
+        'trailer.LimitGenre': True,
+        'trailer.quality': '720p',
+        'audioformat.method': 'af.detect',
+        'audioformat.fallback': 'af.format',
+        'audioformat.file': '',
+        'audioformat.format': 'Other'
+    }
+
+    return defaults.get(key)

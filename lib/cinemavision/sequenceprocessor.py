@@ -56,6 +56,7 @@ class ImageQueue(dict):
         dict.__init__(self, *args, **kwargs)
         self._handler = handler
         self.sItem = s_item
+        self.maxDuration = s_item.getLive('duration') * 60
         self.pos = -1
 
     def __iadd__(self, other):
@@ -108,7 +109,7 @@ class ImageQueue(dict):
         self.queue.append(image)
 
     def next(self, start=0, extend=False):
-        overtime = start and time.time() - start >= self.duration
+        overtime = start and time.time() - start >= self.maxDuration
         if overtime and not self.current().setNumber:
             return None
 
@@ -239,13 +240,16 @@ class FeatureHandler:
             return None
 
     def __call__(self, caller, sItem):
-        features = caller.featureQueue[:sItem.count]
-        caller.featureQueue = caller.featureQueue[sItem.count:]
+        count = sItem.getLive('count')
+        features = caller.featureQueue[:count]
+        caller.featureQueue = caller.featureQueue[count:]
         playables = []
+        showRatingBumper = sItem.getLive('showRatingBumper')
         for f in features:
-            bumper = self.getRatingBumper(f)
-            if bumper:
-                playables.append(Video(bumper.path))
+            if showRatingBumper:
+                bumper = self.getRatingBumper(f)
+                if bumper:
+                    playables.append(Video(bumper.path))
             playables.append(f)
 
         return playables
@@ -256,7 +260,7 @@ class TriviaHandler:
         pass
 
     def __call__(self, caller, sItem):
-        durationLimit = sItem.duration * 60
+        durationLimit = sItem.getLive('duration') * 60
         queue = ImageQueue(self, sItem)
         for slides in self.getTriviaImages(sItem):
             queue += slides
@@ -268,7 +272,13 @@ class TriviaHandler:
 
     def getTriviaImages(self, sItem):
         # Do this each set in reverse so the setNumber counts down
-        durations = (sItem.aDuration, sItem.cDuration, sItem.cDuration, sItem.cDuration, sItem.qDuration)
+        durations = (
+            sItem.getLive('aDuration'),
+            sItem.getLive('cDuration'),
+            sItem.getLive('cDuration'),
+            sItem.getLive('cDuration'),
+            sItem.getLive('qDuration')
+        )
         for trivia in DB.Trivia.select().order_by(DB.fn.Random()):
             try:
                 DB.WatchedTrivia.get((DB.WatchedTrivia.WID == trivia.TID) & DB.WatchedTrivia.watched)
@@ -306,7 +316,7 @@ class TriviaHandler:
         slides.reverse()  # Slides are backwards
 
         if len(slides) == 1:  # This is a still - set duration accordingly
-            slides[0].duration = sItem.sDuration
+            slides[0].duration = sItem.getLive('sDuration')
 
         return slides
 
@@ -331,11 +341,13 @@ class TrailerHandler:
     def __call__(self, caller, sItem):
         self.caller = caller
 
-        if sItem.source == 'itunes':
+        source = sItem.getLive('source')
+
+        if source == 'itunes':
             return self.iTunesHandler(sItem)
-        elif sItem.source == 'dir':
+        elif source == 'dir':
             return self.dirHandler(sItem)
-        elif sItem.source == 'file':
+        elif source == 'file':
             return self.fileHandler(sItem)
 
         return []
@@ -343,11 +355,11 @@ class TrailerHandler:
     def filter(self, sItem, trailers):
         filtered = trailers
 
-        if sItem.limitRating:
+        if sItem.getLive('limitRating'):
             if self.caller.ratings:
                 filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
 
-        if sItem.limitGenre:
+        if sItem.getLive('limitGenre'):
             if self.caller.genres:
                 filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
 
@@ -363,10 +375,21 @@ class TrailerHandler:
 
         return ret
 
-    def oldest(self, sItem):
-        util.DEBUG_LOG('All itunes trailers watched - using oldest trailers')
+    def convertItunesURL(self, url, res):
+        repl = None
+        for r in ('h480p', 'h720p', 'h1080p'):
+            if r in url:
+                repl = r
+                break
+        if not repl:
+            return url
 
-        if sItem.limitRating and self.caller.ratings:
+        return url.replace(repl, 'h{0}'.format(res))
+
+    def oldest(self, sItem):
+        util.DEBUG_LOG('All iTunes trailers watched - using oldest trailers')
+
+        if sItem.getLive('limitRating') and self.caller.ratings:
             trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings).order_by(DB.WatchedTrailers.date)]
         else:
             trailers = [t for t in DB.WatchedTrailers.select().order_by(DB.WatchedTrailers.date)]
@@ -374,27 +397,22 @@ class TrailerHandler:
         if not trailers:
             return []
         # Take the oldest for count + a few to make the random more random
-        if sItem.limitGenre:
+        if sItem.getLive('limitGenre'):
             if self.caller.genres:
                 trailers = [t for t in trailers if any(x in self.caller.genres for x in (t.genres or '').split(','))]
-        if len(trailers) > sItem.count:
-            trailers = random.sample(trailers[:sItem.count + 5], sItem.count)
+        count = sItem.getLive('count')
+        if len(trailers) > count:
+            trailers = random.sample(trailers[:count + 5], count)
 
         now = datetime.datetime.now()
 
         for t in trailers:
             DB.WatchedTrailers.update(
-                source='itunes',
                 watched=True,
-                date=now,
-                title=t.title,
-                url=t.url,
-                userAgent=t.userAgent,
-                rating=t.rating,
-                genres=t.genres
+                date=now
             ).where(DB.WatchedTrailers.WID == t.WID).execute()
 
-        return [Video(t.url, t.userAgent) for t in trailers]
+        return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
 
     def iTunesHandler(self, sItem):
         trailers = scrapers.getTrailers()
@@ -404,10 +422,12 @@ class TrailerHandler:
         if not trailers:
             return self.oldest(sItem)
 
-        if len(trailers) > sItem.count:
-            trailers = random.sample(trailers, sItem.count)
+        count = sItem.getLive('count')
+        if len(trailers) > count:
+            trailers = random.sample(trailers, count)
 
         now = datetime.datetime.now()
+        quality = sItem.getLive('quality')
 
         for t in trailers:
             DB.WatchedTrailers.get_or_create(
@@ -416,13 +436,13 @@ class TrailerHandler:
                 watched=True,
                 date=now,
                 title=t.title,
-                url=t.getPlayableURL(),
+                url=t.getPlayableURL(quality),
                 userAgent=t.userAgent,
                 rating=t.fullRating,
                 genres=','.join(t.genres)
             )
 
-        return [Video(t.getPlayableURL(), t.userAgent) for t in trailers]
+        return [Video(t.getPlayableURL(quality), t.userAgent) for t in trailers]
 
     def dirHandler(self, sItem):
         if not sItem.dir:
@@ -430,7 +450,7 @@ class TrailerHandler:
 
         try:
             files = util.vfs.listdir(sItem.dir)
-            files = random.sample(files, sItem.count)
+            files = random.sample(files, sItem.getLive('count'))
             return [Video(util.pathJoin(sItem.dir, p)) for p in files]
         except:
             util.ERROR()
@@ -469,17 +489,26 @@ class VideoBumperHandler:
     def defaultHandler(self, sItem):
         is3D = self.caller.currentFeature.is3D
 
-        try:
-            bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
-            return [Video(bumper.path)]
-        except IndexError:
-            pass
+        if sItem.random:
+            try:
+                bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
+                return [Video(bumper.path)]
+            except IndexError:
+                pass
+        else:
+            if sItem.source:
+                return [Video(sItem.source)]
+
         return []
 
     def _3DIntro(self, sItem):
+        if not self.caller.currentFeature.is3D:
+            return []
         return self.defaultHandler(sItem)
 
     def _3DOutro(self, sItem):
+        if not self.caller.currentFeature.is3D:
+            return []
         return self.defaultHandler(sItem)
 
     def countdown(self, sItem):
@@ -519,6 +548,45 @@ class VideoBumperHandler:
         return self.defaultHandler(sItem)
 
 
+class AudioFormatHandler:
+    def __call__(self, caller, sItem):
+        bumper = None
+        if sItem.getLive('method') == 'af.detect':
+            if caller.currentFeature.audioFormat:
+                try:
+                    bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat)])
+                    util.DEBUG_LOG('Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
+                except IndexError:
+                    pass
+
+        if (
+            sItem.format and not bumper and (
+                sItem.getLive('method') == 'af.format' or (
+                    sItem.getLive('method') == 'af.detect' and sItem.getLive('fallback') == 'af.format'
+                )
+            )
+        ):
+            try:
+                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == sItem.format)])
+                util.DEBUG_LOG('Using bumper based on setting ({0})'.format(caller.currentFeature.title))
+            except IndexError:
+                pass
+
+        if (
+            sItem.file and not bumper and (
+                sItem.getLive('method') == 'af.file' or (
+                    sItem.getLive('method') == 'af.detect' and sItem.getLive('fallback') == 'af.file'
+                )
+            )
+        ):
+            return [Video(sItem.file)]
+
+        if bumper:
+            return [Video(bumper.path)]
+
+        return []
+
+
 class SequenceProcessor:
     def __init__(self, sequence_path):
         self.pos = -1
@@ -543,7 +611,7 @@ class SequenceProcessor:
         self.defaultFeature.title = 'Default Feature'
         self.defaultFeature.rating = 'NR'
         self.defaultFeature.ratingSystem = 'MPAA'
-        self.defaultFeature.audioFormat = 'THX'
+        self.defaultFeature.audioFormat = 'Other'
 
     def addFeature(self, feature):
         if feature.rating:
@@ -555,30 +623,6 @@ class SequenceProcessor:
             self.genres += feature.genres
 
         self.featureQueue.append(feature)
-
-    def audioformatHandler(self, sItem):
-        if sItem.source:
-            return [Video(sItem.source)]
-        bumper = None
-
-        if self.currentFeature.audioFormat:
-            try:
-                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == self.currentFeature.audioFormat)])
-                util.DEBUG_LOG('Using bumper based on feature codec info ({0})'.format(self.currentFeature.title))
-            except IndexError:
-                pass
-
-        if sItem.format:
-            try:
-                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == sItem.format)])
-                util.DEBUG_LOG('Using bumper based on setting ({0})'.format(self.currentFeature.title))
-            except IndexError:
-                pass
-
-        if bumper:
-            return [Video(bumper.path)]
-
-        return []
 
     def actionHandler(self, sItem):
         return []
@@ -599,7 +643,7 @@ class SequenceProcessor:
         'trivia': TriviaHandler(),
         'trailer': TrailerHandler(),
         'video': VideoBumperHandler(),
-        'audioformat': audioformatHandler,
+        'audioformat': AudioFormatHandler(),
         'action': actionHandler,
         'command': commandHandler
     }

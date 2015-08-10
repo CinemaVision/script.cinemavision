@@ -83,6 +83,10 @@ class ExperienceWindow(kodigui.BaseWindow):
 
 
 class ExperiencePlayer(xbmc.Player):
+    NOT_PLAYING = 0
+    PLAYING_DUMMY = -1
+    SKIPPING_BACK = -2
+
     def create(self, sequence_path):
         # xbmc.Player.__init__(self)
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -93,14 +97,14 @@ class ExperiencePlayer(xbmc.Player):
         return self
 
     def doPlay(self, item, listitem=None, windowed=None, startpos=None):
-        self.playStatus = 0
+        self.playStatus = self.NOT_PLAYING
         self.play(item)
 
     # PLAYER EVENTS
     def onPlayBackEnded(self):
-        if self.playStatus == 0:
+        if self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
-        self.playStatus = 0
+        self.playStatus = self.NOT_PLAYING
         if self.playlist.getposition() != -1:
             self.log('PLAYBACK ENDED')
             if self.playlist.size():
@@ -116,7 +120,7 @@ class ExperiencePlayer(xbmc.Player):
 
     def onPlayBackStarted(self):
         if self.playlist.getposition() > 0:
-            self.playStatus = -1
+            self.playStatus = self.PLAYING_DUMMY
             self.stop()
             return
         else:
@@ -125,28 +129,28 @@ class ExperiencePlayer(xbmc.Player):
         self.playStatus = time.time()
 
     def onPlayBackStopped(self):
-        if self.playStatus == 0:
+        if self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
-        elif self.playStatus == -1:
+        elif self.playStatus == self.PLAYING_DUMMY:
             self.log('PLAYBACK INTERRUPTED')
             self.next()
             return
-        elif self.playStatus == -2:
+        elif self.playStatus == self.SKIPPING_BACK:
             self.log('SKIP BACK')
             self.next(prev=True)
             return
-        self.playStatus = 0
+        self.playStatus = self.NOT_PLAYING
         self.log('PLAYBACK STOPPED')
         self.abort()
 
     def onPlayBackFailed(self):
-        self.playStatus = 0
+        self.playStatus = self.NOT_PLAYING
         self.log('PLAYBACK FAILED')
         self.next()
 
     def onPlayBackSeek(self, seek_time, offset):
         if seek_time == 0:
-            self.playStatus = -2
+            self.playStatus = self.SKIPPING_BACK
             self.stop()
 
     def init(self):
@@ -182,12 +186,15 @@ class ExperiencePlayer(xbmc.Player):
             self.processor.addFeature(feature)
 
     def isPlayingMinimized(self):
-        if not self.isPlayingVideo():
+        # print '{0} {1}'.format(self.isPlayingVideo(), xbmc.getCondVisibility('Player.Playing'))
+        if not xbmc.getCondVisibility('Player.Playing'):  # isPlayingVideo() returns True before video actually plays (ie. is fullscreen)
             return False
 
         if self.playStatus > 0 and time.time() - self.playStatus < 1:  # Give it a second to make sure fullscreen has happened
             return False
 
+        if not xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
+            xbmc.sleep(500)
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
     def start(self):

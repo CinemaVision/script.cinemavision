@@ -297,16 +297,25 @@ class ManagedControlList(object):
 
         self.items = managed_items
         size = self.size()
-        if size > oldSize:
-            for i in range(0, size - oldSize):
-                self.control.addItem(xbmcgui.ListItem())
-        elif size < oldSize:
-            removeIDX = size - 1
-            lowest = removeIDX - (oldSize - size)
+        if size != oldSize:
+            pos = self.getSelectedPosition()
 
-            while removeIDX >= lowest:
-                self.control.removeItem(removeIDX)
-                removeIDX -= 1
+            if size > oldSize:
+                for i in range(0, size - oldSize):
+                    self.control.addItem(xbmcgui.ListItem())
+            elif size < oldSize:
+                pos = self.getSelectedPosition()
+                diff = oldSize - size
+                idx = oldSize - 1
+                while diff:
+                    self.control.removeItem(idx)
+                    idx -= 1
+                    diff -= 1
+
+            if self.positionIsValid(pos):
+                self.selectItem(pos)
+            elif pos >= size:
+                self.selectItem(size - 1)
 
         self._updateItems(0, self.size())
 
