@@ -432,6 +432,11 @@ class TrailerHandler:
                 date=now
             ).where(DB.WatchedTrailers.WID == t.WID).execute()
 
+        globalRatingLimit = util.getSettingDefault('trailer.globalRatingLimit')
+
+        if globalRatingLimit:
+            trailers = [t for t in trailers if ratings.getRating(t.rating).value <= globalRatingLimit.value]
+
         return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
 
     def iTunesHandler(self, sItem):

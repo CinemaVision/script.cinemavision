@@ -4,3 +4,6 @@ def clearDBWatchedStatus():
     DB.WatchedTrailers.update(watched=False).where(
         DB.WatchedTrailers.watched == 1
     ).execute()
+
+    import xbmcgui
+    xbmcgui.Dialog().ok('Done', 'Remove watched status from all trailers.')
