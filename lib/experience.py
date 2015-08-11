@@ -104,7 +104,9 @@ class ExperiencePlayer(xbmc.Player):
     def onPlayBackEnded(self):
         if self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
+
         self.playStatus = self.NOT_PLAYING
+
         if self.playlist.getposition() != -1:
             self.log('PLAYBACK ENDED')
             if self.playlist.size():
@@ -123,22 +125,24 @@ class ExperiencePlayer(xbmc.Player):
             self.playStatus = self.PLAYING_DUMMY
             self.stop()
             return
-        else:
-            self.log('PLAYBACK STARTED')
 
+        self.log('PLAYBACK STARTED')
         self.playStatus = time.time()
 
     def onPlayBackStopped(self):
         if self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
         elif self.playStatus == self.PLAYING_DUMMY:
+            self.playStatus = self.NOT_PLAYING
             self.log('PLAYBACK INTERRUPTED')
             self.next()
             return
         elif self.playStatus == self.SKIPPING_BACK:
+            self.playStatus = self.NOT_PLAYING
             self.log('SKIP BACK')
             self.next(prev=True)
             return
+
         self.playStatus = self.NOT_PLAYING
         self.log('PLAYBACK STOPPED')
         self.abort()
@@ -195,6 +199,7 @@ class ExperiencePlayer(xbmc.Player):
 
         if not xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
             xbmc.sleep(500)
+
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
     def start(self):

@@ -5,6 +5,7 @@ import database as DB
 import sequence
 import util
 import scrapers
+import ratings
 
 
 # Playabe is implemented as a dict to be easily serializable to JSON
@@ -241,6 +242,9 @@ class FeatureHandler:
 
     def __call__(self, caller, sItem):
         count = sItem.getLive('count')
+
+        util.DEBUG_LOG('[F] x {0}'.format(count))
+
         features = caller.featureQueue[:count]
         caller.featureQueue = caller.featureQueue[count:]
         playables = []
@@ -260,7 +264,11 @@ class TriviaHandler:
         pass
 
     def __call__(self, caller, sItem):
-        durationLimit = sItem.getLive('duration') * 60
+        duration = sItem.getLive('duration')
+
+        util.DEBUG_LOG('[Q] {0}m'.format(duration))
+
+        durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
         for slides in self.getTriviaImages(sItem):
             queue += slides
@@ -285,7 +293,7 @@ class TriviaHandler:
             except DB.peewee.DoesNotExist:
                 yield self.createTriviaImages(sItem, trivia, durations)
 
-        # Gram the oldest 4 trivias, shuffle and yield... repeat
+        # Grab the oldest 4 trivias, shuffle and yield... repeat
         pool = []
         for watched in DB.WatchedTrivia.select().where(DB.WatchedTrivia.watched).order_by(DB.WatchedTrivia.date):
             try:
@@ -301,7 +309,8 @@ class TriviaHandler:
                 pool = []
 
         if pool:
-            for t in random.shuffle(pool):
+            random.shuffle(pool)
+            for t in pool:
                 yield self.createTriviaImages(sItem, t, durations)
 
     def createTriviaImages(self, sItem, trivia, durations):
@@ -343,24 +352,35 @@ class TrailerHandler:
 
         source = sItem.getLive('source')
 
+        playables = []
         if source == 'itunes':
-            return self.iTunesHandler(sItem)
+            playables = self.iTunesHandler(sItem)
         elif source == 'dir':
-            return self.dirHandler(sItem)
+            playables = self.dirHandler(sItem)
         elif source == 'file':
-            return self.fileHandler(sItem)
+            playables = self.fileHandler(sItem)
 
-        return []
+        if not playables:
+            util.DEBUG_LOG('[T] {0}: NOT SHOWING'.format(source))
+
+        return playables
 
     def filter(self, sItem, trailers):
         filtered = trailers
+        globalRatingLimit = util.getSettingDefault('trailer.globalRatingLimit')
 
-        if sItem.getLive('limitRating'):
-            if self.caller.ratings:
-                filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
+        if globalRatingLimit:
+            util.DEBUG_LOG('    - Limited by rating: {0}'.format(globalRatingLimit.name))
+            filtered = [f for f in filtered if ratings.getRating(f.fullRating).value <= globalRatingLimit.value]
+        else:
+            if sItem.getLive('limitRating'):
+                if self.caller.ratings:
+                    util.DEBUG_LOG('    - Filtering by rating')
+                    filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
 
         if sItem.getLive('limitGenre'):
             if self.caller.genres:
+                util.DEBUG_LOG('    - Filtering by genres')
                 filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
 
         return filtered
@@ -387,7 +407,7 @@ class TrailerHandler:
         return url.replace(repl, 'h{0}'.format(res))
 
     def oldest(self, sItem):
-        util.DEBUG_LOG('All iTunes trailers watched - using oldest trailers')
+        util.DEBUG_LOG('    - All iTunes trailers watched - using oldest trailers')
 
         if sItem.getLive('limitRating') and self.caller.ratings:
             trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings).order_by(DB.WatchedTrailers.date)]
@@ -415,14 +435,19 @@ class TrailerHandler:
         return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
 
     def iTunesHandler(self, sItem):
+        count = sItem.getLive('count')
+
+        util.DEBUG_LOG('[T] iTunes x {0}'.format(count))
+
         trailers = scrapers.getTrailers()
         trailers = self.filter(sItem, trailers)
-        trailers = self.unwatched(trailers)
+        if util.getSettingDefault('trailer.playUnwatched'):
+            util.DEBUG_LOG('    - Filtering out watched')
+            trailers = self.unwatched(trailers)
 
         if not trailers:
             return self.oldest(sItem)
 
-        count = sItem.getLive('count')
         if len(trailers) > count:
             trailers = random.sample(trailers, count)
 
@@ -430,17 +455,30 @@ class TrailerHandler:
         quality = sItem.getLive('quality')
 
         for t in trailers:
-            DB.WatchedTrailers.get_or_create(
-                WID=t.ID,
-                source='itunes',
-                watched=True,
-                date=now,
-                title=t.title,
-                url=t.getPlayableURL(quality),
-                userAgent=t.userAgent,
-                rating=t.fullRating,
-                genres=','.join(t.genres)
-            )
+            try:
+                trailer = DB.WatchedTrailers.get(DB.WatchedTrailers.WID == t.ID)
+                trailer.update(
+                    source='itunes',
+                    watched=True,
+                    date=now,
+                    title=t.title,
+                    url=t.getPlayableURL(quality),
+                    userAgent=t.userAgent,
+                    rating=t.fullRating,
+                    genres=','.join(t.genres)
+                ).execute()
+            except DB.peewee.DoesNotExist:
+                DB.WatchedTrailers.create(
+                    WID=t.ID,
+                    source='itunes',
+                    watched=True,
+                    date=now,
+                    title=t.title,
+                    url=t.getPlayableURL(quality),
+                    userAgent=t.userAgent,
+                    rating=t.fullRating,
+                    genres=','.join(t.genres)
+                )
 
         return [Video(t.getPlayableURL(quality), t.userAgent) for t in trailers]
 
@@ -448,9 +486,13 @@ class TrailerHandler:
         if not sItem.dir:
             return []
 
+        count = sItem.getLive('count')
+
+        util.DEBUG_LOG('[T] Directory x {0}'.format(count))
+
         try:
             files = util.vfs.listdir(sItem.dir)
-            files = random.sample(files, sItem.getLive('count'))
+            files = random.sample(files, count)
             return [Video(util.pathJoin(sItem.dir, p)) for p in files]
         except:
             util.ERROR()
@@ -459,6 +501,9 @@ class TrailerHandler:
     def fileHandler(self, sItem):
         if not sItem.file:
             return []
+
+        util.DEBUG_LOG('[T] File: '.format(sItem.file))
+
         return [Video(sItem.file)]
 
 
@@ -484,7 +529,9 @@ class VideoBumperHandler:
 
     def __call__(self, caller, sItem):
         self.caller = caller
-        return self.handlers[sItem.vtype](sItem)
+        playables = self.handlers[sItem.vtype](sItem)
+        util.DEBUG_LOG('[V] {0}{1}'.format(sItem.vtype, not playables and ': NOT SHOWING' or ''))
+        return playables
 
     def defaultHandler(self, sItem):
         is3D = self.caller.currentFeature.is3D
@@ -551,34 +598,41 @@ class VideoBumperHandler:
 class AudioFormatHandler:
     def __call__(self, caller, sItem):
         bumper = None
-        if sItem.getLive('method') == 'af.detect':
+        method = sItem.getLive('method')
+        fallback = sItem.getLive('fallback')
+        format_ = sItem.getLive('format')
+
+        util.DEBUG_LOG('[A] Method: {0} Fallback: {1} Format: {2}'.format(method, fallback, format_))
+
+        if method == 'af.detect':
             if caller.currentFeature.audioFormat:
                 try:
                     bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat)])
-                    util.DEBUG_LOG('Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
+                    util.DEBUG_LOG('    - Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
                 except IndexError:
                     pass
 
         if (
-            sItem.format and not bumper and (
-                sItem.getLive('method') == 'af.format' or (
-                    sItem.getLive('method') == 'af.detect' and sItem.getLive('fallback') == 'af.format'
+            format_ and not bumper and (
+                method == 'af.format' or (
+                    method == 'af.detect' and fallback == 'af.format'
                 )
             )
         ):
             try:
-                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == sItem.format)])
-                util.DEBUG_LOG('Using bumper based on setting ({0})'.format(caller.currentFeature.title))
+                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == format_)])
+                util.DEBUG_LOG('    - Using bumper based on format setting ({0})'.format(caller.currentFeature.title))
             except IndexError:
                 pass
 
         if (
             sItem.file and not bumper and (
-                sItem.getLive('method') == 'af.file' or (
-                    sItem.getLive('method') == 'af.detect' and sItem.getLive('fallback') == 'af.file'
+                method == 'af.file' or (
+                    method == 'af.detect' and fallback == 'af.file'
                 )
             )
         ):
+            util.DEBUG_LOG('    - Using bumper based on file setting ({0})'.format(caller.currentFeature.title))
             return [Video(sItem.file)]
 
         if bumper:
@@ -654,7 +708,10 @@ class SequenceProcessor:
         util.DEBUG_LOG('Ratings: {0}'.format(', '.join(self.ratings)))
         util.DEBUG_LOG('Genres: {0}'.format(', '.join(self.genres)))
 
-        util.DEBUG_LOG('\n\n' + '\n\n'.join([str(f) for f in self.featureQueue]))
+        if self.featureQueue:
+            util.DEBUG_LOG('\n\n' + '\n\n'.join([str(f) for f in self.featureQueue]))
+        else:
+            util.DEBUG_LOG('NO FEATURES QUEUED')
 
         self.playables = []
         pos = 0

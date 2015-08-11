@@ -1,4 +1,5 @@
 import os
+import ratings
 
 DEBUG = True
 
@@ -16,6 +17,30 @@ def getSep(path):
         return '\\'
     return '/'
 
+
+def _getSettingDefault(key):
+    defaults = {
+        'feature.count': 1,
+        'feature.showRatingBumper': True,
+        'trivia.duration': 1,
+        'trivia.qDuration': 8,
+        'trivia.cDuration': 6,
+        'trivia.aDuration': 6,
+        'trivia.sDuration': 10,
+        'trailer.source': 'itunes',
+        'trailer.count': 1,
+        'trailer.limitRating': True,
+        'trailer.LimitGenre': True,
+        'trailer.quality': '720p',
+        'audioformat.method': 'af.detect',
+        'audioformat.fallback': 'af.format',
+        'audioformat.file': '',
+        'audioformat.format': 'Other',
+        # Non-sequence defualts
+        'trailer.trailer.playUnwatched': True
+    }
+
+    return defaults.get(key)
 
 try:
     import xbmcvfs as vfs
@@ -60,6 +85,29 @@ try:
             while not xbmc.abortRequested and time.time() - start < timeout:
                 xbmc.sleep(100)
             return xbmc.abortRequested
+
+    def getSettingDefault(key):
+        default = xbmcaddon.Addon().getSetting(key)
+
+        if default == '':
+            return _getSettingDefault(key)
+
+        if key == 'trailer.source':
+            return ['itunes', 'dir', 'file'][int(default)]
+        elif key == 'audioformat.method':
+            return ['af.detect', 'af.format', 'af.file'][int(default)]
+        elif key == 'audioformat.fallback':
+            return ['af.format', 'af.file'][int(default)]
+        elif key == 'audioformat.format':
+            return ['Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'][int(default)]
+        elif key == 'trailer.globalRatingLimit':
+            return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
+        elif default in ['true', 'false']:
+            return default == 'true'
+        elif default.isdigit():
+            return int(default)
+
+        return default
 
 except:
     raise
@@ -136,6 +184,9 @@ except:
         time.sleep(timeout)
         return False
 
+    def getSettingDefault(key):
+        return _getSettingDefault(key)
+
 
 def DEBUG_LOG(msg):
     if DEBUG:
@@ -154,26 +205,3 @@ def callback(msg=None, heading=None):
 
     if CALLBACK:
         CALLBACK(msg, heading)
-
-
-def getSettingDefault(key):
-    defaults = {
-        'feature.count': 1,
-        'feature.showRatingBumper': True,
-        'trivia.duration': 1,
-        'trivia.qDuration': 8,
-        'trivia.cDuration': 6,
-        'trivia.aDuration': 6,
-        'trivia.sDuration': 10,
-        'trailer.source': 'itunes',
-        'trailer.count': 1,
-        'trailer.limitRating': True,
-        'trailer.LimitGenre': True,
-        'trailer.quality': '720p',
-        'audioformat.method': 'af.detect',
-        'audioformat.fallback': 'af.format',
-        'audioformat.file': '',
-        'audioformat.format': 'Other'
-    }
-
-    return defaults.get(key)

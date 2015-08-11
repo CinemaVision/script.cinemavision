@@ -117,9 +117,6 @@ class WatchedBase(peewee.Model):
         database = W_DB
 
 
-util.callback(' - Trailers (watched status)')
-
-
 class WatchedTrailers(WatchedBase):
     source = peewee.CharField()
     rating = peewee.CharField(null=True)
@@ -140,5 +137,7 @@ class WatchedTrivia(WatchedBase):
 
 
 WatchedTrivia.create_table(fail_silently=True)
+
+util.callback(' - Trivia (watched status)')
 
 util.callback(None, 'Database created')

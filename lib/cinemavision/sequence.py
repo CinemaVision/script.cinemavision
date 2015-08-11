@@ -399,7 +399,6 @@ class Video(Item):
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'source':
-            print repr(self.random)
             return not self.random
 
         return True

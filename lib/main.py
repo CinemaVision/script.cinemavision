@@ -176,7 +176,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         options = sItem.getSettingOptions(attr)
 
         if options == cinemavision.sequence.LIMIT_FILE:
-            value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.defaultDir(attr, kodiutil.getSetting('content.path')))
+            value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.getSetting(attr))
             if not value:
                 return
             value = value.decode('utf-8')

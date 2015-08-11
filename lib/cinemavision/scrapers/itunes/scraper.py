@@ -151,7 +151,7 @@ class TrailerScraper(object):
     def __get_url(self, url):
         headers = {'User-Agent': USER_AGENT}
         req = urllib2.Request(url, None, headers)
-        print 'Opening URL: %s' % url
+        # print 'Opening URL: %s' % url
         try:
             return urllib2.urlopen(req).read()
         except urllib2.HTTPError, error:
@@ -175,7 +175,7 @@ class MoviePlotScraper(object):
     def __get_tree(self, url):
         headers = {'User-Agent': USER_AGENT}
         req = urllib2.Request(url, None, headers)
-        print 'Opening URL: %s' % url
+        # print 'Opening URL: %s' % url
         try:
             return BeautifulStoneSoup(urllib2.urlopen(req).read())
         except urllib2.HTTPError, error:

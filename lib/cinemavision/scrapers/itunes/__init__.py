@@ -5,6 +5,8 @@ import re
 class Trailer:
     def __init__(self, data):
         self.data = data
+        if self.data.get('rating', '').lower().startswith('not'):
+            self.data['rating'] = 'NR'
 
     @property
     def ID(self):
