@@ -3,4 +3,4 @@ import itunes
 
 def getTrailers():
     itunesRetriever = itunes.ItunesTrailerRetriever()
-    return itunesRetriever.getMovies()
+    return itunesRetriever.getTrailers()

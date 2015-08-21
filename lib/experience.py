@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import threading
 
 import xbmc
 import xbmcgui
@@ -26,6 +27,82 @@ AUDIO_FORMATS = {
 TAGS_3D = '3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU| HOU | OU |HALF-TAB'
 
 
+class KodiVolumeControl:
+    def __init__(self, abort_flag):
+        self.saved = None
+        self.abortFlag = abort_flag
+        self._stopFlag = False
+        self.rpc = kodijsonrpc.KodiJSONRPC()
+
+    def current(self):
+        return self.rpc.Application.GetProperties(properties=['volume'])['volume']
+
+    def _set(self, volume):
+        xbmc.executebuiltin("XBMC.SetVolume({0})".format(volume))
+        # self.rpc.Application.SetVolume(volume=volume)  # This works but displays the volume indicator :(
+
+    def store(self):
+        if self.saved:
+            return
+
+        self.saved = self.current()
+
+    def restore(self, delay=0):
+        if self.saved is None:
+            return
+
+        if delay:
+            xbmc.sleep(delay)
+
+        kodiutil.DEBUG_LOG('Restoring volume to: {0}'.format(self.saved))
+
+        self._set(self.saved)
+        self.saved = None
+
+    def set(self, volume_or_pct, fade_time=0, relative=False):
+        if relative and self.saved:
+            volume = int(self.saved * (volume_or_pct / 100.0))
+            kodiutil.DEBUG_LOG('Setting volume to: {0} ({1}%)'.format(volume, volume_or_pct))
+        else:
+            volume = volume_or_pct
+            kodiutil.DEBUG_LOG('Setting volume to: {0}'.format(volume))
+
+        if fade_time:
+            current = self.current()
+            self._fade(current, volume, fade_time)
+        else:
+            self._set(volume)
+
+    def stop(self):
+        self._stopFlag = True
+
+    def _stop(self):
+        if self._stopFlag:
+            self._stopFlag = False
+            return True
+        return False
+
+    def _fade(self, start, end, fade_time_millis):
+        mod = end > start and 1 or -1
+        steps = range(start, end + mod, mod)
+        count = len(steps)
+        if not count:
+            return
+
+        interval = fade_time_millis / count
+
+        kodiutil.DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
+        for step in steps:
+            if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
+                kodiutil.DEBUG_LOG('Fade ended early: {0}'.format((xbmc.abortRequested or self.abortFlag.isSet()) and 'ABORT' or 'NOT_PLAYING'))
+                self._set(end)
+                return
+            xbmc.sleep(interval)
+            self._set(step)
+
+        kodiutil.DEBUG_LOG('Fade: END ({0})'.format(end))
+
+
 class ExperienceWindow(kodigui.BaseWindow):
     xmlFile = 'script.cinemavision-experience.xml'
     path = kodiutil.ADDON_PATH
@@ -35,11 +112,15 @@ class ExperienceWindow(kodigui.BaseWindow):
     def __init__(self, *args, **kwargs):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
         self.action = None
+        self.volume = None
+        self.abortFlag = None
 
     def onAction(self, action):
         # print action.getId()
         try:
             if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK or action == xbmcgui.ACTION_STOP:
+                self.volume.stop()
+                self.abortFlag.set()
                 self.doClose()
             elif action == xbmcgui.ACTION_MOVE_RIGHT:
                 if self.action != 'SKIP':
@@ -48,8 +129,10 @@ class ExperienceWindow(kodigui.BaseWindow):
                 if self.action != 'BACK':
                     self.action = 'PREV'
             elif action == xbmcgui.ACTION_PAGE_UP or action == xbmcgui.ACTION_NEXT_ITEM:
+                self.volume.stop()
                 self.action = 'SKIP'
             elif action == xbmcgui.ACTION_PAGE_DOWN or action == xbmcgui.ACTION_PREV_ITEM:
+                self.volume.stop()
                 self.action = 'BACK'
         except:
             kodiutil.ERROR()
@@ -86,11 +169,14 @@ class ExperiencePlayer(xbmc.Player):
     NOT_PLAYING = 0
     PLAYING_DUMMY = -1
     SKIPPING_BACK = -2
+    PLAYING_MUSIC = -10
+
+    DUMMY_FILE = 'script.cinemavision.dummy.mp4'
 
     def create(self, sequence_path):
         # xbmc.Player.__init__(self)
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-        self.fakeFile = os.path.join(kodiutil.ADDON_PATH, 'resources', 'dummy.mp4')
+        self.fakeFile = os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.dummy.mp4')
         self.playStatus = 0
         self.processor = sequenceprocessor.SequenceProcessor(sequence_path)
         self.init()
@@ -102,7 +188,10 @@ class ExperiencePlayer(xbmc.Player):
 
     # PLAYER EVENTS
     def onPlayBackEnded(self):
-        if self.playStatus == self.NOT_PLAYING:
+        if self.playStatus == self.PLAYING_MUSIC:
+            self.log('MUSIC ENDED')
+            return
+        elif self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
 
         self.playStatus = self.NOT_PLAYING
@@ -121,16 +210,23 @@ class ExperiencePlayer(xbmc.Player):
         self.log('PLAYBACK RESUMED')
 
     def onPlayBackStarted(self):
-        if self.playlist.getposition() > 0:
+        if self.playStatus == self.PLAYING_MUSIC:
+            kodiutil.DEBUG_LOG('MUSIC STARTED')
+            return
+
+        self.playStatus = time.time()
+        if self.DUMMY_FILE in self.getPlayingFile():
             self.playStatus = self.PLAYING_DUMMY
             self.stop()
             return
 
         self.log('PLAYBACK STARTED')
-        self.playStatus = time.time()
 
     def onPlayBackStopped(self):
-        if self.playStatus == self.NOT_PLAYING:
+        if self.playStatus == self.PLAYING_MUSIC:
+            self.log('MUSIC STOPPED')
+            return
+        elif self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
         elif self.playStatus == self.PLAYING_DUMMY:
             self.playStatus = self.NOT_PLAYING
@@ -158,11 +254,14 @@ class ExperiencePlayer(xbmc.Player):
             self.stop()
 
     def init(self):
+        self.abortFlag = threading.Event()
         self.window = None
         self.rpc = kodijsonrpc.KodiJSONRPC()
+        self.volume = KodiVolumeControl(self.abortFlag)
 
         result = self.rpc.Playlist.GetItems(playlistid=1, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
-        for r in result['result'].get('items', []):
+        for r in result.get('items', []):
+            print r
             feature = sequenceprocessor.Feature(r['file'])
             feature.title = r.get('title') or r.get('label', '')
             ratingSplit = r.get('mpaa', ' ').split()
@@ -183,9 +282,9 @@ class ExperiencePlayer(xbmc.Player):
             try:
                 codec = r['streamdetails']['audio'][0]['codec']
                 feature.audioFormat = AUDIO_FORMATS.get(codec)
-                self.log('CODEC ({0}): {1}'.format(feature.title, codec))
+                self.log('CODEC ({0}): {1}'.format(repr(feature.title), codec))
             except:
-                self.log('CODEC ({0}): NOT DETECTED'.format(feature.title))
+                self.log('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
 
             self.processor.addFeature(feature)
 
@@ -194,11 +293,25 @@ class ExperiencePlayer(xbmc.Player):
         if not xbmc.getCondVisibility('Player.Playing'):  # isPlayingVideo() returns True before video actually plays (ie. is fullscreen)
             return False
 
-        if self.playStatus > 0 and time.time() - self.playStatus < 1:  # Give it a second to make sure fullscreen has happened
+        if self.playStatus <= 0:
+            return False
+
+        if xbmc.getCondVisibility('Window.IsVisible(busydialog)'):
+            return False
+
+        if time.time() - self.playStatus < 1:  # Give it a second to make sure fullscreen has happened
             return False
 
         if not xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
             xbmc.sleep(500)
+
+        print '{0} {1} {2} {3} {4}'.format(
+            self.isPlayingVideo(),
+            xbmc.getCondVisibility('Player.Playing'),
+            self.playStatus,
+            xbmc.getCondVisibility('VideoPlayer.IsFullscreen'),
+            xbmcgui.getCurrentWindowId()
+        )
 
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
@@ -215,6 +328,8 @@ class ExperiencePlayer(xbmc.Player):
     def openWindow(self):
         kodiutil.setGlobalProperty('slide', '')
         self.window = ExperienceWindow.create()
+        self.window.volume = self.volume
+        self.window.abortFlag = self.abortFlag
 
     def waitLoop(self):
         while not kodiutil.wait(0.1):
@@ -229,12 +344,61 @@ class ExperiencePlayer(xbmc.Player):
         self.window.doClose()
         self.rpc.Playlist.Clear(playlistid=1)
 
-    def showImage(self, image):
-        kodiutil.setGlobalProperty('slide', image.path)
+    def playMusic(self, image_queue):
+        if not image_queue.music:
+            return
 
+        pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+        pl.clear()
+        for p in image_queue.music:
+            pl.add(p)
+
+        xbmc.sleep(100)  # Without this, it will sometimes not play anything
+
+        kodiutil.DEBUG_LOG('Playing music playlist: {0} song(s)'.format(len(pl)))
+
+        self.volume.store()
+        self.volume.set(0)
+
+        self.playStatus = self.PLAYING_MUSIC
+        self.play(pl, windowed=True)
+
+        self.waitForPlayStart()  # Wait playback so fade will work
+        self.volume.set(image_queue.musicVolume, fade_time=int(image_queue.musicFadeIn*1000), relative=True)
+
+    def stopMusic(self, image_queue=None):
+        self.rpc.Playlist.Clear(playlistid=0)
+
+        if image_queue:
+            self.volume.set(0, fade_time=int(image_queue.musicFadeOut*1000))
+
+        self.stop()
+        self.waitForPlayStop()
+        self.playStatus = self.NOT_PLAYING
+        self.volume.restore(delay=500)
+
+    def waitForPlayStart(self, timeout=10000):
+        giveUpTime = time.time() + timeout/1000.0
+        while not xbmc.getCondVisibility('Player.Playing') and time.time() < giveUpTime and not self.abortFlag.isSet():
+            xbmc.sleep(100)
+
+    def waitForPlayStop(self):
+        while self.isPlaying() and not self.abortFlag.isSet():
+            xbmc.sleep(100)
+
+    def showImage(self, image, music=None, image_queue=None):
+        kodiutil.setGlobalProperty('slide', image.path)
         try:
             start = time.time()
-            while not kodiutil.wait(0.1) and time.time() - start < image.duration:
+            stop = time.time() + image.duration
+            if music is True:
+                self.playMusic(image_queue)
+            elif music is False:
+                stop -= 4
+                if stop < start:
+                    stop = start
+
+            while not kodiutil.wait(0.1) and time.time() < stop:
                 if not self.window.isOpen:
                     return False
                 elif self.window.action:
@@ -246,6 +410,9 @@ class ExperiencePlayer(xbmc.Player):
                         return 'SKIP'
                     elif self.window.back():
                         return 'BACK'
+            else:
+                if music is False:
+                    self.stopMusic(image_queue)
         finally:
             kodiutil.setGlobalProperty('slide', '')
 
@@ -255,29 +422,46 @@ class ExperiencePlayer(xbmc.Player):
         image_queue.reset()
         image = image_queue.next()
         start = time.time()
-        while image:
-            self.log(' -IMAGE.QUEUE: {0}'.format(image))
-            action = self.showImage(image)
-            if action:
-                if action == 'NEXT':
-                    image = image_queue.next(extend=True) or image
-                    continue
-                elif action == 'PREV':
-                    image = image_queue.prev() or image
-                    continue
-                elif action == 'BACK':
-                    self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
-                    return False
-                elif action == 'SKIP':
-                    self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
-                    return True
-                else:
-                    if action is True:
-                        image_queue.mark(image)
+        end = time.time() + image_queue.duration
+        first = True
 
-                    image = image_queue.next(start)
-            else:
-                return
+        xbmc.enableNavSounds(False)
+
+        try:
+            while image:
+                self.log(' -IMAGE.QUEUE: {0}'.format(image))
+
+                if first:
+                    first = False
+                    action = self.showImage(image, music=True, image_queue=image_queue)
+                elif time.time() + image.duration >= end and not image.setNumber:
+                    action = self.showImage(image, music=False, image_queue=image_queue)
+                else:
+                    action = self.showImage(image)
+
+                if action:
+                    if action == 'NEXT':
+                        image = image_queue.next(extend=True) or image
+                        continue
+                    elif action == 'PREV':
+                        image = image_queue.prev() or image
+                        continue
+                    elif action == 'BACK':
+                        self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                        return False
+                    elif action == 'SKIP':
+                        self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                        return True
+                    else:
+                        if action is True:
+                            image_queue.mark(image)
+
+                        image = image_queue.next(start)
+                else:
+                    return
+        finally:
+            xbmc.enableNavSounds(True)
+            self.stopMusic()
 
         self.log(' -IMAGE.QUEUE: Finished after {0}secs'.format(int(time.time() - start)))
         return True
@@ -336,5 +520,6 @@ class ExperiencePlayer(xbmc.Player):
             self.next()
 
     def abort(self):
+        self.abortFlag.set()
         self.log('ABORT')
         self.window.doClose()

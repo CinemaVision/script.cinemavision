@@ -355,7 +355,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         mli = kodigui.ManagedListItem()
 
         self.sequenceControl.addItem(mli)
-        self.setFocusId(self.SEQUENCE_LIST_ID)
+        # self.setFocusId(self.SEQUENCE_LIST_ID)
 
     def addItem(self):
         item = self.addItemControl.getSelectedItem()
@@ -687,7 +687,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if self.sequenceControl.positionIsValid(1):
             self.sequenceControl.selectItem(1)
-        self.updateFocus(pre=True)
+            self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
+        else:
+            self.setFocusId(self.ADD_ITEM_LIST_ID)
 
         self.modified = False
 

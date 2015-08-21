@@ -59,6 +59,10 @@ class ImageQueue(dict):
         self.sItem = s_item
         self.maxDuration = s_item.getLive('duration') * 60
         self.pos = -1
+        self.music = None
+        self.musicVolume = 50
+        self.musicFadeIn = 3.0
+        self.musicFadeOut = 3.0
 
     def __iadd__(self, other):
         for o in other:
@@ -149,6 +153,12 @@ class ImageQueue(dict):
             util.DEBUG_LOG('ImageQueue: Marking image as watched')
             self._handler.mark(image)
 
+    def onFirst(self):
+        return self.pos == 0
+
+    def onLast(self):
+        return self.pos == self.size() - 1
+
 
 class Video(Playable):
     type = 'VIDEO'
@@ -167,8 +177,8 @@ class Feature(Video):
 
     def __repr__(self):
         return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating ({2}): {3}\n    Genres: {4}\n    3D: {5}\n    Audio: {6}'.format(
-            self.title,
-            self.path,
+            repr(self.title),
+            repr(self.path),
             self.ratingSystem,
             self.rating,
             ', '.join(self.genres),
@@ -270,6 +280,13 @@ class TriviaHandler:
 
         durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
+
+        if util.getSettingDefault('trivia.playMusic'):
+            queue.music = [s.path for s in DB.Song.select().order_by(DB.fn.Random())]
+            queue.musicVolume = util.getSettingDefault('trivia.musicVolume')
+            queue.musicFadeIn = util.getSettingDefault('trivia.musicFadeIn')
+            queue.musicFadeOut = util.getSettingDefault('trivia.musicFadeOut')
+
         for slides in self.getTriviaImages(sItem):
             queue += slides
 
@@ -529,7 +546,8 @@ class VideoBumperHandler:
             'trailers.intro': self.trailersIntro,
             'trailers.outro': self.trailersOutro,
             'trivia.intro': self.triviaIntro,
-            'trivia.outro': self.triviaOutro
+            'trivia.outro': self.triviaOutro,
+            'file': self.file
         }
 
     def __call__(self, caller, sItem):
@@ -539,7 +557,7 @@ class VideoBumperHandler:
         return playables
 
     def defaultHandler(self, sItem):
-        is3D = self.caller.currentFeature.is3D
+        is3D = self.caller.currentFeature.is3D and sItem.play3D
 
         if sItem.random:
             try:
@@ -547,6 +565,13 @@ class VideoBumperHandler:
                 return [Video(bumper.path)]
             except IndexError:
                 pass
+
+            if is3D and util.getSettingDefault('bumper.fallback2D'):
+                try:
+                    bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))])
+                    return [Video(bumper.path)]
+                except IndexError:
+                    pass
         else:
             if sItem.source:
                 return [Video(sItem.source)]
@@ -599,6 +624,12 @@ class VideoBumperHandler:
     def triviaOutro(self, sItem):
         return self.defaultHandler(sItem)
 
+    def file(self, sItem):
+        if sItem.file:
+            return [Video(sItem.file)]
+        else:
+            return []
+
 
 class AudioFormatHandler:
     def __call__(self, caller, sItem):
@@ -609,13 +640,26 @@ class AudioFormatHandler:
 
         util.DEBUG_LOG('[A] Method: {0} Fallback: {1} Format: {2}'.format(method, fallback, format_))
 
+        is3D = caller.currentFeature.is3D and sItem.play3D
+
         if method == 'af.detect':
             if caller.currentFeature.audioFormat:
                 try:
-                    bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat)])
+                    bumper = random.choice(
+                        [x for x in DB.AudioFormatBumpers.select().where(
+                            (DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat) & (DB.AudioFormatBumpers.is3D == is3D)
+                        )]
+                    )
                     util.DEBUG_LOG('    - Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
                 except IndexError:
-                    pass
+                    if is3D and util.getSettingDefault('bumper.fallback2D'):
+                        try:
+                            bumper = random.choice(
+                                [x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat)]
+                            )
+                            util.DEBUG_LOG('    - Using bumper based on feature codec info and falling back to 2D ({0})'.format(caller.currentFeature.title))
+                        except IndexError:
+                            pass
 
         if (
             format_ and not bumper and (
@@ -625,11 +669,19 @@ class AudioFormatHandler:
             )
         ):
             try:
-                bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == format_)])
-                util.DEBUG_LOG('    - Using bumper based on format setting ({0})'.format(caller.currentFeature.title))
+                bumper = random.choice(
+                    [x for x in DB.AudioFormatBumpers.select().where(
+                        (DB.AudioFormatBumpers.format == format_) & (DB.AudioFormatBumpers.is3D == is3D)
+                    )]
+                )
+                util.DEBUG_LOG('    - Using bumper based on format setting ({0})'.format(repr(caller.currentFeature.title)))
             except IndexError:
-                pass
-
+                if is3D and util.getSettingDefault('bumper.fallback2D'):
+                    try:
+                        bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == format_)])
+                        util.DEBUG_LOG('    - Using bumper based on format setting and falling back to 2D ({0})'.format(caller.currentFeature.title))
+                    except IndexError:
+                        pass
         if (
             sItem.file and not bumper and (
                 method == 'af.file' or (

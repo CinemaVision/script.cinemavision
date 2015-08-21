@@ -5,6 +5,7 @@ import re
 class Trailer:
     def __init__(self, data):
         self.data = data
+        self.is3D = False
         if self.data.get('rating', '').lower().startswith('not'):
             self.data['rating'] = 'NR'
 
@@ -60,6 +61,6 @@ class Trailer:
 
 
 class ItunesTrailerRetriever:
-    def getMovies(self):
+    def getTrailers(self):
         ms = scraper.MovieScraper()
         return [Trailer(t) for t in ms.get_most_recent_movies(None)]

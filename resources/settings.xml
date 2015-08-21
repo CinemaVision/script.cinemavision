@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
-        <setting id="content.path"     label="Content path"         type="folder" sources="files" option="writeable" value="" />
-        <setting id="allow.video.skip" label="Allow video skipping" type="bool"   default="true" />
+        <setting id="content.path"      label="Content path"          type="folder" sources="files" option="writeable" value="" />
+        <setting id="sequence.2D"       label="2D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
+        <setting id="sequence.3D"       label="3D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
+        <setting id="allow.video.skip"  label="Allow video skipping"  type="bool"   default="true" />
+        <setting id="bumper.fallback2D" label="Fallback to 2D bumper" type="bool"   default="false" />
     </category>
     <category label="Feature">
         <setting label="Defaults" type="lsep"/>
@@ -10,6 +13,10 @@
         <setting id="feature.showRatingBumper" label="Show rating bumper" type="bool"   default="true" />
     </category>
     <category label="Trivia">
+        <setting id="trivia.playMusic"    label="Play music"            type="bool"   default="false" />
+        <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="50"  range="1,100"    option="percent" />
+        <setting id="trivia.musicFadeIn"  label="Fade in (seconds)"     type="slider" default="3.0" range="0,0.2,10" option="float" />
+        <setting id="trivia.musicFadeOut" label="Fade out (seconds)"    type="slider" default="3.0" range="0,0.2,10" option="float" />
         <setting label="Defaults" type="lsep"/>
         <setting id="trivia.duration"  label="Duration (minutes)"          type="slider" default="15" range="1,60" option="int" />
         <setting id="trivia.qDuration" label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />

@@ -37,7 +37,12 @@ def _getSettingDefault(key):
         'audioformat.file': '',
         'audioformat.format': 'Other',
         # Non-sequence defualts
-        'trailer.trailer.playUnwatched': True
+        'bumper.fallback2D': False,
+        'trivia.playMusic': False,
+        'trivia.musicVolume': 50,
+        'trivia.musicFadeIn': 3.0,
+        'trivia.musicFadeOut': 3.0,
+        'trailer.playUnwatched': True
     }
 
     return defaults.get(key)
@@ -106,6 +111,11 @@ try:
             return default == 'true'
         elif default.isdigit():
             return int(default)
+
+        try:
+            return float(default)
+        except ValueError:
+            pass
 
         return default
 

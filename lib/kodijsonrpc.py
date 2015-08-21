@@ -3,6 +3,10 @@ import json
 
 
 class JSONRPCMethod:
+
+    class Exception(Exception):
+        pass
+
     def __init__(self):
         self.family = None
 
@@ -17,9 +21,14 @@ class JSONRPCMethod:
             if kwargs:
                 command['params'] = kwargs
 
-            print json.dumps(command)
+            # print json.dumps(command)
 
-            return json.loads(xbmc.executeJSONRPC(json.dumps(command)))
+            ret = json.loads(xbmc.executeJSONRPC(json.dumps(command)))
+
+            if 'error' in ret:
+                raise self.Exception(ret['error'])
+            else:
+                return ret['result']
 
         return handler
 

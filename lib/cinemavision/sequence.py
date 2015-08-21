@@ -231,11 +231,11 @@ class Feature(Item):
 class Trivia(Item):
     _type = 'trivia'
     _elements = (
-        {'attr': 'duration',    'type': int, 'limits': (0, 60), 'name': 'Duration (minutes)', 'default': 0},
+        {'attr': 'duration',    'type': int, 'limits': (0, 60), 'name': 'Duration (minutes)',          'default': 0},
         {'attr': 'qDuration',   'type': int, 'limits': (0, 60), 'name': 'Question Duration (seconds)', 'default': 0},
-        {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)', 'default': 0},
-        {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)', 'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)', 'default': 0}
+        {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)',     'default': 0},
+        {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)',   'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)',    'default': 0}
     )
     displayName = 'Trivia Slides'
     typeChar = 'Q'
@@ -370,7 +370,8 @@ class Video(Item):
                 'trailers.intro',
                 'trailers.outro',
                 'trivia.intro',
-                'trivia.outro'
+                'trivia.outro',
+                'file'
             ],
             'name': 'Type'
         },
@@ -385,6 +386,18 @@ class Video(Item):
             'type': None,
             'limits': LIMIT_DB_CHOICE,
             'name': 'Source'
+        },
+        {
+            'attr': 'file',
+            'type': None,
+            'limits': LIMIT_FILE,
+            'name': 'File'
+        },
+        {
+            'attr': 'play3D',
+            'type': strToBool,
+            'limits': LIMIT_BOOL,
+            'name': 'Play 3D If 3D Feature'
         }
     )
     displayName = 'Video Bumper'
@@ -395,11 +408,19 @@ class Video(Item):
         self.vtype = ''
         self.random = True
         self.source = ''
+        self.file = ''
+        self.play3D = True
 
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'source':
             return not self.random
+        elif attr == 'file':
+            return self.vtype == 'file'
+        elif attr == 'random':
+            return self.vtype != 'file'
+        elif attr == 'play3D':
+            return self.random and self.vtype not in ('3D.intro', '3D.outro', 'file')
 
         return True
 
@@ -450,6 +471,12 @@ class AudioFormat(Item):
             'limits': [None, 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'],
             'name': 'Format',
             'default': None
+        },
+        {
+            'attr': 'play3D',
+            'type': strToBool,
+            'limits': LIMIT_BOOL,
+            'name': 'Play 3D If 3D Feature'
         }
     )
     displayName = 'Audio Format Bumper'
@@ -461,6 +488,7 @@ class AudioFormat(Item):
         self.fallback = None
         self.format = None
         self.file = ''
+        self.play3D = True
 
     def elementVisible(self, e):
         attr = e['attr']
@@ -470,6 +498,8 @@ class AudioFormat(Item):
             return self.method == 'af.file' or (self.method == 'af.detect' and self.fallback == 'af.file')
         elif attr == 'format':
             return self.method == 'af.format' or (self.method == 'af.detect' and self.fallback == 'af.format')
+        elif attr == 'play3D':
+            return self.method in (None, 'af.detect', 'af.format')
 
         return True
 
