@@ -99,6 +99,8 @@ try:
 
         if key == 'trailer.source':
             return ['itunes', 'dir', 'file'][int(default)]
+        elif key == 'trivia.music':
+            return ['off', 'content', 'dir'][int(default)]
         elif key == 'audioformat.method':
             return ['af.detect', 'af.format', 'af.file'][int(default)]
         elif key == 'audioformat.fallback':
@@ -196,6 +198,15 @@ except:
 
     def getSettingDefault(key):
         return _getSettingDefault(key)
+
+
+def listFilePaths(path):
+    ret = []
+    for f in vfs.listdir(path):
+        full = pathJoin(path, f)
+        if not isDir(full):
+            ret.append(full)
+    return ret
 
 
 def DEBUG_LOG(msg):

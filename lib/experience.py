@@ -173,12 +173,12 @@ class ExperiencePlayer(xbmc.Player):
 
     DUMMY_FILE = 'script.cinemavision.dummy.mp4'
 
-    def create(self, sequence_path):
+    def create(self):
         # xbmc.Player.__init__(self)
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         self.fakeFile = os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.dummy.mp4')
         self.playStatus = 0
-        self.processor = sequenceprocessor.SequenceProcessor(sequence_path)
+        self.has3D = False
         self.init()
         return self
 
@@ -258,6 +258,7 @@ class ExperiencePlayer(xbmc.Player):
         self.window = None
         self.rpc = kodijsonrpc.KodiJSONRPC()
         self.volume = KodiVolumeControl(self.abortFlag)
+        self.features = []
 
         result = self.rpc.Playlist.GetItems(playlistid=1, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
         for r in result.get('items', []):
@@ -279,6 +280,8 @@ class ExperiencePlayer(xbmc.Player):
             else:
                 feature.is3D = bool(re.findall(TAGS_3D, r['file']))
 
+            self.has3D = self.has3D or feature.is3D
+
             try:
                 codec = r['streamdetails']['audio'][0]['codec']
                 feature.audioFormat = AUDIO_FORMATS.get(codec)
@@ -286,7 +289,7 @@ class ExperiencePlayer(xbmc.Player):
             except:
                 self.log('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
 
-            self.processor.addFeature(feature)
+            self.features.append(feature)
 
     def isPlayingMinimized(self):
         # print '{0} {1}'.format(self.isPlayingVideo(), xbmc.getCondVisibility('Player.Playing'))
@@ -315,8 +318,12 @@ class ExperiencePlayer(xbmc.Player):
 
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
-    def start(self):
+    def start(self, sequence_path):
+        self.processor = sequenceprocessor.SequenceProcessor(sequence_path)
+        [self.processor.addFeature(f) for f in self.features]
+
         self.log('[ -- Started --------------------------------------------------------------- ]')
+
         self.openWindow()
         self.processor.process()
         self.next()

@@ -384,6 +384,26 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = True
         self.updateSpecials()
 
+    def addItems(self, items):
+        final = []
+        for sItem in items:
+            mli = kodigui.ManagedListItem(sItem.display(), data_source=sItem)
+            mli.setProperty('type', sItem.fileChar)
+            mli.setProperty('type.name', sItem.displayName)
+            mli.setProperty('enabled', sItem.enabled and '1' or '')
+
+            self.updateItemSettings(sItem, mli)
+
+            final.append(mli)
+            final.append(kodigui.ManagedListItem())
+
+        self.sequenceControl.addItems(final)
+
+        self.updateFirstLast()
+
+        self.modified = True
+        self.updateSpecials()
+
     def updateFirstLast(self):
         for i in self.sequenceControl:
             i.setProperty('first', '')
@@ -552,7 +572,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             item.setProperty('setting{0}'.format(ct), disp)
             item.setProperty('setting{0}_name'.format(ct), e['name'])
             ct += 1
-        for i in range(ct, 7):
+        for i in range(ct, 8):
             item.setProperty('setting{0}'.format(i), '')
             item.setProperty('setting{0}_name'.format(i), '')
 
@@ -605,8 +625,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not savePath:
             savePath = self.defaultSavePath()
 
-        e = experience.ExperiencePlayer().create(savePath)
-        e.start()
+        e = experience.ExperiencePlayer().create()
+        e.start(savePath)
 
     def new(self):
         if self.modified:
@@ -682,8 +702,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItems = cinemavision.sequence.getItemsFromString(xmlString)
         self.sequenceControl.reset()
         self.fillSequence()
-        for sItem in sItems:
-            self.insertItem(sItem, -1)
+
+        self.addItems(sItems)
 
         if self.sequenceControl.positionIsValid(1):
             self.sequenceControl.selectItem(1)

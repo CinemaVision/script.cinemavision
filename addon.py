@@ -13,12 +13,13 @@ if __name__ == '__main__':
         from lib import experience
         from lib import kodiutil
 
-        seqPath = cvutil.getSequencePath()
+        e = experience.ExperiencePlayer().create()
 
-        kodiutil.DEBUG_LOG('Loading sequence for 2D: {0}'.format(repr(seqPath)))
+        seqPath = cvutil.getSequencePath(for_3D=e.has3D)
 
-        e = experience.ExperiencePlayer().create(seqPath)
-        e.start()
+        kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
+
+        e.start(seqPath)
     else:
         from lib import main
         main.main()

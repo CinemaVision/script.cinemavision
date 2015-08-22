@@ -31,9 +31,9 @@
         <control type="group">
             <visible>!IsEmpty(Container(201).ListItem.Label)</visible>
             <posx>60</posx>
-            <posy>565</posy>
-            <width>780</width>
-            <height>395</height>
+            <posy>555</posy>
+            <width>840</width>
+            <height>480</height>
             <control type="label">
                 <width>780</width>
                 <height>40</height>
@@ -49,7 +49,7 @@
                 <top>80</top>
                 <itemgap>10</itemgap>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -58,7 +58,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting0_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting0)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -67,7 +67,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting1_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting1)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -76,7 +76,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting2_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting2)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -85,7 +85,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting3_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting3)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -94,7 +94,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting4_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting4)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -103,7 +103,7 @@
                     <label>$INFO[Container(201).ListItem.Property(setting5_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting5)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
@@ -112,13 +112,22 @@
                     <label>$INFO[Container(201).ListItem.Property(setting6_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting6)][/COLOR]</label>
                 </control>
                 <control type="label">
-                    <width>780</width>
+                    <width>840</width>
                     <height>40</height>
                     <font>font20</font>
                     <textcolor>white</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
                     <label>$INFO[Container(201).ListItem.Property(setting7_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting7)][/COLOR]</label>
+                </control>
+                <control type="label">
+                    <width>840</width>
+                    <height>40</height>
+                    <font>font20</font>
+                    <textcolor>white</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <label>$INFO[Container(201).ListItem.Property(setting8_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting8)][/COLOR]</label>
                 </control>
             </control>
 

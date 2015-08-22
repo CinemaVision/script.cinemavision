@@ -33,12 +33,14 @@ SETTINGS_DISPLAY = {
     'itunes': 'Apple iTunes',
     'dir': 'Directory',
     'file': 'Single File',
+    'content': 'Content',
     'standard': 'Standard',
     'af.detect': 'Detect from source',
     'af.format': 'Choose format',
     'af.file': 'Choose file',
     'True': 'Yes',
-    'False': 'No'
+    'False': 'No',
+    'off': 'Off'
 }
 
 
@@ -235,7 +237,21 @@ class Trivia(Item):
         {'attr': 'qDuration',   'type': int, 'limits': (0, 60), 'name': 'Question Duration (seconds)', 'default': 0},
         {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)',     'default': 0},
         {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)',   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)',    'default': 0}
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)',    'default': 0},
+        {
+            'attr': 'music',
+            'type': None,
+            'limits': [None, 'off', 'content', 'dir'],
+            'name': 'Music',
+            'default': None
+        },
+        {
+            'attr': 'musicDir',
+            'type': None,
+            'limits': LIMIT_DIR,
+            'name': 'Path',
+            'default': ''
+        }
     )
     displayName = 'Trivia Slides'
     typeChar = 'Q'
@@ -247,12 +263,27 @@ class Trivia(Item):
         self.cDuration = 0
         self.aDuration = 0
         self.sDuration = 0
+        self.music = None
+        self.musicDir = ''
 
     def display(self):
         name = self.name or self.displayName
         if self.duration > 0:
             return '{0} ({1}m)'.format(name, self.duration)
         return name
+
+    def getLive(self, attr):
+        if not attr == 'musicDir' or self.music is not None:
+            return Item.getLive(self, attr)
+
+        return util.getSettingDefault('{0}.{1}'.format(self._type, attr))
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'musicDir':
+            if self.music != 'dir':
+                return False
+        return True
 
 
 ################################################################################

@@ -281,11 +281,7 @@ class TriviaHandler:
         durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
 
-        if util.getSettingDefault('trivia.playMusic'):
-            queue.music = [s.path for s in DB.Song.select().order_by(DB.fn.Random())]
-            queue.musicVolume = util.getSettingDefault('trivia.musicVolume')
-            queue.musicFadeIn = util.getSettingDefault('trivia.musicFadeIn')
-            queue.musicFadeOut = util.getSettingDefault('trivia.musicFadeOut')
+        self.addMusic(sItem, queue)
 
         for slides in self.getTriviaImages(sItem):
             queue += slides
@@ -294,6 +290,24 @@ class TriviaHandler:
                 break
 
         return [queue]
+
+    def addMusic(self, sItem, queue):
+        mode = sItem.getLive('music')
+        if mode == 'off':
+            return
+
+        if mode == 'content':
+            queue.music = [s.path for s in DB.Song.select().order_by(DB.fn.Random())]
+        elif mode == 'dir':
+            path = sItem.getLive('musicDir')
+            if not path:
+                return
+            queue.music = util.listFilePaths(path)
+            random.shuffle(queue.music)
+
+        queue.musicVolume = util.getSettingDefault('trivia.musicVolume')
+        queue.musicFadeIn = util.getSettingDefault('trivia.musicFadeIn')
+        queue.musicFadeOut = util.getSettingDefault('trivia.musicFadeOut')
 
     def getTriviaImages(self, sItem):
         # Do this each set in reverse so the setNumber counts down
