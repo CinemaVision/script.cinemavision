@@ -14,11 +14,12 @@
     </category>
     <category label="Trivia">
         <setting label="Music" type="lsep"/>
-        <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="70"  range="1,100"    option="percent" />
+        <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="85"  range="1,100"    option="percent" />
         <setting id="trivia.musicFadeIn"  label="Fade in (seconds)"     type="slider" default="3.0" range="0,0.2,10" option="float" />
         <setting id="trivia.musicFadeOut" label="Fade out (seconds)"    type="slider" default="3.0" range="0,0.2,10" option="float" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide"  default="1" />
+        <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
+        <setting id="trivia.transitionDuration"   label="Duration (ms)"           type="slider" default="400" range="100,100,2000" option="int" subsetting="true" enable="!eq(-1,0)" />
         <setting id="trivia.duration"    label="Duration (minutes)"          type="slider" default="15" range="1,60" option="int" />
         <setting id="trivia.qDuration"   label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
         <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />

@@ -6,7 +6,8 @@ import threading
 import xbmc
 import xbmcgui
 
-import kodijsonrpc
+from kodijsonrpc import rpc
+
 import kodigui
 import kodiutil
 from cinemavision import sequenceprocessor
@@ -32,14 +33,13 @@ class KodiVolumeControl:
         self.saved = None
         self.abortFlag = abort_flag
         self._stopFlag = False
-        self.rpc = kodijsonrpc.KodiJSONRPC()
 
     def current(self):
-        return self.rpc.Application.GetProperties(properties=['volume'])['volume']
+        return rpc.Application.GetProperties(properties=['volume'])['volume']
 
     def _set(self, volume):
         xbmc.executebuiltin("XBMC.SetVolume({0})".format(volume))
-        # self.rpc.Application.SetVolume(volume=volume)  # This works but displays the volume indicator :(
+        # rpc.Application.SetVolume(volume=volume)  # This works but displays the volume indicator :(
 
     def store(self):
         if self.saved:
@@ -103,6 +103,26 @@ class KodiVolumeControl:
         kodiutil.DEBUG_LOG('Fade: END ({0})'.format(end))
 
 
+class ScreensaverControl:
+    def __init__(self):
+        self._originalMode = None
+        self.store()
+
+    def disable(self):
+        rpc.Settings.SetSettingValue(setting='screensaver.mode', value='')
+        kodiutil.DEBUG_LOG('Screensaver: DISABLED')
+
+    def store(self):
+        self._originalMode = rpc.Settings.GetSettingValue(setting='screensaver.mode').get('value')
+        kodiutil.DEBUG_LOG('Screensaver: Mode stored ({0})'.format(self._originalMode))
+
+    def restore(self):
+        if not self._originalMode:
+            return
+        rpc.Settings.SetSettingValue(setting='screensaver.mode', value=self._originalMode)
+        kodiutil.DEBUG_LOG('Screensaver: RESTORED')
+
+
 class ExperienceWindow(kodigui.BaseWindow):
     xmlFile = 'script.cinemavision-experience.xml'
     path = kodiutil.ADDON_PATH
@@ -123,22 +143,25 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.image = (self.getControl(100), self.getControl(101))
 
     def setImage(self, url):
+        if not self.effect:
+            return
+
         if self.effect == 'none':
             self.none(url)
         elif self.effect == 'fade':
-            self.fade(url)
-        elif self.effect == 'slide':
-            self.slide(url)
+            self.change(url)
+        elif self.effect.startswith('slide'):
+            self.change(url)
 
     def none(self, url):
         kodiutil.setGlobalProperty('image0', url)
 
-    def fade(self, url):
-        kodiutil.setGlobalProperty('image{0}'.format(self.currentImage), url)
-        self.currentImage = int(not self.currentImage)
-        kodiutil.setGlobalProperty('show1', not self.currentImage and '1' or '')
+    # def fade(self, url):
+    #     kodiutil.setGlobalProperty('image{0}'.format(self.currentImage), url)
+    #     self.currentImage = int(not self.currentImage)
+    #     kodiutil.setGlobalProperty('show1', not self.currentImage and '1' or '')
 
-    def slide(self, url):
+    def change(self, url):
         kodiutil.setGlobalProperty('image0', self.lastImage)
         kodiutil.setGlobalProperty('show1', '')
         xbmc.sleep(100)
@@ -153,14 +176,36 @@ class ExperienceWindow(kodigui.BaseWindow):
         kodiutil.setGlobalProperty('image1', '')
         kodiutil.setGlobalProperty('show1', '')
 
-    def setTransition(self, effect=None):
+    def setTransition(self, effect=None, duration=400):
+        self.duration = duration
         self.effect = effect or 'none'
         if self.effect == 'none':
             self.image[1].setAnimations([])
         elif self.effect == 'fade':
-            self.image[1].setAnimations([('Visible', 'effect=fade start=0 end=100 time=400'), ('Hidden', 'effect=fade start=100 end=0 time=400')])
-        elif self.effect == 'slide':
-            self.image[1].setAnimations([('Visible', 'effect=slide start=1980 end=0 time=400'), ('Hidden', 'effect=slide start=0 end=1980 time=0')])
+            self.image[1].setAnimations([
+                ('Visible', 'effect=fade start=0 end=100 time={duration}'.format(duration=self.duration)),
+                ('Hidden', 'effect=fade start=100 end=0 time=0')
+            ])
+        elif self.effect == 'slideL':
+            self.image[1].setAnimations([
+                ('Visible', 'effect=slide start=1980,0 end=0,0 time={duration}'.format(duration=self.duration)),
+                ('Hidden', 'effect=slide start=0,0 end=1980,0 time=0')
+            ])
+        elif self.effect == 'slideR':
+            self.image[1].setAnimations([
+                ('Visible', 'effect=slide start=-1980,0 end=0,0 time={duration}'.format(duration=self.duration)),
+                ('Hidden', 'effect=slide start=0,0 end=-1980,0 time=0')
+            ])
+        elif self.effect == 'slideU':
+            self.image[1].setAnimations([
+                ('Visible', 'effect=slide start=0,1080 end=0,0 time={duration}'.format(duration=self.duration)),
+                ('Hidden', 'effect=slide start=0,0 end=0,1080 time=0')
+            ])
+        elif self.effect == 'slideD':
+            self.image[1].setAnimations([
+                ('Visible', 'effect=slide start=0,-1080 end=0,0 time={duration}'.format(duration=self.duration)),
+                ('Hidden', 'effect=slide start=0,0 end=-1080 time=0')
+            ])
 
     def onAction(self, action):
         # print action.getId()
@@ -305,11 +350,11 @@ class ExperiencePlayer(xbmc.Player):
     def init(self):
         self.abortFlag = threading.Event()
         self.window = None
-        self.rpc = kodijsonrpc.KodiJSONRPC()
         self.volume = KodiVolumeControl(self.abortFlag)
+        self.screensaver = ScreensaverControl()
         self.features = []
 
-        result = self.rpc.Playlist.GetItems(playlistid=1, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
+        result = rpc.Playlist.GetItems(playlistid=1, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
         for r in result.get('items', []):
             print r
             feature = sequenceprocessor.Feature(r['file'])
@@ -400,7 +445,7 @@ class ExperiencePlayer(xbmc.Player):
 
         self.log('[ -- Finished -------------------------------------------------------------- ]')
         self.window.doClose()
-        self.rpc.Playlist.Clear(playlistid=1)
+        rpc.Playlist.Clear(playlistid=1)
 
     def playMusic(self, image_queue):
         if not image_queue.music:
@@ -408,8 +453,8 @@ class ExperiencePlayer(xbmc.Player):
 
         pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
         pl.clear()
-        for p in image_queue.music:
-            pl.add(p)
+        for s in image_queue.music:
+            pl.add(s.path)
 
         xbmc.sleep(100)  # Without this, it will sometimes not play anything
 
@@ -425,7 +470,7 @@ class ExperiencePlayer(xbmc.Player):
         self.volume.set(image_queue.musicVolume, fade_time=int(image_queue.musicFadeIn*1000), relative=True)
 
     def stopMusic(self, image_queue=None):
-        self.rpc.Playlist.Clear(playlistid=0)
+        rpc.Playlist.Clear(playlistid=0)
 
         if image_queue:
             self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
@@ -444,14 +489,14 @@ class ExperiencePlayer(xbmc.Player):
         while self.isPlaying() and not self.abortFlag.isSet():
             xbmc.sleep(100)
 
-    def showImage(self, image, music=None, image_queue=None):
+    def showImage(self, image, first=None, image_queue=None):
         self.window.setImage(image.path)
         start = time.time()
         stop = time.time() + image.duration
-        if music is True:
+        if first is True:
             self.playMusic(image_queue)
-        elif music is False:
-            stop -= 4
+        elif first is False:  # Last
+            stop -= image_queue.musicFadeOut
             if stop < start:
                 stop = start
 
@@ -468,7 +513,7 @@ class ExperiencePlayer(xbmc.Player):
                 elif self.window.back():
                     return 'BACK'
         else:
-            if music is False:
+            if first is False:
                 self.stopMusic(image_queue)
 
         return True
@@ -477,13 +522,14 @@ class ExperiencePlayer(xbmc.Player):
         image_queue.reset()
         image = image_queue.next()
 
-        self.window.setTransition(image_queue.transition)
+        self.window.setTransition(image_queue.transition, image_queue.transitionDuration)
 
         start = time.time()
         end = time.time() + image_queue.duration
         first = True
 
         xbmc.enableNavSounds(False)
+        self.screensaver.disable()
 
         try:
             while image:
@@ -491,9 +537,9 @@ class ExperiencePlayer(xbmc.Player):
 
                 if first:
                     first = False
-                    action = self.showImage(image, music=True, image_queue=image_queue)
+                    action = self.showImage(image, first=True, image_queue=image_queue)
                 elif time.time() + image.duration >= end and not image.setNumber:
-                    action = self.showImage(image, music=False, image_queue=image_queue)
+                    action = self.showImage(image, first=False, image_queue=image_queue)
                 else:
                     action = self.showImage(image)
 
@@ -518,6 +564,7 @@ class ExperiencePlayer(xbmc.Player):
                 else:
                     return
         finally:
+            self.screensaver.restore()
             self.window.clear()
             xbmc.enableNavSounds(True)
             self.stopMusic()
@@ -531,7 +578,7 @@ class ExperiencePlayer(xbmc.Player):
         if video.userAgent:
             path += '|User-Agent=' + video.userAgent
         self.playlist.clear()
-        self.rpc.Playlist.Clear(playlistid=1)
+        rpc.Playlist.Clear(playlistid=1)
 
         if kodiutil.getSetting('allow.video.skip', True):
             self.playlist.add(path)

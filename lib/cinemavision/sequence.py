@@ -43,7 +43,10 @@ SETTINGS_DISPLAY = {
     'off': 'Off',
     'none': 'None',
     'fade': 'Fade',
-    'slide': 'Slide'
+    'slideL': 'Slide Left',
+    'slideR': 'Slide Right',
+    'slideU': 'Slide Up',
+    'slideD': 'Slide Down'
 }
 
 
@@ -203,7 +206,7 @@ class Feature(Item):
         {
             'attr': 'count',
             'type': int,
-            'limits': (0, 10),
+            'limits': (0, 10, 1),
             'name': 'Count',
             'default': 0
         },
@@ -236,17 +239,24 @@ class Feature(Item):
 class Trivia(Item):
     _type = 'trivia'
     _elements = (
-        {'attr': 'duration',    'type': int, 'limits': (0, 60), 'name': 'Duration (minutes)',          'default': 0},
-        {'attr': 'qDuration',   'type': int, 'limits': (0, 60), 'name': 'Question Duration (seconds)', 'default': 0},
-        {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)',     'default': 0},
-        {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)',   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Single Duration (seconds)',    'default': 0},
+        {'attr': 'duration',    'type': int, 'limits': (0, 60, 1), 'name': 'Duration (minutes)',          'default': 0},
+        {'attr': 'qDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Question Duration (seconds)', 'default': 0},
+        {'attr': 'cDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Clue Duration (seconds)',     'default': 0},
+        {'attr': 'aDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Answer Duration (seconds)',   'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Single Duration (seconds)',    'default': 0},
         {
             'attr': 'transition',
             'type': None,
-            'limits': [None, 'none', 'fade', 'slide'],
+            'limits': [None, 'none', 'fade', 'slideL', 'slideR', 'slideU', 'slideD'],
             'name': 'Transition',
             'default': None
+        },
+        {
+            'attr': 'transitionDuration',
+            'type': int,
+            'limits': (0, 2000, 100),
+            'name': 'Transition Duration',
+            'default': 0
         },
         {
             'attr': 'music',
@@ -274,6 +284,7 @@ class Trivia(Item):
         self.aDuration = 0
         self.sDuration = 0
         self.transition = None
+        self.transitionDuration = 0
         self.music = None
         self.musicDir = ''
 
@@ -294,6 +305,10 @@ class Trivia(Item):
         if attr == 'musicDir':
             if self.music != 'dir':
                 return False
+        elif attr == 'transitionDuration':
+            if not self.transition or self.transition == 'none':
+                return False
+
         return True
 
 
@@ -313,7 +328,7 @@ class Trailer(Item):
         {
             'attr': 'count',
             'type': int,
-            'limits': (0, 10),
+            'limits': (0, 10, 1),
             'name': 'Count',
             'default': 0
         },
@@ -603,7 +618,7 @@ class Command(Item):
         if not e['attr'] == 'arg' or self.command not in ('skip', 'back'):
             return Item.getLimits(self, attr)
 
-        return (1, 99)
+        return (1, 99, 1)
 
     def getType(self, attr):
         e = self.getElement(attr)
@@ -615,7 +630,7 @@ class Command(Item):
     def getSettingOptions(self, setting):
         if setting == 'arg':
             if self.command in ('back', 'skip'):
-                return (1, 99)
+                return (1, 99, 1)
         else:
             return Item.getSettingOptions(self, setting)
 

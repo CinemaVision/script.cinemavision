@@ -27,6 +27,8 @@ def _getSettingDefault(key):
         'trivia.cDuration': 6,
         'trivia.aDuration': 6,
         'trivia.sDuration': 10,
+        'trivia.transition': 'fade',
+        'trivia.transitionDuration': 400,
         'trailer.source': 'itunes',
         'trailer.count': 1,
         'trailer.limitRating': True,
@@ -39,7 +41,7 @@ def _getSettingDefault(key):
         # Non-sequence defualts
         'bumper.fallback2D': False,
         'trivia.playMusic': False,
-        'trivia.musicVolume': 70,
+        'trivia.musicVolume': 85,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,
         'trailer.playUnwatched': True
@@ -91,6 +93,47 @@ try:
                 xbmc.sleep(100)
             return xbmc.abortRequested
 
+    old_vfs_File = vfs.File
+
+    class vfs_File(old_vfs_File):
+        def __init__(self, *args, **kwargs):
+            old_vfs_File.__init__(self, *args, **kwargs)
+            self._size = self.size()  # size() returns size at open, so we need to keep track ourselves
+            self._pos = 0
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.close()
+
+        def flush(self):
+            pass
+
+        def tell(self):
+            return self._pos
+
+        def read(self, nbytes=0):
+            self._pos += nbytes
+            if self._pos >= self._size or not nbytes:
+                self._pos = self._size - 1
+            return old_vfs_File.read(self, nbytes)
+
+        def write(self, data):
+            self._pos += len(data)
+            self._size = max(self._pos, self._size)
+            return old_vfs_File.write(self, data)
+
+        def seek(self, offset, whence=0):
+            if whence == 0:
+                self._pos = 0
+            elif whence == 2:
+                self._pos = self._size - 1
+            self._pos += offset
+            return old_vfs_File.seek(self, offset, whence)
+
+    vfs.File = vfs_File
+
     def getSettingDefault(key):
         default = xbmcaddon.Addon().getSetting(key)
 
@@ -106,7 +149,7 @@ try:
         elif key == 'audioformat.fallback':
             return ['af.format', 'af.file'][int(default)]
         elif key == 'trivia.transition':
-            return ['none', 'fade', 'slide'][int(default)]
+            return ['none', 'fade', 'slideL', 'slideR', 'slideU', 'slideD'][int(default)]
         elif key == 'audioformat.format':
             return [
                 'Auro-3D', 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'

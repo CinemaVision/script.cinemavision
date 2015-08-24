@@ -50,6 +50,23 @@ class Image(Playable):
         return self['setNumber']
 
 
+class Song(Playable):
+    type = 'SONG'
+
+    def __init__(self, path, duration=0, *args, **kwargs):
+        self['path'] = path
+        self['duration'] = duration
+        Playable.__init__(self, *args, **kwargs)
+
+    @property
+    def duration(self):
+        return self['duration']
+
+    @property
+    def durationInt(self):
+        return int(self['duration'])
+
+
 class ImageQueue(dict):
     type = 'IMAGE.QUEUE'
 
@@ -60,8 +77,9 @@ class ImageQueue(dict):
         self.maxDuration = s_item.getLive('duration') * 60
         self.pos = -1
         self.transition = None
+        self.transitionDuration = 400
         self.music = None
-        self.musicVolume = 50
+        self.musicVolume = 85
         self.musicFadeIn = 3.0
         self.musicFadeOut = 3.0
 
@@ -282,14 +300,15 @@ class TriviaHandler:
         durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
         queue.transition = sItem.getLive('transition')
-
-        self.addMusic(sItem, queue)
+        queue.transitionDuration = sItem.getLive('transitionDuration')
 
         for slides in self.getTriviaImages(sItem):
             queue += slides
 
             if queue.duration >= durationLimit:
                 break
+
+        self.addMusic(sItem, queue)
 
         return [queue]
 
@@ -299,13 +318,35 @@ class TriviaHandler:
             return
 
         if mode == 'content':
-            queue.music = [s.path for s in DB.Song.select().order_by(DB.fn.Random())]
+            queue.music = [Song(s.path, s.duration) for s in DB.Song.select().order_by(DB.fn.Random())]
         elif mode == 'dir':
             path = sItem.getLive('musicDir')
             if not path:
                 return
-            queue.music = util.listFilePaths(path)
+
+            import mutagen
+            mutagen.setFileOpener(util.vfs.File)
+
+            queue.music = []
+            for p in util.listFilePaths(path):
+                data = mutagen.File(p)
+                d = 0
+                if data:
+                    d = data.info.length
+                queue.music.append(Song(p, d))
+
             random.shuffle(queue.music)
+
+        duration = sum([s.duration for s in queue.music])
+
+        if duration:  # Maybe they were all zero - we'll be here forever :)
+            while duration < queue.duration:
+                for i in range(len(queue.music)):
+                    song = queue.music[i]
+                    duration += song.duration
+                    queue.music.append(song)
+                    if duration >= queue.duration:
+                        break
 
         queue.musicVolume = util.getSettingDefault('trivia.musicVolume')
         queue.musicFadeIn = util.getSettingDefault('trivia.musicFadeIn')

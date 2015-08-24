@@ -43,6 +43,7 @@ class Song(ContentBase):
     year = peewee.CharField(null=True)
 
     path = peewee.CharField(unique=True)
+    duration = peewee.FloatField(default=0)
 
 Song.create_table(fail_silently=True)
 

@@ -3,6 +3,8 @@ import re
 from xml.etree import ElementTree as ET
 
 import util
+import mutagen
+mutagen.setFileOpener(util.vfs.File)
 
 TYPE_IDS = {
     '3D Intro':       '3D.intro',
@@ -227,11 +229,23 @@ class MusicHandler:
         if ext.lower() in self._extensions:
             path = util.pathJoin(base, path)
             name = os.path.basename(p)
-            self._callback('Loading Song: [ {0} ]'.format(name))
-            self.db.Song.get_or_create(
-                path=path,
-                defaults={'name': name}
-            )
+            data = mutagen.File(path)
+
+            try:
+                self.db.Song.get(self.db.Song.path == path)
+                self._callback('Loading Song (exists): [ {0} ]'.format(name))
+            except self.db.peewee.DoesNotExist:
+                data = mutagen.File(path)
+                if data:
+                    duration = data.info.length
+                    self._callback('Loading Song (new): [ {0} ({1}) ]'.format(name, data.info.pprint()))
+                else:
+                    duration = 0
+                self.db.Song.create(
+                    path=path,
+                    name=name,
+                    duration=duration
+                )
 
 
 class TriviaDirectoryHandler:

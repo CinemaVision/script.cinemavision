@@ -94,6 +94,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         limits = self.getLimits(sItem, attr)
         total = limits[1] - limits[0]
         val = int(round(((pct/100.0) * total) + limits[0]))
+        val = val - (val % limits[2])
         sItem.setSetting(attr, val)
 
         item.setLabel2(sItem.getSettingDisplay(attr))
@@ -112,7 +113,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         attr = item.dataSource
         if item.getProperty('type') == 'integer':
             val = sItem.getSetting(attr)
-            self.updateSlider(val, *reversed(self.getLimits(sItem, attr)))
+            self.updateSlider(val, *self.getLimits(sItem, attr))
 
         self.main.updateItemSettings(sItem, self.item)
 
@@ -130,13 +131,15 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         sItem = self.item.dataSource
         attr = item.dataSource
         val = sItem.getSetting(attr)
-        val += offset
         limits = self.getLimits(sItem, attr)
+
+        val += offset * limits[2]
+
         if not limits[0] <= val <= limits[1]:
             return
 
         sItem.setSetting(attr, val)
-        self.updateSlider(val, *reversed(limits))
+        self.updateSlider(val, *limits)
         item.setLabel2(sItem.getSettingDisplay(attr))
 
         self.modified = True
@@ -144,7 +147,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.main.updateSpecials()
         self.main.updateItemSettings(sItem, self.item)
 
-    def updateSlider(self, val, max_val, min_val=0):
+    def updateSlider(self, val, min_val, max_val, step):
         total = max_val - min_val
         val = val - min_val
         pct = (val/float(total)) * 100
