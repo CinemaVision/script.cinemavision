@@ -35,12 +35,15 @@ SETTINGS_DISPLAY = {
     'file': 'Single File',
     'content': 'Content',
     'standard': 'Standard',
-    'af.detect': 'Detect from source',
+    'af.detect': 'Auto-detect from source',
     'af.format': 'Choose format',
     'af.file': 'Choose file',
     'True': 'Yes',
     'False': 'No',
-    'off': 'Off'
+    'off': 'Off',
+    'none': 'None',
+    'fade': 'Fade',
+    'slide': 'Slide'
 }
 
 
@@ -237,7 +240,14 @@ class Trivia(Item):
         {'attr': 'qDuration',   'type': int, 'limits': (0, 60), 'name': 'Question Duration (seconds)', 'default': 0},
         {'attr': 'cDuration',   'type': int, 'limits': (0, 60), 'name': 'Clue Duration (seconds)',     'default': 0},
         {'attr': 'aDuration',   'type': int, 'limits': (0, 60), 'name': 'Answer Duration (seconds)',   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Still Duration (seconds)',    'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60), 'name': 'Single Duration (seconds)',    'default': 0},
+        {
+            'attr': 'transition',
+            'type': None,
+            'limits': [None, 'none', 'fade', 'slide'],
+            'name': 'Transition',
+            'default': None
+        },
         {
             'attr': 'music',
             'type': None,
@@ -263,6 +273,7 @@ class Trivia(Item):
         self.cDuration = 0
         self.aDuration = 0
         self.sDuration = 0
+        self.transition = None
         self.music = None
         self.musicDir = ''
 
@@ -499,7 +510,9 @@ class AudioFormat(Item):
         {
             'attr': 'format',
             'type': None,
-            'limits': [None, 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'],
+            'limits': [
+                None, 'Auro-3D', 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'
+            ],
             'name': 'Format',
             'default': None
         },

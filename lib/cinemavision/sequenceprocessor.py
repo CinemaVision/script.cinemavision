@@ -59,6 +59,7 @@ class ImageQueue(dict):
         self.sItem = s_item
         self.maxDuration = s_item.getLive('duration') * 60
         self.pos = -1
+        self.transition = None
         self.music = None
         self.musicVolume = 50
         self.musicFadeIn = 3.0
@@ -280,6 +281,7 @@ class TriviaHandler:
 
         durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
+        queue.transition = sItem.getLive('transition')
 
         self.addMusic(sItem, queue)
 

@@ -8,28 +8,30 @@
         <setting id="bumper.fallback2D" label="Fallback to 2D bumper" type="bool"   default="false" />
     </category>
     <category label="Feature">
-        <setting label="Defaults" type="lsep"/>
+        <setting label="Module Defaults" type="lsep"/>
         <setting id="feature.count"            label="Count"              type="slider" default="1" range="1,10" option="int" />
         <setting id="feature.showRatingBumper" label="Show rating bumper" type="bool"   default="true" />
     </category>
     <category label="Trivia">
-        <setting id="trivia.music"        label="Music"                 type="enum"   values="Off|Content|Directory" default="0" />
-        <setting id="trivia.musicDir"     label="Path"                  type="folder" subsetting="true" sources="files" value="" visible="eq(-1,2)" />
-        <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" subsetting="true" default="50"  range="1,100"    option="percent" />
-        <setting id="trivia.musicFadeIn"  label="Fade in (seconds)"     type="slider" subsetting="true" default="3.0" range="0,0.2,10" option="float" />
-        <setting id="trivia.musicFadeOut" label="Fade out (seconds)"    type="slider" subsetting="true" default="3.0" range="0,0.2,10" option="float" />
-        <setting label="Defaults" type="lsep"/>
-        <setting id="trivia.duration"  label="Duration (minutes)"          type="slider" default="15" range="1,60" option="int" />
-        <setting id="trivia.qDuration" label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
-        <setting id="trivia.cDuration" label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
-        <setting id="trivia.aDuration" label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
-        <setting id="trivia.sDuration" label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
+        <setting label="Music" type="lsep"/>
+        <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="70"  range="1,100"    option="percent" />
+        <setting id="trivia.musicFadeIn"  label="Fade in (seconds)"     type="slider" default="3.0" range="0,0.2,10" option="float" />
+        <setting id="trivia.musicFadeOut" label="Fade out (seconds)"    type="slider" default="3.0" range="0,0.2,10" option="float" />
+        <setting label="Module Defaults" type="lsep"/>
+        <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide"  default="1" />
+        <setting id="trivia.duration"    label="Duration (minutes)"          type="slider" default="15" range="1,60" option="int" />
+        <setting id="trivia.qDuration"   label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
+        <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
+        <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
+        <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
+        <setting id="trivia.music"       label="Music"                       type="enum"   values="Off|Content|Directory" default="0" />
+        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="files" value="" visible="eq(-1,2)" />
     </category>
     <category label="Trailer">
         <setting id="trailer.playUnwatched"     label="Play only unwatched first"     type="bool"   default="true" />
         <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting id="trailer.globalRatingLimit" label="Rating limit"                  type="enum"   values="No Limit|G|PG|PG-13|R|NC-17" default="0" />
-        <setting label="Defaults" type="lsep"/>
+        <setting label="Module Defaults" type="lsep"/>
         <setting id="trailer.source"      label="Trailer source"  type="enum"       values="iTunes|Directory|Single File" default="0" />
         <setting id="trailer.count"       label="Count"           type="slider"     subsetting="true" default="1" range="1,10" option="int" />
         <setting id="trailer.limitRating" label="Limit rating"    type="bool"       subsetting="true" default="true" />
@@ -37,10 +39,10 @@
         <setting id="trailer.quality"     label="Trailer quality" type="labelenum"  subsetting="true" values="480p|720p|1080p" default="720p" />
     </category>
     <category label="Audio Format">
-        <setting label="Defaults" type="lsep"/>
-        <setting id="audioformat.method"   label="Method"   type="enum" values="Detect from source|Choose format|Choose file" default="0" />
+        <setting label="Module Defaults" type="lsep"/>
+        <setting id="audioformat.method"   label="Method"   type="enum" values="Auto-detect from source|Choose format|Choose file" default="0" />
         <setting id="audioformat.fallback" label="Fallback" type="enum" values="Choose format|Choose file" default="0" subsetting="true" />
-        <setting id="audioformat.format"   label="Format"   type="enum" values="Dolby TrueHD|DTS-X|DTS-HD Master Audio|DTS|Dolby Atmos|THX|Dolby Digital Plus|Dolby Digital|Other" default="8" subsetting="true" />
+        <setting id="audioformat.format"   label="Format"   type="enum" values="Auro-3D|Dolby TrueHD|DTS-X|DTS-HD Master Audio|DTS|Dolby Atmos|THX|Dolby Digital Plus|Dolby Digital|Other" default="9" subsetting="true" />
         <setting id="audioformat.file"     label="File"     type="file" sources="files" value="" subsetting="true" />
     </category>
 </settings>

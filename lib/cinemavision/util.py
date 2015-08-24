@@ -39,7 +39,7 @@ def _getSettingDefault(key):
         # Non-sequence defualts
         'bumper.fallback2D': False,
         'trivia.playMusic': False,
-        'trivia.musicVolume': 50,
+        'trivia.musicVolume': 70,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,
         'trailer.playUnwatched': True
@@ -105,8 +105,12 @@ try:
             return ['af.detect', 'af.format', 'af.file'][int(default)]
         elif key == 'audioformat.fallback':
             return ['af.format', 'af.file'][int(default)]
+        elif key == 'trivia.transition':
+            return ['none', 'fade', 'slide'][int(default)]
         elif key == 'audioformat.format':
-            return ['Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'][int(default)]
+            return [
+                'Auro-3D', 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'
+            ][int(default)]
         elif key == 'trailer.globalRatingLimit':
             return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
         elif default in ['true', 'false']:

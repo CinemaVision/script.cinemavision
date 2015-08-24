@@ -114,6 +114,53 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.action = None
         self.volume = None
         self.abortFlag = None
+        self.effect = None
+        self.duration = 400
+        self.lastImage = ''
+        self.clear()
+
+    def onInit(self):
+        self.image = (self.getControl(100), self.getControl(101))
+
+    def setImage(self, url):
+        if self.effect == 'none':
+            self.none(url)
+        elif self.effect == 'fade':
+            self.fade(url)
+        elif self.effect == 'slide':
+            self.slide(url)
+
+    def none(self, url):
+        kodiutil.setGlobalProperty('image0', url)
+
+    def fade(self, url):
+        kodiutil.setGlobalProperty('image{0}'.format(self.currentImage), url)
+        self.currentImage = int(not self.currentImage)
+        kodiutil.setGlobalProperty('show1', not self.currentImage and '1' or '')
+
+    def slide(self, url):
+        kodiutil.setGlobalProperty('image0', self.lastImage)
+        kodiutil.setGlobalProperty('show1', '')
+        xbmc.sleep(100)
+        kodiutil.setGlobalProperty('image1', url)
+        kodiutil.setGlobalProperty('show1', '1')
+        self.lastImage = url
+
+    def clear(self):
+        self.currentImage = 0
+        self.lastImage = ''
+        kodiutil.setGlobalProperty('image0', '')
+        kodiutil.setGlobalProperty('image1', '')
+        kodiutil.setGlobalProperty('show1', '')
+
+    def setTransition(self, effect=None):
+        self.effect = effect or 'none'
+        if self.effect == 'none':
+            self.image[1].setAnimations([])
+        elif self.effect == 'fade':
+            self.image[1].setAnimations([('Visible', 'effect=fade start=0 end=100 time=400'), ('Hidden', 'effect=fade start=100 end=0 time=400')])
+        elif self.effect == 'slide':
+            self.image[1].setAnimations([('Visible', 'effect=slide start=1980 end=0 time=400'), ('Hidden', 'effect=slide start=0 end=1980 time=0')])
 
     def onAction(self, action):
         # print action.getId()
@@ -123,9 +170,11 @@ class ExperienceWindow(kodigui.BaseWindow):
                 self.abortFlag.set()
                 self.doClose()
             elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                self.volume.stop()
                 if self.action != 'SKIP':
                     self.action = 'NEXT'
             elif action == xbmcgui.ACTION_MOVE_LEFT:
+                self.volume.stop()
                 if self.action != 'BACK':
                     self.action = 'PREV'
             elif action == xbmcgui.ACTION_PAGE_UP or action == xbmcgui.ACTION_NEXT_ITEM:
@@ -329,11 +378,13 @@ class ExperiencePlayer(xbmc.Player):
         self.next()
         self.waitLoop()
 
+        del self.window
+        self.window = None
+
     def log(self, msg):
         kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
 
     def openWindow(self):
-        kodiutil.setGlobalProperty('slide', '')
         self.window = ExperienceWindow.create()
         self.window.volume = self.volume
         self.window.abortFlag = self.abortFlag
@@ -365,7 +416,7 @@ class ExperiencePlayer(xbmc.Player):
         kodiutil.DEBUG_LOG('Playing music playlist: {0} song(s)'.format(len(pl)))
 
         self.volume.store()
-        self.volume.set(0)
+        self.volume.set(1)
 
         self.playStatus = self.PLAYING_MUSIC
         self.play(pl, windowed=True)
@@ -377,7 +428,7 @@ class ExperiencePlayer(xbmc.Player):
         self.rpc.Playlist.Clear(playlistid=0)
 
         if image_queue:
-            self.volume.set(0, fade_time=int(image_queue.musicFadeOut*1000))
+            self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
 
         self.stop()
         self.waitForPlayStop()
@@ -394,40 +445,40 @@ class ExperiencePlayer(xbmc.Player):
             xbmc.sleep(100)
 
     def showImage(self, image, music=None, image_queue=None):
-        kodiutil.setGlobalProperty('slide', image.path)
-        try:
-            start = time.time()
-            stop = time.time() + image.duration
-            if music is True:
-                self.playMusic(image_queue)
-            elif music is False:
-                stop -= 4
-                if stop < start:
-                    stop = start
+        self.window.setImage(image.path)
+        start = time.time()
+        stop = time.time() + image.duration
+        if music is True:
+            self.playMusic(image_queue)
+        elif music is False:
+            stop -= 4
+            if stop < start:
+                stop = start
 
-            while not kodiutil.wait(0.1) and time.time() < stop:
-                if not self.window.isOpen:
-                    return False
-                elif self.window.action:
-                    if self.window.next():
-                        return 'NEXT'
-                    elif self.window.prev():
-                        return 'PREV'
-                    elif self.window.skip():
-                        return 'SKIP'
-                    elif self.window.back():
-                        return 'BACK'
-            else:
-                if music is False:
-                    self.stopMusic(image_queue)
-        finally:
-            kodiutil.setGlobalProperty('slide', '')
+        while not kodiutil.wait(0.1) and time.time() < stop:
+            if not self.window.isOpen:
+                return False
+            elif self.window.action:
+                if self.window.next():
+                    return 'NEXT'
+                elif self.window.prev():
+                    return 'PREV'
+                elif self.window.skip():
+                    return 'SKIP'
+                elif self.window.back():
+                    return 'BACK'
+        else:
+            if music is False:
+                self.stopMusic(image_queue)
 
         return True
 
     def showImageQueue(self, image_queue):
         image_queue.reset()
         image = image_queue.next()
+
+        self.window.setTransition(image_queue.transition)
+
         start = time.time()
         end = time.time() + image_queue.duration
         first = True
@@ -467,6 +518,7 @@ class ExperiencePlayer(xbmc.Player):
                 else:
                     return
         finally:
+            self.window.clear()
             xbmc.enableNavSounds(True)
             self.stopMusic()
 
@@ -508,7 +560,11 @@ class ExperiencePlayer(xbmc.Player):
         self.log('Playing next item: {0}'.format(playable))
 
         if playable.type == 'IMAGE':
-            action = self.showImage(playable)
+            try:
+                action = self.showImage(playable)
+            finally:
+                self.window.clear()
+
             if action == 'BACK':
                 self.next(prev=True)
             else:

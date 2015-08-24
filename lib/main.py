@@ -276,15 +276,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 if action == xbmcgui.ACTION_MOVE_LEFT:
                     pos = self.sequenceControl.getSelectedPosition()
                     pos -= 1
-                    if self.sequenceControl.positionIsValid(pos):
-                        self.sequenceControl.selectItem(pos)
-                        self.updateFocus(pre=True)
+                    if not self.sequenceControl.positionIsValid(pos):
+                        pos = self.sequenceControl.size() - 1
+                    self.sequenceControl.selectItem(pos)
+                    self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_MOVE_RIGHT:
                     pos = self.sequenceControl.getSelectedPosition()
                     pos += 1
-                    if self.sequenceControl.positionIsValid(pos):
-                        self.sequenceControl.selectItem(pos)
-                        self.updateFocus(pre=True)
+                    if not self.sequenceControl.positionIsValid(pos):
+                        pos = 0
+                    self.sequenceControl.selectItem(pos)
+                    self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
@@ -296,8 +298,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def handleClose(self):
         yes = True
         if self.modified:
-            yes = xbmcgui.Dialog().yesno('Confirm', 'Sequence is modified.', '', 'Really exit?')
-        return not yes
+            yes = xbmcgui.Dialog().yesno('Confirm', 'Sequence was modified.', '', 'Do you really want to exit without saving changes?')
+
+        if yes:
+            return False
+
+        self.save(as_new=True)
+
+        return True
 
     def updateFocus(self, pre=False):
         if (pre and not self.focusedOnItem()) or (not pre and self.focusedOnItem()):
@@ -652,18 +660,19 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         items = [li.dataSource for li in self.sequenceControl if li.dataSource]
         xmlString = cinemavision.sequence.getSaveString(items)
 
+        if not self.path or as_new:
+            path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False, self.path)
+            print path
+            if not path:
+                return
+            self.path = path
+
         if not self.name or as_new:
             as_new = True  # Because we set name, we want to at least check the path
             name = xbmcgui.Dialog().input('Enter Name For File', self.name)
             if not name:
                 return
             self.name = name
-
-        if not self.path or as_new:
-            path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False, self.path)
-            if not path:
-                return
-            self.path = path
 
         fullPath = self.savePath()
 
