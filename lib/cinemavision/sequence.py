@@ -191,6 +191,9 @@ class Item:
                 return 'Default'
             return val is True and 'Yes' or 'No'
 
+        if val is None or val is 0:
+            return 'Default ({0})'.format(settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
+
         return unicode(settingDisplay(val))
 
     def DBChoices(self, attr):
@@ -321,8 +324,7 @@ class Trivia(Item):
 
     def elementVisible(self, e):
         attr = e['attr']
-        if attr != 'format' and self.format != 'slide':
-            return False
+
         if attr == 'musicDir':
             if self.music != 'dir':
                 return False

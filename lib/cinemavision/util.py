@@ -23,7 +23,7 @@ def _getSettingDefault(key):
         'feature.count': 1,
         'feature.ratingBumper': 'video',
         'trivia.format': 'slide',
-        'trivia.duration': 1,
+        'trivia.duration': 15,
         'trivia.qDuration': 8,
         'trivia.cDuration': 6,
         'trivia.aDuration': 6,

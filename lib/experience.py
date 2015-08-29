@@ -29,17 +29,26 @@ TAGS_3D = '3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HA
 
 
 def isURLFile(path):
-    if path.endswith('.url'):
+    if path.endswith('.cvurl'):
         return True
     return False
 
 
-def playURLFile(path):
-    url = ''
+def resolveURLFile(path):
     import YDStreamExtractor as StreamExtractor
 
     StreamExtractor.overrideParam('noplaylist', True)
     StreamExtractor.generateBlacklist(('.*:(?:user|channel|search)$', '(?i)generic.*'))
+
+    import xbmcvfs
+    f = xbmcvfs.File(path, 'r')
+    try:
+        url = f.read().strip()
+    except:
+        kodiutil.ERROR()
+        return
+    finally:
+        f.close()
 
     vid = StreamExtractor.getVideoInfo(url)
 
@@ -272,6 +281,14 @@ class ExperienceWindow(kodigui.BaseWindow):
             return kodigui.BaseWindow.onAction(self, action)
 
         kodigui.BaseWindow.onAction(self, action)
+
+    def hasAction(self):
+        return bool(self.action)
+
+    def getAction(self):
+        action = self.action
+        self.action = None
+        return action
 
     def skip(self):
         if self.action == 'SKIP':
@@ -548,7 +565,8 @@ class ExperiencePlayer(xbmc.Player):
             if image_queue:
                 self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
                 while self.volume.fading() and not self.abortFlag.isSet() and not kodiutil.wait(0.1):
-                    pass
+                    if self.window.hasAction():
+                        break
 
             self.stop()
             self.waitForPlayStop()
@@ -665,7 +683,10 @@ class ExperiencePlayer(xbmc.Player):
         finally:
             self.screensaver.restore()
             xbmc.enableNavSounds(True)
-            self.stopMusic(image_queue)
+            self.stopMusic(action != 'BACK' and image_queue or None)
+            if self. window.hasAction():
+                if self.window.getAction() == 'BACK':
+                    return False
             self.window.clear()
 
         self.log(' -IMAGE.QUEUE: Finished after {0}secs'.format(int(time.time() - start)))
@@ -682,8 +703,11 @@ class ExperiencePlayer(xbmc.Player):
     def showVideo(self, video):
         path = video.path
 
-        if video.userAgent:
-            path += '|User-Agent=' + video.userAgent
+        if isURLFile(path):
+            path = resolveURLFile(path)
+        else:
+            if video.userAgent:
+                path += '|User-Agent=' + video.userAgent
 
         if kodiutil.getSetting('allow.video.skip', True):
             self.playVideos([path])

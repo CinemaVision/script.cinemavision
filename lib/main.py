@@ -157,9 +157,9 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         limits = sItem.getLimits(attr)
         if sItem._type == 'command':
             if sItem.command == 'back':
-                return (limits[0], min(limits[1], self.leftOffset))
+                return (limits[0], min(limits[1], self.leftOffset), limits[2])
             elif sItem.command == 'skip':
-                return (limits[0], min(limits[1], self.rightOffset))
+                return (limits[0], min(limits[1], self.rightOffset), limits[2])
 
         return limits
 
