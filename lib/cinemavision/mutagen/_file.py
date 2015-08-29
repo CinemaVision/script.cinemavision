@@ -13,8 +13,7 @@ _fileopener = [open]
 
 
 def setFileOpener(opener):
-    _fileopener.pop()
-    _fileopener.append(opener)
+    _fileopener[0] = opener
 
 
 def FileOpener(*args, **kwargs):

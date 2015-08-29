@@ -21,7 +21,8 @@ def getSep(path):
 def _getSettingDefault(key):
     defaults = {
         'feature.count': 1,
-        'feature.showRatingBumper': True,
+        'feature.ratingBumper': 'video',
+        'trivia.format': 'slide',
         'trivia.duration': 1,
         'trivia.qDuration': 8,
         'trivia.cDuration': 6,
@@ -142,8 +143,10 @@ try:
 
         if key == 'trailer.source':
             return ['itunes', 'dir', 'file'][int(default)]
+        elif key == 'trivia.format':
+            return ['slide', 'video'][int(default)]
         elif key == 'trivia.music':
-            return ['off', 'content', 'dir'][int(default)]
+            return ['off', 'content', 'dir', 'file'][int(default)]
         elif key == 'audioformat.method':
             return ['af.detect', 'af.format', 'af.file'][int(default)]
         elif key == 'audioformat.fallback':
@@ -156,6 +159,8 @@ try:
             ][int(default)]
         elif key == 'trailer.globalRatingLimit':
             return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
+        elif key == 'feature.ratingBumper':
+            return ['none', 'video', 'image'][int(default)]
         elif default in ['true', 'false']:
             return default == 'true'
         elif default.isdigit():
@@ -167,6 +172,10 @@ try:
             pass
 
         return default
+
+    videoExtensions = tuple(xbmc.getSupportedMedia('video').split('|'))
+    musicExtensions = tuple(xbmc.getSupportedMedia('music').split('|'))
+    imageExtensions = tuple(xbmc.getSupportedMedia('picture').split('|'))
 
 except:
     raise
@@ -246,6 +255,10 @@ except:
     def getSettingDefault(key):
         return _getSettingDefault(key)
 
+    videoExtensions = ('.mp4',)
+    musicExtensions = ('.mp3', '.wav')
+    imageExtensions = ('.jpg', '.png')
+
 
 def listFilePaths(path):
     ret = []
@@ -254,6 +267,10 @@ def listFilePaths(path):
         if not isDir(full):
             ret.append(full)
     return ret
+
+
+def datetimeTotalSeconds(td):
+    return float((td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)) / 10**6
 
 
 def DEBUG_LOG(msg):

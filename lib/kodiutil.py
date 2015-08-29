@@ -78,6 +78,7 @@ def setGlobalProperty(key, val):
 def getGlobalProperty(key):
     return xbmc.getInfoLabel('Window(10000).Property(script.cinemavision.{0})'.format(key))
 
+
 try:
     xbmc.Monitor().waitForAbort
 

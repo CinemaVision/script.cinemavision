@@ -46,7 +46,10 @@ SETTINGS_DISPLAY = {
     'slideL': 'Slide Left',
     'slideR': 'Slide Right',
     'slideU': 'Slide Up',
-    'slideD': 'Slide Down'
+    'slideD': 'Slide Down',
+    'video': 'Video',
+    'image': 'Image',
+    'slide': 'Slide'
 }
 
 
@@ -211,12 +214,12 @@ class Feature(Item):
             'default': 0
         },
         {
-            'attr': 'showRatingBumper',
-            'type': strToBoolWithDefault,
-            'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Show Rating Bumper',
+            'attr': 'ratingBumper',
+            'type': None,
+            'limits': [None, 'none', 'video', 'image'],
+            'name': 'Rating Bumper',
             'default': None
-        }
+        },
     )
     displayName = 'Feature'
     typeChar = 'F'
@@ -224,7 +227,7 @@ class Feature(Item):
     def __init__(self):
         Item.__init__(self)
         self.count = 0
-        self.showRatingBumper = None
+        self.ratingBumper = None
 
     def display(self):
         name = self.name or self.displayName
@@ -239,11 +242,18 @@ class Feature(Item):
 class Trivia(Item):
     _type = 'trivia'
     _elements = (
+        {
+            'attr': 'format',
+            'type': None,
+            'limits': [None, 'slide', 'video'],
+            'name': 'Format',
+            'default': None
+        },
         {'attr': 'duration',    'type': int, 'limits': (0, 60, 1), 'name': 'Duration (minutes)',          'default': 0},
         {'attr': 'qDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Question Duration (seconds)', 'default': 0},
         {'attr': 'cDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Clue Duration (seconds)',     'default': 0},
         {'attr': 'aDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Answer Duration (seconds)',   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Single Duration (seconds)',    'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Single Duration (seconds)',   'default': 0},
         {
             'attr': 'transition',
             'type': None,
@@ -261,7 +271,7 @@ class Trivia(Item):
         {
             'attr': 'music',
             'type': None,
-            'limits': [None, 'off', 'content', 'dir'],
+            'limits': [None, 'off', 'content', 'dir', 'file'],
             'name': 'Music',
             'default': None
         },
@@ -271,6 +281,13 @@ class Trivia(Item):
             'limits': LIMIT_DIR,
             'name': 'Path',
             'default': ''
+        },
+        {
+            'attr': 'musicFile',
+            'type': None,
+            'limits': LIMIT_FILE,
+            'name': 'File',
+            'default': ''
         }
     )
     displayName = 'Trivia Slides'
@@ -278,6 +295,7 @@ class Trivia(Item):
 
     def __init__(self):
         Item.__init__(self)
+        self.format = None
         self.duration = 0
         self.qDuration = 0
         self.cDuration = 0
@@ -287,6 +305,7 @@ class Trivia(Item):
         self.transitionDuration = 0
         self.music = None
         self.musicDir = ''
+        self.musicFile = ''
 
     def display(self):
         name = self.name or self.displayName
@@ -302,8 +321,13 @@ class Trivia(Item):
 
     def elementVisible(self, e):
         attr = e['attr']
+        if attr != 'format' and self.format != 'slide':
+            return False
         if attr == 'musicDir':
             if self.music != 'dir':
+                return False
+        if attr == 'musicFile':
+            if self.music != 'file':
                 return False
         elif attr == 'transitionDuration':
             if not self.transition or self.transition == 'none':
@@ -471,7 +495,7 @@ class Video(Item):
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'source':
-            return not self.random
+            return self.vtype != 'file' and not self.random
         elif attr == 'file':
             return self.vtype == 'file'
         elif attr == 'random':

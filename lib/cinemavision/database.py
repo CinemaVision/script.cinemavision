@@ -58,11 +58,19 @@ class Trivia(ContentBase):
     rating = peewee.CharField(null=True)
     genre = peewee.CharField(null=True)
     year = peewee.CharField(null=True)
+    duration = peewee.FloatField(default=0)
 
     questionPath = peewee.CharField(unique=True, null=True)
+    cluePath0 = peewee.CharField(unique=True, null=True)
     cluePath1 = peewee.CharField(unique=True, null=True)
     cluePath2 = peewee.CharField(unique=True, null=True)
     cluePath3 = peewee.CharField(unique=True, null=True)
+    cluePath4 = peewee.CharField(unique=True, null=True)
+    cluePath5 = peewee.CharField(unique=True, null=True)
+    cluePath6 = peewee.CharField(unique=True, null=True)
+    cluePath7 = peewee.CharField(unique=True, null=True)
+    cluePath8 = peewee.CharField(unique=True, null=True)
+    cluePath9 = peewee.CharField(unique=True, null=True)
     answerPath = peewee.CharField(unique=True, null=True)
 
 Trivia.create_table(fail_silently=True)
@@ -70,35 +78,34 @@ Trivia.create_table(fail_silently=True)
 util.callback(' - AudioFormatBumpers')
 
 
-class AudioFormatBumpers(ContentBase):
+class BumperBase(ContentBase):
     is3D = peewee.BooleanField(default=False)
-    format = peewee.CharField()
+    isImage = peewee.BooleanField(default=False)
     path = peewee.CharField(unique=True)
+
+
+class AudioFormatBumpers(BumperBase):
+    format = peewee.CharField()
 
 AudioFormatBumpers.create_table(fail_silently=True)
 
 util.callback(' - RatingsBumpers')
 
 
-class RatingsBumpers(ContentBase):
-    is3D = peewee.BooleanField(default=False)
+class RatingsBumpers(BumperBase):
     system = peewee.CharField(default='MPAA')
-    path = peewee.CharField(unique=True)
 
 RatingsBumpers.create_table(fail_silently=True)
 
 util.callback(' - VideoBumpers')
 
 
-class VideoBumpers(ContentBase):
+class VideoBumpers(BumperBase):
     type = peewee.CharField()
-    is3D = peewee.BooleanField()
 
     rating = peewee.CharField(null=True)
     genre = peewee.CharField(null=True)
     year = peewee.CharField(null=True)
-
-    path = peewee.CharField(unique=True)
 
 VideoBumpers.create_table(fail_silently=True)
 

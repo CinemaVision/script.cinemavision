@@ -4,6 +4,8 @@ from xml.etree import ElementTree as ET
 
 import util
 import mutagen
+import hachoir
+
 mutagen.setFileOpener(util.vfs.File)
 
 TYPE_IDS = {
@@ -204,29 +206,34 @@ class UserContent:
             type_ = sub.replace(' Bumpers', '')
             for v in util.vfs.listdir(path):
                 name, ext = os.path.splitext(v)
-                if ext not in ('.mp4'):
+                isImage = False
+                if ext in util.videoExtensions:
+                    isImage = False
+                elif ext in util.imageExtensions:
+                    isImage = True
+                else:
                     continue
+
                 self.log('Loading {0}: [ {1} ]'.format(model.__name__, name))
                 model.get_or_create(
                     path=os.path.join(path, v),
                     defaults={
                         type_name: TYPE_IDS.get(type_, type_),
                         'name': name,
-                        'is3D': '3D' in v
+                        'is3D': '3D' in v,
+                        'isImage': isImage
                     }
                 )
 
 
 class MusicHandler:
-    _extensions = ('.mp3', '.wav')
-
     def __init__(self, db, callback=None):
         self.db = db
         self._callback = callback
 
     def __call__(self, base, path):
         p, ext = os.path.splitext(path)
-        if ext.lower() in self._extensions:
+        if ext.lower() in util.musicExtensions:
             path = util.pathJoin(base, path)
             name = os.path.basename(p)
             data = mutagen.File(path)
@@ -255,33 +262,51 @@ class TriviaDirectoryHandler:
     _clueNA = ('clue', 'format')
     _answerNA = ('answer', 'format')
 
-    _imageExtensions = ('.jpg', '.png')
+    _defaultQRegEx = '_q\.jpg|png|gif|bmp'
+    _defaultCRegEx = '_c(\d)?\.jpg|png|gif|bmp'
+    _defaultARegEx = '_a\.jpg|png|gif|bmp'
 
     def __init__(self, db, callback=None):
         self.db = db
         self._callback = callback
 
     def __call__(self, basePath):
+        hasSlidesXML = False
         slideXML = util.pathJoin(basePath, self._formatXML)
-        if not util.vfs.exists(slideXML):
-            return self.processSimpleDir(basePath)
-
-        f = util.vfs.File(slideXML, 'r')
-        xml = f.read()
-        f.close()
-        xml = xml.replace('">', '" />')  # Clean broken slide tags
-        slides = ET.fromstring(xml)
-        slide = slides.find('slide')
-        if slide is None:
-            util.LOG('BAD_SLIDE_FILE')
-            return None
+        if util.vfs.exists(slideXML):
+            hasSlidesXML = True
 
         pack = os.path.basename(basePath.rstrip('\\/'))
 
-        rating = self.getNodeAttribute(slide, self._ratingNA[0], self._ratingNA[1]) or ''
-        questionRE = (self.getNodeAttribute(slide, self._questionNA[0], self._questionNA[1]) or '').replace('N/A', '')
-        clueRE = self.getNodeAttribute(slide, self._clueNA[0], self._clueNA[1]) or ''.replace('N/A', '')
-        answerRE = self.getNodeAttribute(slide, self._answerNA[0], self._answerNA[1]) or ''.replace('N/A', '')
+        xml = None
+        slide = None
+
+        if hasSlidesXML:
+            try:
+                f = util.vfs.File(slideXML, 'r')
+                xml = f.read()
+            finally:
+                f.close()
+
+            try:
+                slides = ET.fromstring(xml)
+                slide = slides.find('slide')
+            except ET.ParseError:
+                util.DEBUG_LOG('bad slides.xml')
+            except:
+                util.ERROR()
+                slide = None
+
+        if slide:
+            rating = self.getNodeAttribute(slide, self._ratingNA[0], self._ratingNA[1]) or ''
+            questionRE = (self.getNodeAttribute(slide, self._questionNA[0], self._questionNA[1]) or '').replace('N/A', '')
+            clueRE = self.getNodeAttribute(slide, self._clueNA[0], self._clueNA[1]) or ''.replace('N/A', '')
+            answerRE = self.getNodeAttribute(slide, self._answerNA[0], self._answerNA[1]) or ''.replace('N/A', '')
+        else:
+            rating = ''
+            questionRE = self._defaultQRegEx
+            clueRE = self._defaultCRegEx
+            answerRE = self._defaultARegEx
 
         contents = util.vfs.listdir(basePath)
 
@@ -289,26 +314,54 @@ class TriviaDirectoryHandler:
 
         for c in contents:
             path = util.pathJoin(basePath, c)
-            name = c.split('_', 1)[0]
+            base, ext = os.path.splitext(c)
 
-            if name not in trivia:
-                trivia[name] = {'q': '', 'c': [], 'a': ''}
+            if not ext.lower() in util.imageExtensions:
+                if ext.lower() in util.videoExtensions:
+                    self.getSlide(basePath, c, pack)
+                continue
+
+            ttype = ''
+            clueCount = 0
 
             if re.search(questionRE, c):
-                trivia[name]['q'] = path
+                name = re.split(questionRE, c)[0]
+                ttype = 'q'
             elif re.search(answerRE, c):
-                trivia[name]['a'] = path
+                name = re.split(answerRE, c)[0]
+                ttype = 'a'
             elif re.search(clueRE, c):
-                trivia[name]['c'].append(path)
+                name = re.split(clueRE, c)[0]
+
+                try:
+                    clueCount = re.search(clueRE, c).group(1)
+                except:
+                    pass
+
+                ttype = 'c'
+            else:  # A still
+                name = re.split(clueRE, c)[0]
+                ttype = 'a'
+
+            if name not in trivia:
+                trivia[name] = {'q': None, 'c': {}, 'a': None}
+
+            if ttype == 'q' or ttype == 'a':
+                trivia[name][ttype] = path
+            elif ttype == 'c':
+                trivia[name]['c'][clueCount] = path
 
         for name, data in trivia.items():
             questionPath = data['q']
             answerPath = data['a']
 
-            if not questionPath or not answerPath:
+            if not answerPath:
                 continue
 
-            self._callback('Loading Trivia(QA): [ {0} ]'.format(name))
+            if questionPath:
+                self._callback('Loading Trivia(QA): [ {0} ]'.format(name))
+            else:
+                self._callback('Loading Trivia(fact): [ {0} ]'.format(name))
 
             defaults = {
                     'type': 'QA',
@@ -318,15 +371,17 @@ class TriviaDirectoryHandler:
                     'questionPath': questionPath
             }
 
-            ct = 1
-            for c in data['c']:
-                defaults['cluePath{0}'.format(ct)] = c
-                ct += 1
-
-            self.db.Trivia.get_or_create(
-                answerPath=answerPath,
-                defaults=defaults
-            )
+            for ct, key in enumerate(sorted(data['c'].keys())):
+                defaults['cluePath{0}'.format(ct)] = data['c'][key]
+            try:
+                self.db.Trivia.get_or_create(
+                    answerPath=answerPath,
+                    defaults=defaults
+                )
+            except:
+                print data
+                util.ERROR()
+                raise
 
     def processSimpleDir(self, path):
         pack = os.path.basename(path.rstrip('\\/'))
@@ -336,18 +391,38 @@ class TriviaDirectoryHandler:
 
     def getSlide(self, path, c, pack=''):
         name, ext = os.path.splitext(c)
-        if ext not in self._imageExtensions:
-            return
+        duration = 0
+        path = util.pathJoin(path, c)
 
-        self._callback('Loading Trivia (fact): [ {0} ]'.format(name))
-        self.db.Trivia.get_or_create(
-                answerPath=util.pathJoin(path, c),
-                defaults={
-                    'type': 'fact',
-                    'TID': '{0}.{1}'.format(pack, name),
-                    'name': name
-                }
-            )
+        try:
+            self.db.Trivia.get(self.db.Trivia.answerPath == path)
+            self._callback('Loading Trivia (exists): [ {0} ]'.format(name))
+        except self.db.peewee.DoesNotExist:
+            if ext.lower() in util.videoExtensions:
+                ttype = 'video'
+                parser = hachoir.hachoir_parser.createParser(path)
+                metadata = hachoir.hachoir_metadata.extractMetadata(parser)
+                durationDT = None
+                if metadata:
+                    durationDT = metadata.get('duration')
+                    duration = durationDT and util.datetimeTotalSeconds(durationDT) or 0
+                self._callback('Loading Trivia (video): [ {0} ({1}) ]'.format(name, durationDT))
+
+            elif ext.lower() in util.imageExtensions:
+                ttype = 'fact'
+                self._callback('Loading Trivia (fact): [ {0} ]'.format(name))
+            else:
+                return
+
+            self.db.Trivia.get_or_create(
+                    answerPath=path,
+                    defaults={
+                        'type': ttype,
+                        'TID': '{0}.{1}'.format(pack, name),
+                        'name': name,
+                        'duration': duration
+                    }
+                )
 
     def getNodeAttribute(self, node, sub_node_name, attr_name):
         subNode = node.find(sub_node_name)

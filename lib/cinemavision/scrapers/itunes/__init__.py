@@ -49,15 +49,22 @@ class Trailer:
         except IndexError:
             versions = all_
 
+        version = None
         try:
             version = [v for v in versions if any(res in u for u in v['urls'])][0]
             if version:
                 return [u for u in version['urls'] if res in u][0]
-            else:
-                return versions[0]['urls'][0]
         except:
             import traceback
             traceback.print_exc()
+
+        try:
+            return versions[0]['urls'][0]
+        except:
+            import traceback
+            traceback.print_exc()
+
+        return None
 
 
 class ItunesTrailerRetriever:
