@@ -324,6 +324,8 @@ class Trivia(Item):
 
     def elementVisible(self, e):
         attr = e['attr']
+        if attr != 'format' and self.format == 'video':
+            return False
 
         if attr == 'musicDir':
             if self.music != 'dir':
