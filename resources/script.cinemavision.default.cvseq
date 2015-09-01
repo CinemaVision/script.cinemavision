@@ -2,62 +2,68 @@
 <sequence>
 	<item enabled="True" type="video">
 		<vtype>trivia.intro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
-	<item enabled="True" type="trivia">
-		<duration>1</duration>
-		<qDuration>8</qDuration>
-		<cDuration>6</cDuration>
-		<aDuration>6</aDuration>
-		<sDuration>10</sDuration>
-	</item>
+	<item enabled="True" type="trivia"/>
 	<item enabled="True" type="video">
 		<vtype>trivia.outro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
+	</item>
+	<item enabled="True" type="video">
+		<vtype>courtesy</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>theater.intro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>trailers.intro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
-	<item enabled="True" type="trailer">
-		<count>1</count>
-	</item>
+	<item enabled="True" type="trailer"/>
 	<item enabled="True" type="video">
 		<vtype>trailers.outro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
-	<item enabled="True" type="video">
-		<vtype>countdown</vtype>
+	<item enabled="True" type="audioformat">
+		<play3D>True</play3D>
 	</item>
-	<item enabled="True" type="video">
-		<vtype>feature.intro</vtype>
-	</item>
-	<item enabled="True" type="audioformat"/>
-	<item enabled="True" type="feature">
-		<count>1</count>
-		<showRatingBumper>True</showRatingBumper>
-	</item>
+	<item enabled="True" type="feature"/>
 	<item enabled="True" type="command">
 		<command>skip</command>
-		<arg>5</arg>
+		<arg>6</arg>
 		<condition>feature.queue=empty</condition>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>intermission</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
-	<item enabled="True" type="audioformat"/>
-	<item enabled="True" type="feature">
-		<count>1</count>
-		<showRatingBumper>True</showRatingBumper>
+	<item enabled="True" type="trivia"/>
+	<item enabled="True" type="audioformat">
+		<play3D>True</play3D>
 	</item>
+	<item enabled="True" type="feature"/>
 	<item enabled="True" type="command">
 		<command>back</command>
-		<arg>3</arg>
+		<arg>4</arg>
 		<condition>feature.queue=full</condition>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>feature.outro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
 	<item enabled="True" type="video">
 		<vtype>theater.outro</vtype>
+		<random>True</random>
+		<play3D>True</play3D>
 	</item>
 </sequence>

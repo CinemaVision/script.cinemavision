@@ -97,7 +97,8 @@ class KodiVolumeControl:
         self.saved = None
 
     def set(self, volume_or_pct, fade_time=0, relative=False):
-        if relative and self.saved:
+        self.store()
+        if relative:
             volume = int(self.saved * (volume_or_pct / 100.0))
             kodiutil.DEBUG_LOG('Setting volume to: {0} ({1}%)'.format(volume, volume_or_pct))
         else:
@@ -120,6 +121,9 @@ class KodiVolumeControl:
         return False
 
     def _fade(self, start, end, fade_time_millis):
+        if self.fading():
+            self.stop()
+            self._fader.join()
         self._fader = threading.Thread(target=self._fadeWorker, args=(start, end, fade_time_millis))
         self._fader.start()
 
@@ -135,13 +139,15 @@ class KodiVolumeControl:
         kodiutil.DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
         for step in steps:
             if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
-                kodiutil.DEBUG_LOG('Fade ended early: {0}'.format((xbmc.abortRequested or self.abortFlag.isSet()) and 'ABORT' or 'NOT_PLAYING'))
-                self._set(end)
+                kodiutil.DEBUG_LOG(
+                    'Fade ended early({0}): {1}'.format(step, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
+                )
+                # self._set(end)
                 return
             xbmc.sleep(interval)
             self._set(step)
 
-        kodiutil.DEBUG_LOG('Fade: END ({0})'.format(end))
+        kodiutil.DEBUG_LOG('Fade: END ({0})'.format(step))
 
 
 class ScreensaverControl:
@@ -178,10 +184,17 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.effect = None
         self.duration = 400
         self.lastImage = ''
+        self.initialized = False
         self.clear()
 
     def onInit(self):
         self.image = (self.getControl(100), self.getControl(101))
+        self.initialized = True
+
+    def join(self):
+        while not kodiutil.wait(0.1) and not self.abortFlag.isSet():
+            if self.initialized:
+                return
 
     def setImage(self, url):
         if not self.effect:
@@ -408,10 +421,14 @@ class ExperiencePlayer(xbmc.Player):
         self.log('PLAYBACK FAILED')
         self.next()
 
-    # def onPlayBackSeek(self, seek_time, offset):
-    #     if seek_time == 0:
-    #         self.playStatus = self.SKIPPING_BACK
-    #         self.stop()
+    def getPlayingFile(self):
+        if self.isPlaying():
+            try:
+                return xbmc.Player.getPlayingFile(self)
+            except RuntimeError:
+                pass
+            return ''
+        return ''
 
     def init(self):
         self.abortFlag = threading.Event()
@@ -455,6 +472,7 @@ class ExperiencePlayer(xbmc.Player):
             feature.title = 'Feature Stub'
             feature.rating = 'PG-13'
             feature.ratingSystem = 'MPAA'
+            feature.audioFormat = 'Dolby Digital'
 
             self.features.append(feature)
 
@@ -501,7 +519,10 @@ class ExperiencePlayer(xbmc.Player):
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
     def start(self, sequence_path):
-        self.processor = sequenceprocessor.SequenceProcessor(sequence_path)
+        import cvutil
+        dbPath = cvutil.getDBPath()
+
+        self.processor = sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath)
         [self.processor.addFeature(f) for f in self.features]
 
         self.log('[ -- Started --------------------------------------------------------------- ]')
@@ -521,6 +542,7 @@ class ExperiencePlayer(xbmc.Player):
         self.window = ExperienceWindow.create()
         self.window.volume = self.volume
         self.window.abortFlag = self.abortFlag
+        self.window.join()
 
     def waitLoop(self):
         while not kodiutil.wait(0.1):
@@ -539,6 +561,7 @@ class ExperiencePlayer(xbmc.Player):
     def playMusic(self, image_queue):
         if not image_queue.music:
             return
+        print repr(image_queue.music)
 
         pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
         pl.clear()
@@ -562,7 +585,7 @@ class ExperiencePlayer(xbmc.Player):
         try:
             rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_MUSIC)
 
-            if image_queue:
+            if image_queue and image_queue.music:
                 self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
                 while self.volume.fading() and not self.abortFlag.isSet() and not kodiutil.wait(0.1):
                     if self.window.hasAction():

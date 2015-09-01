@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
-        <setting id="content.path"      label="Content path"          type="folder" sources="files" option="writeable" value="" />
-        <setting id="sequence.2D"       label="2D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
-        <setting id="sequence.3D"       label="3D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
-        <setting id="allow.video.skip"  label="Allow video skipping"  type="bool"   default="true" />
-        <setting id="bumper.fallback2D" label="Fallback to 2D bumper" type="bool"   default="false" />
+        <setting id="content.path"        label="Content path"          type="folder" sources="files" option="writeable" value="" />
+        <setting id="sequence.2D"         label="2D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
+        <setting id="sequence.3D"         label="3D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
+        <setting id="allow.video.skip"    label="Allow video skipping"  type="bool"   default="true" />
+        <setting id="bumper.fallback2D"   label="Fallback to 2D bumper" type="bool"   default="false" />
+        <setting id="database.update"     label="Update Content"        type="action" action="RunScript(script.cinemavision,update.database)" />
+        <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
     </category>
     <category label="Feature">
         <setting label="Module Defaults" type="lsep"/>
@@ -20,22 +22,24 @@
         <setting label="Module Defaults" type="lsep"/>
         <setting id="trivia.format"      label="Format"                      type="enum"   values="Slide|Video"  default="0" />
         <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
-        <setting id="trivia.transitionDuration"   label="Duration (ms)"      type="slider" default="400" range="100,100,2000" option="int" subsetting="true" enable="!eq(-1,0)" />
+        <setting id="trivia.transitionDuration"   label="Duration (ms)"      type="slider" default="400" range="100,100,2000" option="int" subsetting="true" />
         <setting id="trivia.duration"    label="Duration (minutes)"          type="slider" default="15" range="1,60" option="int" />
         <setting id="trivia.qDuration"   label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
         <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.music"       label="Music"                       type="enum"   values="Off|Content|Directory|File" default="0" />
-        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="files" value="" visible="eq(-1,2)" />
-        <setting id="trivia.musicDir"    label="File"                        type="file"   subsetting="true" sources="files" value="" visible="eq(-1,3)" />
+        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="files" value="" />
+        <setting id="trivia.musicDir"    label="File"                        type="file"   subsetting="true" sources="files" value="" />
     </category>
     <category label="Trailer">
-        <setting id="trailer.playUnwatched"     label="Play only unwatched first"     type="bool"   default="true" />
+        <setting id="trailer.playUnwatched"     label="Play unwatched trailers first"     type="bool"   default="true" />
         <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting id="trailer.globalRatingLimit" label="Rating limit"                  type="enum"   values="No Limit|G|PG|PG-13|R|NC-17" default="0" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"      label="Trailer source"  type="enum"       values="iTunes|Directory|Single File" default="0" />
+        <setting id="trailer.source"      label="Trailer source"  type="enum"       values="iTunes|Kodi Database|Directory|Single File" default="0" />
+        <setting id="trailer.dir"         label="Path"            type="folder"     subsetting="true" sources="files" value="" />
+        <setting id="trailer.file"        label="File"            type="file"       subsetting="true" sources="files" value="" />
         <setting id="trailer.count"       label="Count"           type="slider"     subsetting="true" default="1" range="1,10" option="int" />
         <setting id="trailer.limitRating" label="Limit rating"    type="bool"       subsetting="true" default="true" />
         <setting id="trailer.LimitGenre"  label="Limit genre"     type="bool"       subsetting="true" default="true" />

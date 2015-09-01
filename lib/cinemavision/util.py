@@ -33,7 +33,7 @@ def _getSettingDefault(key):
         'trailer.source': 'itunes',
         'trailer.count': 1,
         'trailer.limitRating': True,
-        'trailer.LimitGenre': True,
+        'trailer.limitGenre': True,
         'trailer.quality': '720p',
         'audioformat.method': 'af.detect',
         'audioformat.fallback': 'af.format',
@@ -142,7 +142,7 @@ try:
             return _getSettingDefault(key)
 
         if key == 'trailer.source':
-            return ['itunes', 'dir', 'file'][int(default)]
+            return ['itunes', 'kodidb', 'dir', 'file'][int(default)]
         elif key == 'trivia.format':
             return ['slide', 'video'][int(default)]
         elif key == 'trivia.music':
@@ -173,7 +173,7 @@ try:
 
         return default
 
-    videoExtensions = tuple(xbmc.getSupportedMedia('video').split('|'))
+    videoExtensions = tuple(xbmc.getSupportedMedia('video').split('|') + ['.cvurl'])
     musicExtensions = tuple(xbmc.getSupportedMedia('music').split('|'))
     imageExtensions = tuple(xbmc.getSupportedMedia('picture').split('|'))
 

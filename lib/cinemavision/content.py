@@ -5,6 +5,8 @@ from xml.etree import ElementTree as ET
 import util
 import mutagen
 import hachoir
+import database as DB
+
 
 mutagen.setFileOpener(util.vfs.File)
 
@@ -77,20 +79,20 @@ class UserContent:
         ))
     )
 
-    def __init__(self, content_dir=None, callback=None):
+    def __init__(self, content_dir=None, callback=None, db_path=None):
         self._callback = callback
-        self.setupDB()
-        self.musicHandler = MusicHandler(self.db, self.log)
-        self.triviaDirectoryHandler = TriviaDirectoryHandler(self.db, self.log)
+        self.setupDB(db_path)
+        self.musicHandler = MusicHandler(self.log)
+        self.triviaDirectoryHandler = TriviaDirectoryHandler(self.log)
         self.setContentDirectoryPath(content_dir)
-        self.setupContentDirectory()
+        if not db_path:
+            self.setupContentDirectory()
         self.loadContent()
 
-    def setupDB(self):
+    def setupDB(self, db_path):
         try:
             util.CALLBACK = self._callback
-            import database
-            self.db = database
+            DB.initialize(db_path)
         finally:
             util.CALLBACK = None
 
@@ -161,6 +163,9 @@ class UserContent:
         for sub in paths:
             path = os.path.join(basePath, sub)
             if util.isDir(path):
+                if sub.startswith('_Exclude'):
+                    util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(sub))
+                    continue
                 fmt = 'DIR'
             elif path.lower().endswith('.zip'):
                 fmt = 'ZIP'
@@ -179,21 +184,21 @@ class UserContent:
 
         basePath = util.pathJoin(self._contentDirectory, 'Audio Format Bumpers')
 
-        self.createBumpers(basePath, self.db.AudioFormatBumpers, 'format')
+        self.createBumpers(basePath, DB.AudioFormatBumpers, 'format')
 
     def loadVideoBumpers(self):
         self.logHeading('LOADING VIDEO BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Video Bumpers')
 
-        self.createBumpers(basePath, self.db.VideoBumpers, 'type')
+        self.createBumpers(basePath, DB.VideoBumpers, 'type')
 
     def loadRatingsBumpers(self):
         self.logHeading('LOADING RATINGS BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Ratings Bumpers')
 
-        self.createBumpers(basePath, self.db.RatingsBumpers, 'system')
+        self.createBumpers(basePath, DB.RatingsBumpers, 'system')
 
     def createBumpers(self, basePath, model, type_name):
         paths = util.vfs.listdir(basePath)
@@ -201,6 +206,10 @@ class UserContent:
         for sub in paths:
             path = util.pathJoin(basePath, sub)
             if not util.isDir(path):
+                continue
+
+            if sub.startswith('_Exclude'):
+                util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(sub))
                 continue
 
             type_ = sub.replace(' Bumpers', '')
@@ -214,7 +223,7 @@ class UserContent:
                 else:
                     continue
 
-                self.log('Loading {0}: [ {1} ]'.format(model.__name__, name))
+                self.log('Loading {0} ({1}): [ {2} ]'.format(model.__name__, sub, name))
                 model.get_or_create(
                     path=os.path.join(path, v),
                     defaults={
@@ -227,8 +236,7 @@ class UserContent:
 
 
 class MusicHandler:
-    def __init__(self, db, callback=None):
-        self.db = db
+    def __init__(self, callback=None):
         self._callback = callback
 
     def __call__(self, base, path):
@@ -239,16 +247,16 @@ class MusicHandler:
             data = mutagen.File(path)
 
             try:
-                self.db.Song.get(self.db.Song.path == path)
+                DB.Song.get(DB.Song.path == path)
                 self._callback('Loading Song (exists): [ {0} ]'.format(name))
-            except self.db.peewee.DoesNotExist:
+            except DB.peewee.DoesNotExist:
                 data = mutagen.File(path)
                 if data:
                     duration = data.info.length
                     self._callback('Loading Song (new): [ {0} ({1}) ]'.format(name, data.info.pprint()))
                 else:
                     duration = 0
-                self.db.Song.create(
+                DB.Song.create(
                     path=path,
                     name=name,
                     duration=duration
@@ -266,8 +274,7 @@ class TriviaDirectoryHandler:
     _defaultCRegEx = '_c(\d)?\.jpg|png|gif|bmp'
     _defaultARegEx = '_a\.jpg|png|gif|bmp'
 
-    def __init__(self, db, callback=None):
-        self.db = db
+    def __init__(self, callback=None):
         self._callback = callback
 
     def __call__(self, basePath):
@@ -374,7 +381,7 @@ class TriviaDirectoryHandler:
             for ct, key in enumerate(sorted(data['c'].keys())):
                 defaults['cluePath{0}'.format(ct)] = data['c'][key]
             try:
-                self.db.Trivia.get_or_create(
+                DB.Trivia.get_or_create(
                     answerPath=answerPath,
                     defaults=defaults
                 )
@@ -395,9 +402,9 @@ class TriviaDirectoryHandler:
         path = util.pathJoin(path, c)
 
         try:
-            self.db.Trivia.get(self.db.Trivia.answerPath == path)
+            DB.Trivia.get(DB.Trivia.answerPath == path)
             self._callback('Loading Trivia (exists): [ {0} ]'.format(name))
-        except self.db.peewee.DoesNotExist:
+        except DB.peewee.DoesNotExist:
             if ext.lower() in util.videoExtensions:
                 ttype = 'video'
                 parser = hachoir.hachoir_parser.createParser(path)
@@ -414,7 +421,7 @@ class TriviaDirectoryHandler:
             else:
                 return
 
-            self.db.Trivia.get_or_create(
+            DB.Trivia.get_or_create(
                     answerPath=path,
                     defaults={
                         'type': ttype,

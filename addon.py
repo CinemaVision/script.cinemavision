@@ -20,6 +20,9 @@ if __name__ == '__main__':
         kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
 
         e.start(seqPath)
+    elif arg == 'update.database':
+        from lib import cvutil
+        cvutil.loadContent()
     else:
         from lib import main
         main.main()

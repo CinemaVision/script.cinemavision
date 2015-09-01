@@ -102,7 +102,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.modified = True
 
         self.main.updateSpecials()
-        self.main.updateItemSettings(sItem, self.item)
+        self.main.updateItemSettings(self.item)
 
     def updateItem(self):
         item = self.settingsList.getSelectedItem()
@@ -115,7 +115,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             val = sItem.getSetting(attr)
             self.updateSlider(val, *self.getLimits(sItem, attr))
 
-        self.main.updateItemSettings(sItem, self.item)
+        self.main.updateItemSettings(self.item)
 
     def moveLeft(self):
         self.moveLR(-1)
@@ -145,7 +145,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         self.modified = True
 
         self.main.updateSpecials()
-        self.main.updateItemSettings(sItem, self.item)
+        self.main.updateItemSettings(self.item)
 
     def updateSlider(self, val, min_val, max_val, step):
         total = max_val - min_val
@@ -179,10 +179,18 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         options = sItem.getSettingOptions(attr)
 
         if options == cinemavision.sequence.LIMIT_FILE:
-            value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.getSetting(attr))
-            if not value:
-                return
-            value = value.decode('utf-8')
+            select = True
+            if sItem.getSetting(attr):
+                yes = xbmcgui.Dialog().yesno('Change Path', '', 'Would choose a new path, or clear the current path?', '', 'Choose', 'Clear')
+                if yes:
+                    value = None
+                    select = False
+
+            if select:
+                value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.getSetting(attr))
+                if not value:
+                    return
+                value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_DB_CHOICE:
             options = sItem.DBChoices(attr)
             if not options:
@@ -193,10 +201,18 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 return False
             value = options[idx][0]
         elif options == cinemavision.sequence.LIMIT_DIR:
-            value = xbmcgui.Dialog().browse(0, 'Select Directory', 'files')
-            if not value:
-                return
-            value = value.decode('utf-8')
+            select = True
+            if sItem.getSetting(attr):
+                yes = xbmcgui.Dialog().yesno('Change Path', '', 'Would choose a new path, or clear the current path?', '', 'Clear', 'Choose')
+                if yes:
+                    value = None
+                    select = False
+
+            if select:
+                value = xbmcgui.Dialog().browse(0, 'Select Directory', 'files')
+                if not value:
+                    return
+                value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_BOOL_DEFAULT:
             curr = sItem.getSetting(attr)
             if curr is None:
@@ -220,7 +236,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
         self.modified = True
 
-        self.main.updateItemSettings(sItem, self.item)
+        self.main.updateItemSettings(self.item)
 
         if sItem._type == 'command' and attr == 'command':
             self.main.updateSpecials()
@@ -242,7 +258,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = False
         self.name = ''
         self.path = ''
-        self.content = None
 
     def onFirstInit(self):
         self.sequenceControl = kodigui.ManagedControlList(self, self.SEQUENCE_LIST_ID, 22)
@@ -280,19 +295,27 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     return
             else:
                 if action == xbmcgui.ACTION_MOVE_LEFT:
+                    if self.sequenceControl.size() < 2:
+                        return
                     pos = self.sequenceControl.getSelectedPosition()
                     pos -= 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = self.sequenceControl.size() - 1
-                    self.sequenceControl.selectItem(pos)
-                    self.updateFocus(pre=True)
+                        self.sequenceControl.selectItem(pos)
+                    else:
+                        self.sequenceControl.selectItem(pos)
+                        self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                    if self.sequenceControl.size() < 2:
+                        return
                     pos = self.sequenceControl.getSelectedPosition()
                     pos += 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = 0
-                    self.sequenceControl.selectItem(pos)
-                    self.updateFocus(pre=True)
+                        self.sequenceControl.selectItem(pos)
+                    else:
+                        self.sequenceControl.selectItem(pos)
+                        self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
@@ -326,13 +349,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.loadDefault()
 
     def loadContent(self):
-        contentPath = kodiutil.getSetting('content.path')
-        if not contentPath:
+        if not kodiutil.getSetting('database.autoUpdate', False):
             return
-        kodiutil.DEBUG_LOG('Loading content...')
 
-        with kodiutil.Progress('Loading Content') as p:
-            self.content = cinemavision.content.UserContent(contentPath, callback=p.msg)
+        import cvutil
+        cvutil.loadContent()
 
     def fillOptions(self):
         for i in cinemavision.sequence.ITEM_TYPES:
@@ -388,7 +409,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         mli.setProperty('type.name', sItem.displayName)
         mli.setProperty('enabled', sItem.enabled and '1' or '')
 
-        self.updateItemSettings(sItem, mli)
+        self.updateItemSettings(mli)
 
         self.sequenceControl.insertItem(pos, mli)
         self.sequenceControl.insertItem(pos, kodigui.ManagedListItem())
@@ -406,7 +427,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             mli.setProperty('type.name', sItem.displayName)
             mli.setProperty('enabled', sItem.enabled and '1' or '')
 
-            self.updateItemSettings(sItem, mli)
+            self.updateItemSettings(mli)
 
             final.append(mli)
             final.append(kodigui.ManagedListItem())
@@ -521,7 +542,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem = item.dataSource
         sItem.enabled = not sItem.enabled
         item.setProperty('enabled', sItem.enabled and '1' or '')
-        self.updateItemSettings(sItem, item)
+        self.updateItemSettings(item)
 
         self.modified = True
 
@@ -568,13 +589,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             return
         isw = ItemSettingsWindow.open(main=self, item=item)
 
-        sItem = item.dataSource
+        self.updateItemSettings(item)
 
-        self.updateItemSettings(sItem, item)
         if not self.modified:
             self.modified = isw.modified
 
-    def updateItemSettings(self, sItem, item):
+    def updateItemSettings(self, item):
+        sItem = item.dataSource
+
         ct = 0
         item.setProperty('setting{0}'.format(ct), sItem.enabled and 'Yes' or 'No')
         item.setProperty('setting{0}_name'.format(ct), 'Enabled')
@@ -612,6 +634,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def doMenu(self):
         options = []
+        options.append(('settings', 'Settings'))
         options.append(('new', 'New Sequence'))
         options.append(('save', 'Save Sequence'))
         options.append(('saveas', 'Save Sequence As...'))
@@ -622,7 +645,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             return
         option = options[idx][0]
 
-        if option == 'new':
+        if option == 'settings':
+            self.settings()
+        elif option == 'new':
             self.new()
         elif option == 'save':
             self.save()
@@ -633,11 +658,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif option == 'test':
             self.test()
 
+    def settings(self):
+        kodiutil.ADDON.openSettings()
+        for item in self.sequenceControl:
+            if item.dataSource:
+                self.updateItemSettings(item)
+
     def test(self):
         import experience
-        savePath = self.savePath()
-        if not savePath:
-            savePath = self.defaultSavePath()
+
+        savePath = os.path.join(kodiutil.PROFILE_PATH, 'temp.cvseq')
+        self._save(savePath, temp=True)
 
         e = experience.ExperiencePlayer().create()
         e.start(savePath)
@@ -649,6 +680,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.name = ''
         self.sequenceControl.reset()
         self.fillSequence()
+        self.setFocusId(self.ADD_ITEM_LIST_ID)
 
     def savePath(self, path=None, name=None):
         path = path or self.path
@@ -663,12 +695,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         return self.savePath(path, 'script.cinemavision.default')
 
     def save(self, as_new=False):
-        items = [li.dataSource for li in self.sequenceControl if li.dataSource]
-        xmlString = cinemavision.sequence.getSaveString(items)
-
         if not self.path or as_new:
             path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False, self.path)
-            print path
             if not path:
                 return
             self.path = path
@@ -682,18 +710,21 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         fullPath = self.savePath()
 
-        kodiutil.DEBUG_LOG('Saving to: {0}'.format(fullPath))
+        self._save(fullPath)
 
-        f = xbmcvfs.File(fullPath, 'w')
+    def _save(self, full_path, temp=False):
+        items = [li.dataSource for li in self.sequenceControl if li.dataSource]
+        xmlString = cinemavision.sequence.getSaveString(items)
+
+        kodiutil.DEBUG_LOG('Saving to: {0}'.format(full_path))
+
+        f = xbmcvfs.File(full_path, 'w')
         f.write(xmlString)
         f.close()
 
-        self.modified = False
-
-        # print xmlString
-        # test = cinemavision.sequence.getItemsFromString(xmlString)
-        # print test
-        self.saveDefault()
+        if not temp:
+            self.modified = False
+            self.saveDefault()
 
     def load(self, path=None):
         path = path or xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False, self.path)

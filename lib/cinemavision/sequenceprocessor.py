@@ -530,7 +530,9 @@ class TrailerHandler:
 
         playables = []
         if source == 'itunes':
-            playables = self.iTunesHandler(sItem)
+            playables = self.scraperHandler(sItem, 'iTunes')
+        elif source == 'kodidb':
+            playables = self.scraperHandler(sItem, 'kodiDB')
         elif source == 'dir':
             playables = self.dirHandler(sItem)
         elif source == 'file':
@@ -582,13 +584,13 @@ class TrailerHandler:
 
         return url.replace(repl, 'h{0}'.format(res))
 
-    def oldest(self, sItem):
-        util.DEBUG_LOG('    - All iTunes trailers watched - using oldest trailers')
+    def oldest(self, sItem, source):
+        util.DEBUG_LOG('    - All scraper trailers watched - using oldest trailers')
 
         if sItem.getLive('limitRating') and self.caller.ratings:
             trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings).order_by(DB.WatchedTrailers.date)]
         else:
-            trailers = [t for t in DB.WatchedTrailers.select().order_by(DB.WatchedTrailers.date)]
+            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.source == source).order_by(DB.WatchedTrailers.date)]
 
         if not trailers:
             return []
@@ -615,19 +617,20 @@ class TrailerHandler:
 
         return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
 
-    def iTunesHandler(self, sItem):
+    def scraperHandler(self, sItem, source):
         count = sItem.getLive('count')
 
-        util.DEBUG_LOG('[T] iTunes x {0}'.format(count))
+        util.DEBUG_LOG('[T] {0} x {1}'.format(source, count))
 
-        trailers = scrapers.getTrailers()
+        trailers = scrapers.getTrailers(source)
         trailers = self.filter(sItem, trailers)
+
         if util.getSettingDefault('trailer.playUnwatched'):
             util.DEBUG_LOG('    - Filtering out watched')
             trailers = self.unwatched(trailers)
 
         if not trailers:
-            return self.oldest(sItem)
+            return self.oldest(sItem, source)
 
         if len(trailers) > count:
             trailers = random.sample(trailers, count)
@@ -643,7 +646,7 @@ class TrailerHandler:
 
                 trailer = DB.WatchedTrailers.get(DB.WatchedTrailers.WID == t.ID)
                 trailer.update(
-                    source='itunes',
+                    source=source,
                     watched=True,
                     date=now,
                     title=t.title,
@@ -655,7 +658,7 @@ class TrailerHandler:
             except DB.peewee.DoesNotExist:
                 DB.WatchedTrailers.create(
                     WID=t.ID,
-                    source='itunes',
+                    source=source,
                     watched=True,
                     date=now,
                     title=t.title,
@@ -668,7 +671,9 @@ class TrailerHandler:
         return [Video(t.getPlayableURL(quality), t.userAgent) for t in trailers]
 
     def dirHandler(self, sItem):
-        if not sItem.dir:
+        path = sItem.getLive('dir')
+
+        if not path:
             return []
 
         count = sItem.getLive('count')
@@ -676,20 +681,21 @@ class TrailerHandler:
         util.DEBUG_LOG('[T] Directory x {0}'.format(count))
 
         try:
-            files = util.vfs.listdir(sItem.dir)
+            files = util.vfs.listdir(path)
             files = random.sample(files, count)
-            return [Video(util.pathJoin(sItem.dir, p)) for p in files]
+            return [Video(util.pathJoin(path, p)) for p in files]
         except:
             util.ERROR()
             return []
 
     def fileHandler(self, sItem):
-        if not sItem.file:
+        path = sItem.getLive('file')
+        if not path:
             return []
 
-        util.DEBUG_LOG('[T] File: '.format(sItem.file))
+        util.DEBUG_LOG('[T] File: {0}'.format(repr(path)))
 
-        return [Video(sItem.file)]
+        return [Video(path)]
 
 
 class VideoBumperHandler:
@@ -846,14 +852,14 @@ class AudioFormatHandler:
                     except IndexError:
                         pass
         if (
-            sItem.file and not bumper and (
+            sItem.getLive('file') and not bumper and (
                 method == 'af.file' or (
                     method == 'af.detect' and fallback == 'af.file'
                 )
             )
         ):
             util.DEBUG_LOG('    - Using bumper based on file setting ({0})'.format(caller.currentFeature.title))
-            return [Video(sItem.file)]
+            return [Video(sItem.getLive('file'))]
 
         if bumper:
             return [Video(bumper.path)]
@@ -862,7 +868,8 @@ class AudioFormatHandler:
 
 
 class SequenceProcessor:
-    def __init__(self, sequence_path):
+    def __init__(self, sequence_path, db_path=None):
+        DB.initialize(db_path)
         self.pos = -1
         self.size = 0
         self.sequence = []

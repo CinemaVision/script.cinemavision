@@ -31,6 +31,7 @@ SETTINGS_DISPLAY = {
     'feature.queue=full': 'Feature queue is full',
     'feature.queue=empty': 'Feature queue is empty',
     'itunes': 'Apple iTunes',
+    'kodidb': 'Kodi Database',
     'dir': 'Directory',
     'file': 'Single File',
     'content': 'Content',
@@ -55,7 +56,7 @@ SETTINGS_DISPLAY = {
 
 def settingDisplay(setting):
     if setting is None or setting is 0:
-        return 'Default'
+        return ''
 
     try:
         return SETTINGS_DISPLAY.get(str(setting), setting)
@@ -166,6 +167,9 @@ class Item:
             return util.getSettingDefault('{0}.{1}'.format(self._type, attr))
         return val
 
+    def globalDefault(self, attr):
+        return util.getSettingDefault('{0}.{1}'.format(self._type, attr))
+
     def getSettingIndex(self, attr):
         for i, e in enumerate(self._elements):
             if e['attr'] == attr:
@@ -188,7 +192,7 @@ class Item:
         limits = self.getLimits(setting)
         if limits == LIMIT_BOOL_DEFAULT:
             if val is None:
-                return 'Default'
+                return 'Default ({0})'.format(settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
             return val is True and 'Yes' or 'No'
 
         if val is None or val is 0:
@@ -307,8 +311,8 @@ class Trivia(Item):
         self.transition = None
         self.transitionDuration = 0
         self.music = None
-        self.musicDir = ''
-        self.musicFile = ''
+        self.musicDir = None
+        self.musicFile = None
 
     def display(self):
         name = self.name or self.displayName
@@ -324,17 +328,18 @@ class Trivia(Item):
 
     def elementVisible(self, e):
         attr = e['attr']
-        if attr != 'format' and self.format == 'video':
+        if attr != 'format' and self.getLive('format') == 'video':
             return False
 
         if attr == 'musicDir':
-            if self.music != 'dir':
+            if self.getLive('music') != 'dir':
                 return False
-        if attr == 'musicFile':
-            if self.music != 'file':
+        elif attr == 'musicFile':
+            if self.getLive('music') != 'file':
                 return False
         elif attr == 'transitionDuration':
-            if not self.transition or self.transition == 'none':
+            transition = self.getLive('transition')
+            if not transition or transition == 'none':
                 return False
 
         return True
@@ -349,7 +354,7 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': [None, 'itunes', 'dir', 'file'],
+            'limits': [None, 'itunes', 'kodidb', 'dir', 'file'],
             'name': 'Source',
             'default': None
         },
@@ -403,8 +408,8 @@ class Trailer(Item):
         Item.__init__(self)
         self.count = 0
         self.source = None
-        self.file = ''
-        self.dir = ''
+        self.file = None
+        self.dir = None
         self.limitRating = None
         self.limitGenre = None
         self.quality = None
@@ -418,16 +423,19 @@ class Trailer(Item):
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'file':
-            if self.source != 'file':
+            if self.getLive('source') != 'file':
                 return False
         elif attr == 'dir':
-            if self.source != 'dir':
+            if self.getLive('source') != 'dir':
                 return False
         elif attr == 'count':
-            if self.source not in ['dir', 'itunes']:
+            if self.getLive('source') not in ('dir', 'itunes', 'kodidb'):
                 return False
-        elif attr in ('limitRating', 'limitGenre', 'quality'):
-            if self.source != 'itunes':
+        elif attr in ('limitRating', 'limitGenre'):
+            if self.getLive('source') not in ('itunes', 'kodidb'):
+                return False
+        elif attr == 'quality':
+            if self.getLive('source') != 'itunes':
                 return False
         return True
 
@@ -574,19 +582,19 @@ class AudioFormat(Item):
         self.method = None
         self.fallback = None
         self.format = None
-        self.file = ''
+        self.file = None
         self.play3D = True
 
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'fallback':
-            return self.method == 'af.detect'
+            return self.getLive('method') == 'af.detect'
         elif attr == 'file':
-            return self.method == 'af.file' or (self.method == 'af.detect' and self.fallback == 'af.file')
+            return self.getLive('method') == 'af.file' or (self.getLive('method') == 'af.detect' and self.getLive('fallback') == 'af.file')
         elif attr == 'format':
-            return self.method == 'af.format' or (self.method == 'af.detect' and self.fallback == 'af.format')
+            return self.getLive('method') == 'af.format' or (self.getLive('method') == 'af.detect' and self.getLive('fallback') == 'af.format')
         elif attr == 'play3D':
-            return self.method in (None, 'af.detect', 'af.format')
+            return self.getLive('method') in (None, 'af.detect', 'af.format')
 
         return True
 
