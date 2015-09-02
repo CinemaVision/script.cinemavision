@@ -50,13 +50,14 @@ SETTINGS_DISPLAY = {
     'slideD': 'Slide Down',
     'video': 'Video',
     'image': 'Image',
-    'slide': 'Slide'
+    'slide': 'Slide',
+    'DTS-X': 'DTS:X'
 }
 
 
 def settingDisplay(setting):
     if setting is None or setting is 0:
-        return ''
+        return 'Default'
 
     try:
         return SETTINGS_DISPLAY.get(str(setting), setting)
@@ -287,14 +288,14 @@ class Trivia(Item):
             'type': None,
             'limits': LIMIT_DIR,
             'name': 'Path',
-            'default': ''
+            'default': None
         },
         {
             'attr': 'musicFile',
             'type': None,
             'limits': LIMIT_FILE,
             'name': 'File',
-            'default': ''
+            'default': None
         }
     )
     displayName = 'Trivia Slides'
@@ -562,7 +563,8 @@ class AudioFormat(Item):
             'attr': 'format',
             'type': None,
             'limits': [
-                None, 'Auro-3D', 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'
+                None, 'Auro-3D', 'Dolby Digital', 'Dolby Digital Plus', 'Dolby TrueHD',
+                'Dolby Atmos', 'DTS', 'DTS-HD Master Audio', 'DTS-X', 'Datasat', 'THX', 'Other'
             ],
             'name': 'Format',
             'default': None
@@ -604,9 +606,22 @@ class AudioFormat(Item):
 ################################################################################
 class Action(Item):
     _type = 'action'
+    _elements = (
+        {
+            'attr': 'file',
+            'type': None,
+            'limits': LIMIT_FILE,
+            'name': 'Action File Path',
+            'default': ''
+        },
+    )
     displayName = 'Action'
     typeChar = '!'
     fileChar = '_'
+
+    def __init__(self):
+        Item.__init__(self)
+        self.file = ''
 
 
 ################################################################################

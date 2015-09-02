@@ -23,18 +23,22 @@ def _getSettingDefault(key):
         'feature.count': 1,
         'feature.ratingBumper': 'video',
         'trivia.format': 'slide',
-        'trivia.duration': 15,
+        'trivia.duration': 10,
         'trivia.qDuration': 8,
         'trivia.cDuration': 6,
         'trivia.aDuration': 6,
         'trivia.sDuration': 10,
         'trivia.transition': 'fade',
         'trivia.transitionDuration': 400,
+        'trivia.musicFile': '',
+        'trivia.musicDir': '',
         'trailer.source': 'itunes',
         'trailer.count': 1,
         'trailer.limitRating': True,
         'trailer.limitGenre': True,
         'trailer.quality': '720p',
+        'trailer.dir': '',
+        'trailer.file': '',
         'audioformat.method': 'af.detect',
         'audioformat.fallback': 'af.format',
         'audioformat.file': '',
@@ -42,7 +46,7 @@ def _getSettingDefault(key):
         # Non-sequence defualts
         'bumper.fallback2D': False,
         'trivia.playMusic': False,
-        'trivia.musicVolume': 85,
+        'trivia.musicVolume': 75,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,
         'trailer.playUnwatched': True
@@ -155,7 +159,8 @@ try:
             return ['none', 'fade', 'slideL', 'slideR', 'slideU', 'slideD'][int(default)]
         elif key == 'audioformat.format':
             return [
-                'Auro-3D', 'Dolby TrueHD', 'DTS-X', 'DTS-HD Master Audio', 'DTS', 'Dolby Atmos', 'THX', 'Dolby Digital Plus', 'Dolby Digital', 'Other'
+                'Auro-3D', 'Dolby Digital', 'Dolby Digital Plus', 'Dolby TrueHD',
+                'Dolby Atmos', 'DTS', 'DTS-HD Master Audio', 'DTS-X', 'Datasat', 'THX', 'Other'
             ][int(default)]
         elif key == 'trailer.globalRatingLimit':
             return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]

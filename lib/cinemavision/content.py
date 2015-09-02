@@ -49,6 +49,7 @@ class UserContent:
             'DTS',
             'DTS-HD Master Audio',
             'DTS-X',
+            'Datasat'
             'Other',
             'THX'
         )),
@@ -368,7 +369,7 @@ class TriviaDirectoryHandler:
             if questionPath:
                 self._callback('Loading Trivia(QA): [ {0} ]'.format(name))
             else:
-                self._callback('Loading Trivia(fact): [ {0} ]'.format(name))
+                self._callback('Loading Trivia(Single): [ {0} ]'.format(name))
 
             defaults = {
                     'type': 'QA',

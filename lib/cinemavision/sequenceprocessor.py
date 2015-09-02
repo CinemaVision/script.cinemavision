@@ -6,6 +6,7 @@ import sequence
 import util
 import scrapers
 import ratings
+import actions
 
 
 # Playabe is implemented as a dict to be easily serializable to JSON
@@ -302,6 +303,21 @@ class Feature(Video):
     @audioFormat.setter
     def audioFormat(self, val):
         self['audioFormat'] = val
+
+
+class Action(dict):
+    type = 'ACTION'
+
+    def __init__(self, processor, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.processor = processor
+        self['path'] = processor.path
+
+    def __repr__(self):
+        return '{0}: {1} - {2}'.format(self.type, self['path'], self.processor)
+
+    def run(self):
+        self.processor.run()
 
 
 class FeatureHandler:
@@ -867,6 +883,17 @@ class AudioFormatHandler:
         return []
 
 
+class ActionHandler:
+    def __call__(self, caller, sItem):
+        if not sItem.file:
+            util.DEBUG_LOG('[!] NO PATH SET')
+            return []
+
+        util.DEBUG_LOG('[!] {0}'.format(sItem.file))
+        processor = actions.ActionFileProcessor(sItem.file)
+        return [Action(processor)]
+
+
 class SequenceProcessor:
     def __init__(self, sequence_path, db_path=None):
         DB.initialize(db_path)
@@ -905,9 +932,6 @@ class SequenceProcessor:
 
         self.featureQueue.append(feature)
 
-    def actionHandler(self, sItem):
-        return []
-
     def commandHandler(self, sItem):
         if sItem.condition == 'feature.queue=full' and not self.featureQueue:
             return 0
@@ -925,7 +949,7 @@ class SequenceProcessor:
         'trailer': TrailerHandler(),
         'video': VideoBumperHandler(),
         'audioformat': AudioFormatHandler(),
-        'action': actionHandler,
+        'action': ActionHandler(),
         'command': commandHandler
     }
 

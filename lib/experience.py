@@ -561,7 +561,6 @@ class ExperiencePlayer(xbmc.Player):
     def playMusic(self, image_queue):
         if not image_queue.music:
             return
-        print repr(image_queue.music)
 
         pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
         pl.clear()
@@ -738,6 +737,9 @@ class ExperiencePlayer(xbmc.Player):
         else:
             self.play(path)
 
+    def doAction(self, action):
+        action.run()
+
     def next(self, prev=False):
         if self.processor.atEnd():
             return
@@ -751,7 +753,7 @@ class ExperiencePlayer(xbmc.Player):
         else:
             playable = self.processor.next()
 
-        if not playable:
+        if playable is None:
             self.window.doClose()
             return
 
@@ -779,6 +781,10 @@ class ExperiencePlayer(xbmc.Player):
 
         elif playable.type in ('VIDEO', 'FEATURE'):
             self.showVideo(playable)
+
+        elif playable.type == 'ACTION':
+            self.doAction(playable)
+            self.next()
 
         else:
             self.log('NOT PLAYING: {0}'.format(playable))
