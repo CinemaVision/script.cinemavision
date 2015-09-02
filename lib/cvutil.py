@@ -57,6 +57,7 @@ def loadContent():
 
 
 def downloadDemoContent():
+    import xbmc
     import requests
     import zipfile
     url = 'http://cinemavision.tv/cvdemo/Demo.zip'
@@ -82,7 +83,11 @@ def downloadDemoContent():
 
     z = zipfile.ZipFile(output)
     z.extractall(target)
-    os.remove(output)
+    xbmc.sleep(500)
+    try:
+        os.remove(output)
+    except:
+        kodiutil.ERROR()
 
     return True
 
