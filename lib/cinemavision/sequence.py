@@ -465,6 +465,7 @@ class Video(Item):
                 'trailers.outro',
                 'trivia.intro',
                 'trivia.outro',
+                'dir',
                 'file'
             ],
             'name': 'Type'
@@ -480,6 +481,19 @@ class Video(Item):
             'type': None,
             'limits': LIMIT_DB_CHOICE,
             'name': 'Source'
+        },
+        {
+            'attr': 'dir',
+            'type': None,
+            'limits': LIMIT_DIR,
+            'name': 'Directory'
+        },
+        {
+            'attr': 'count',
+            'type': int,
+            'limits': (1, 10, 1),
+            'name': 'Count',
+            'default': 0
         },
         {
             'attr': 'file',
@@ -502,13 +516,19 @@ class Video(Item):
         self.vtype = ''
         self.random = True
         self.source = ''
+        self.dir = ''
+        self.count = 1
         self.file = ''
         self.play3D = True
 
     def elementVisible(self, e):
         attr = e['attr']
         if attr == 'source':
-            return self.vtype != 'file' and not self.random
+            return self.vtype not in ('file', 'dir') and not self.random
+        elif attr == 'dir':
+            return self.vtype == 'dir'
+        elif attr == 'count':
+            return self.vtype == 'dir'
         elif attr == 'file':
             return self.vtype == 'file'
         elif attr == 'random':

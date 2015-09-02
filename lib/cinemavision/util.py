@@ -45,7 +45,7 @@ def _getSettingDefault(key):
         'audioformat.format': 'Other',
         # Non-sequence defualts
         'bumper.fallback2D': False,
-        'trivia.playMusic': False,
+        'trivia.music': 'content',
         'trivia.musicVolume': 75,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,

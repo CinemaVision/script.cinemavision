@@ -28,7 +28,7 @@
         <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
-        <setting id="trivia.music"       label="Music"                       type="enum"   values="Off|Content|Directory|File" default="0" />
+        <setting id="trivia.music"       label="Music"                       type="enum"   values="Off|Content|Directory|File" default="1" />
         <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="files" value="" />
         <setting id="trivia.musicFile"   label="File"                        type="file"   subsetting="true" sources="files" value="" />
     </category>

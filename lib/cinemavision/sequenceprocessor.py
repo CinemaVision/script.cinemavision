@@ -347,11 +347,12 @@ class FeatureHandler:
         mediaType = sItem.getLive('ratingBumper')
 
         for f in features:
+            bumper = None
             if mediaType == 'video':
                 bumper = self.getRatingBumper(f)
                 if bumper:
                     playables.append(Video(bumper.path))
-            elif mediaType == 'image':
+            if mediaType == 'image' or mediaType == 'video' and not bumper:
                 bumper = self.getRatingBumper(f, image=True)
                 if bumper:
                     playables.append(Image(bumper.path, duration=10, fade=3000))
@@ -732,13 +733,16 @@ class VideoBumperHandler:
             'trailers.outro': self.trailersOutro,
             'trivia.intro': self.triviaIntro,
             'trivia.outro': self.triviaOutro,
+            'dir': self.dir,
             'file': self.file
         }
 
     def __call__(self, caller, sItem):
         self.caller = caller
         playables = self.handlers[sItem.vtype](sItem)
-        util.DEBUG_LOG('[V] {0}{1}'.format(sItem.vtype, not playables and ': NOT SHOWING' or ''))
+        util.DEBUG_LOG('[V] {0}{1}'.format(
+            sItem.vtype, not playables and ': NOT SHOWING' or '{0}'.format(sItem.vtype == 'dir' and ' x {0}'.format(sItem.count) or ''))
+        )
         return playables
 
     def defaultHandler(self, sItem):
@@ -813,6 +817,22 @@ class VideoBumperHandler:
         if sItem.file:
             return [Video(sItem.file)]
         else:
+            return []
+
+    def dir(self, sItem):
+        if not sItem.dir:
+            return []
+
+        try:
+            files = util.vfs.listdir(sItem.dir)
+            if sItem.random:
+                files = random.sample(files, sItem.count)
+            else:
+                files = files[:sItem.count]
+
+            return [Video(util.pathJoin(sItem.dir, p)) for p in files]
+        except:
+            util.ERROR()
             return []
 
 
