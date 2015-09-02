@@ -534,7 +534,7 @@ class Video(Item):
         elif attr == 'random':
             return self.vtype != 'file'
         elif attr == 'play3D':
-            return self.random and self.vtype not in ('3D.intro', '3D.outro', 'file')
+            return self.random and self.vtype not in ('3D.intro', '3D.outro', 'dir', 'file')
 
         return True
 
