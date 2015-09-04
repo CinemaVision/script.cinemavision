@@ -990,5 +990,29 @@
             </control>
 
         </control>
+        <control type="group">
+            <posx>1420</posx>
+            <posy>920</posy>
+            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.DEMO_MODE))</visible>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>460</width>
+                <height>120</height>
+                <texture>script.cinemavision-white_square.png</texture>
+                <colordiffuse>FF303030</colordiffuse>
+                <aspectratio>stretch</aspectratio>
+            </control>
+            <control type="textbox">
+                <left>20</left>
+                <top>20</top>
+                <width>420</width>
+                <height>80</height>
+                <font>font13</font>
+                <textcolor>FF64A0FF</textcolor>
+                <align>right</align>
+                <label>DEMO MODE[CR]Set [COLOR FFA4E0FF]Content path[/COLOR] in settings</label>
+            </control>
+        </control>
     </controls>
 </window>

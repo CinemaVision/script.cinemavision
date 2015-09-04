@@ -337,8 +337,9 @@ class ExperiencePlayer(xbmc.Player):
     DUMMY_FILE_PREV = 'script.cinemavision.dummy_PREV.mp4'
     DUMMY_FILE_NEXT = 'script.cinemavision.dummy_NEXT.mp4'
 
-    def create(self):
+    def create(self, from_editor=False):
         # xbmc.Player.__init__(self)
+        self.fromEditor = from_editor
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         self.fakeFilePrev = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.dummy_PREV.mp4')
         self.fakeFileNext = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.dummy_NEXT.mp4')
@@ -437,14 +438,18 @@ class ExperiencePlayer(xbmc.Player):
         self.screensaver = ScreensaverControl()
         self.features = []
 
-        result = rpc.Playlist.GetItems(playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title'])  # Get video playlist
+        result = rpc.Playlist.GetItems(playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime'])
         for r in result.get('items', []):
             feature = sequenceprocessor.Feature(r['file'])
             feature.title = r.get('title') or r.get('label', '')
             ratingSplit = r.get('mpaa', ' ').split()
+            if len(ratingSplit) == 1:
+                ratingSplit.append('')
             feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
             feature.ratingSystem = 'MPAA'
             feature.genres = r.get('genre', [])
+            feature.thumb = r.get('thumbnail', '')
+            feature.runtime = r.get('runtime', '')
 
             try:
                 stereomode = r['streamdetails']['video'][0]['stereomode']
@@ -467,7 +472,7 @@ class ExperiencePlayer(xbmc.Player):
 
             self.features.append(feature)
 
-        if not self.features:
+        if self.fromEditor and not self.features:
             feature = sequenceprocessor.Feature(self.featureStub)
             feature.title = 'Feature Stub'
             feature.rating = 'PG-13'
@@ -475,6 +480,9 @@ class ExperiencePlayer(xbmc.Player):
             feature.audioFormat = 'Dolby Digital'
 
             self.features.append(feature)
+
+    def hasFeatures(self):
+        return bool(self.features)
 
     def playVideos(self, paths):
         self.playlist.clear()

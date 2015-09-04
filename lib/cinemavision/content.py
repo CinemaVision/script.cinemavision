@@ -49,11 +49,12 @@ class UserContent:
             'DTS',
             'DTS-HD Master Audio',
             'DTS-X',
-            'Datasat'
+            'Datasat',
             'Other',
             'THX'
         )),
         'Music',
+        'Actions',
         ('Ratings Bumpers', (
             'MPAA',
             'BBFC',
@@ -152,7 +153,10 @@ class UserContent:
         basePath = util.pathJoin(self._contentDirectory, 'Music')
         paths = util.vfs.listdir(basePath)
 
-        for path in paths:
+        total = float(len(paths))
+        for ct, path in enumerate(paths):
+            pct = int((ct/total)*20)
+            self._callback(pct=pct)
             self.musicHandler(basePath, path)
 
     def loadTrivia(self):
@@ -161,7 +165,10 @@ class UserContent:
         basePath = util.pathJoin(self._contentDirectory, 'Trivia Slides')
         paths = util.vfs.listdir(basePath)
 
-        for sub in paths:
+        total = float(len(paths))
+        for ct, sub in enumerate(paths):
+            pct = 20 + int((ct/total)*20)
+            self._callback(pct=pct)
             path = os.path.join(basePath, sub)
             if util.isDir(path):
                 if sub.startswith('_Exclude'):
@@ -185,26 +192,30 @@ class UserContent:
 
         basePath = util.pathJoin(self._contentDirectory, 'Audio Format Bumpers')
 
-        self.createBumpers(basePath, DB.AudioFormatBumpers, 'format')
+        self.createBumpers(basePath, DB.AudioFormatBumpers, 'format', 40)
 
     def loadVideoBumpers(self):
         self.logHeading('LOADING VIDEO BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Video Bumpers')
 
-        self.createBumpers(basePath, DB.VideoBumpers, 'type')
+        self.createBumpers(basePath, DB.VideoBumpers, 'type', 60)
 
     def loadRatingsBumpers(self):
         self.logHeading('LOADING RATINGS BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Ratings Bumpers')
 
-        self.createBumpers(basePath, DB.RatingsBumpers, 'system')
+        self.createBumpers(basePath, DB.RatingsBumpers, 'system', 80)
 
-    def createBumpers(self, basePath, model, type_name):
+    def createBumpers(self, basePath, model, type_name, pct_start):
         paths = util.vfs.listdir(basePath)
+        total = float(len(paths))
 
-        for sub in paths:
+        for ct, sub in enumerate(paths):
+            pct = pct_start + int((ct/total)*20)
+            self._callback(pct=pct)
+
             path = util.pathJoin(basePath, sub)
             if not util.isDir(path):
                 continue

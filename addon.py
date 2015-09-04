@@ -9,17 +9,8 @@ if __name__ == '__main__':
         from lib import settings
         settings.clearDBWatchedStatus()
     elif arg == 'experience':
-        from lib import cvutil
-        from lib import experience
-        from lib import kodiutil
-
-        e = experience.ExperiencePlayer().create()
-
-        seqPath = cvutil.getSequencePath(for_3D=e.has3D)
-
-        kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
-
-        e.start(seqPath)
+        from lib import player
+        player.begin()
     elif arg == 'update.database':
         from lib import cvutil
         cvutil.loadContent()

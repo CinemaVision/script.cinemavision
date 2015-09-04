@@ -349,11 +349,19 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.loadDefault()
 
     def loadContent(self):
-        if not kodiutil.getSetting('database.autoUpdate', False):
+        if self.checkForContentDB() and not kodiutil.getSetting('database.autoUpdate', False):
             return
 
         import cvutil
         cvutil.loadContent()
+
+    def checkForContentDB(self):
+        if kodiutil.getSetting('content.path'):
+            kodiutil.setGlobalProperty('DEMO_MODE', '')
+            return os.path.exists(os.path.join(kodiutil.PROFILE_PATH, 'content.db'))
+        else:
+            kodiutil.setGlobalProperty('DEMO_MODE', '1')
+            return True
 
     def fillOptions(self):
         for i in cinemavision.sequence.ITEM_TYPES:
@@ -669,13 +677,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if item.dataSource:
                 self.updateItemSettings(item)
 
+        if not self.checkForContentDB():
+            import cvutil
+            cvutil.loadContent()
+
     def test(self):
         import experience
 
         savePath = os.path.join(kodiutil.PROFILE_PATH, 'temp.cvseq')
         self._save(savePath, temp=True)
 
-        e = experience.ExperiencePlayer().create()
+        e = experience.ExperiencePlayer().create(from_editor=True)
         e.start(savePath)
 
     def new(self):

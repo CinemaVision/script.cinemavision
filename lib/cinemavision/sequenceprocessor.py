@@ -304,6 +304,29 @@ class Feature(Video):
     def audioFormat(self, val):
         self['audioFormat'] = val
 
+    @property
+    def thumb(self):
+        return self.get('thumbnail', '')
+
+    @thumb.setter
+    def thumb(self, val):
+        self['thumbnail'] = val
+
+    @property
+    def runtime(self):
+        return self.get('runtime', '')
+
+    @runtime.setter
+    def runtime(self, val):
+        self['runtime'] = val
+
+    @property
+    def durationMinutesDisplay(self):
+        if not self.runtime:
+            return
+
+        return '{0} minutes'.format(self.runtime/60)
+
 
 class Action(dict):
     type = 'ACTION'

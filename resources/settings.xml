@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
-        <setting id="content.path"        label="Content path"          type="folder" sources="files" option="writeable" value="" />
-        <setting id="sequence.2D"         label="2D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
-        <setting id="sequence.3D"         label="3D Sequence"           type="file"   sources="files" value="" mask="*.cvseq" />
+        <setting id="content.path"        label="Content path"          type="folder" sources="auto" option="writeable" value="" />
+        <setting id="sequence.2D"         label="2D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
+        <setting id="sequence.3D"         label="3D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
         <setting id="allow.video.skip"    label="Allow video skipping"  type="bool"   default="true" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper" type="bool"   default="false" />
         <setting id="database.update"     label="Update Content"        type="action" action="RunScript(script.cinemavision,update.database)" />
@@ -29,8 +29,8 @@
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.music"       label="Music"                       type="enum"   values="Off|Content|Directory|File" default="1" />
-        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="files" value="" />
-        <setting id="trivia.musicFile"   label="File"                        type="file"   subsetting="true" sources="files" value="" />
+        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="auto" value="" />
+        <setting id="trivia.musicFile"   label="File"                        type="file"   subsetting="true" sources="auto" value="" />
     </category>
     <category label="Trailer">
         <setting id="trailer.playUnwatched"     label="Play unwatched trailers first"     type="bool"   default="true" />
@@ -38,8 +38,8 @@
         <setting id="trailer.globalRatingLimit" label="Rating limit"                  type="enum"   values="No Limit|G|PG|PG-13|R|NC-17" default="0" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="trailer.source"      label="Trailer source"  type="enum"       values="Apple iTunes|Kodi Database|Directory|Single File" default="0" />
-        <setting id="trailer.dir"         label="Path"            type="folder"     subsetting="true" sources="files" value="" />
-        <setting id="trailer.file"        label="File"            type="file"       subsetting="true" sources="files" value="" />
+        <setting id="trailer.dir"         label="Path"            type="folder"     subsetting="true" sources="auto" value="" />
+        <setting id="trailer.file"        label="File"            type="file"       subsetting="true" sources="auto" value="" />
         <setting id="trailer.count"       label="Count"           type="slider"     subsetting="true" default="1" range="1,10" option="int" />
         <setting id="trailer.limitRating" label="Match feature rating"    type="bool"       subsetting="true" default="true" />
         <setting id="trailer.LimitGenre"  label="Match feature genre"     type="bool"       subsetting="true" default="true" />
@@ -50,6 +50,6 @@
         <setting id="audioformat.method"   label="Method"   type="enum" values="Auto-detect from source|Choose format|Choose file" default="0" />
         <setting id="audioformat.fallback" label="Fallback" type="enum" values="Choose format|Choose file" default="0" subsetting="true" />
         <setting id="audioformat.format"   label="Format"   type="enum" values="Auro-3D|Dolby Digital|Dolby Digital Plus|Dolby TrueHD|Dolby Atmos|DTS|DTS-HD Master Audio|DTS:X|Datasat|THX|Other" default="10" subsetting="true" />
-        <setting id="audioformat.file"     label="File"     type="file" sources="files" value="" subsetting="true" />
+        <setting id="audioformat.file"     label="File"     type="file" sources="auto" value="" subsetting="true" />
     </category>
 </settings>

@@ -370,7 +370,7 @@ class ManagedControlList(object):
         if source_idx < dest_idx:
             rstart = source_idx
             rend = dest_idx+1
-            dest_idx -= 1
+            # dest_idx-=1
         else:
             rstart = dest_idx
             rend = source_idx+1
