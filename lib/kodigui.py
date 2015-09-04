@@ -10,6 +10,8 @@ class BaseFunctions:
     path = ''
     theme = ''
     res = '720p'
+    width = 1280
+    height = 720
 
     def __init__(self):
         self.isOpen = True
@@ -31,6 +33,12 @@ class BaseFunctions:
         self.isOpen = True
         self.doModal()
         self.isOpen = False
+
+    def mouseXTrans(self, val):
+        return int((val / self.getWidth()) * self.width)
+
+    def mouseYTrans(self, val):
+        return int((val / self.getHeight()) * self.height)
 
 
 class BaseWindow(xbmcgui.WindowXML, BaseFunctions):

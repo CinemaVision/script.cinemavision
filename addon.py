@@ -13,7 +13,7 @@ if __name__ == '__main__':
         player.begin()
     elif arg == 'update.database':
         from lib import cvutil
-        cvutil.loadContent()
+        cvutil.loadContent(from_settings=True)
     else:
         from lib import main
         main.main()

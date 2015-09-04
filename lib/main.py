@@ -247,6 +247,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     path = kodiutil.ADDON_PATH
     theme = 'Main'
     res = '1080i'
+    width = 1920
+    height = 1080
 
     SEQUENCE_LIST_ID = 201
     ADD_ITEM_LIST_ID = 202
@@ -294,7 +296,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     self.updateSpecials()
                     return
             else:
-                if action == xbmcgui.ACTION_MOVE_LEFT:
+                if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
                     pos = self.sequenceControl.getSelectedPosition()
@@ -305,7 +307,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     else:
                         self.sequenceControl.selectItem(pos)
                         self.updateFocus(pre=True)
-                elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
                     pos = self.sequenceControl.getSelectedPosition()
@@ -704,7 +706,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         name = name or self.name
         if not name or not path:
             return None
-
+        if name.endswith('.cvseq'):
+            name = name[:-6]
         return cinemavision.util.pathJoin(path, name) + '.cvseq'
 
     def defaultSavePath(self):
@@ -742,6 +745,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not temp:
             self.modified = False
             self.saveDefault()
+
+        sequence2D = kodiutil.getSetting('sequence.2D')
+        sequence3D = kodiutil.getSetting('sequence.3D')
+        if not sequence2D or (full_path != sequence2D and full_path != sequence3D):
+            yes = xbmcgui.Dialog().yesno('Set Default', 'Would you like to set this as the default for playback?')
+            if yes:
+                as3D = xbmcgui.Dialog().yesno('2D/3D', 'For 2D or 3D?', nolabel='2D', yeslabel='3D')
+                if as3D:
+                    kodiutil.setSetting('sequence.3D', full_path)
+                else:
+                    kodiutil.setSetting('sequence.2D', full_path)
 
     def load(self, path=None):
         path = path or xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False, self.path)

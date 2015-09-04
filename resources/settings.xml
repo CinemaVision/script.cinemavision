@@ -2,12 +2,13 @@
 <settings>
     <category label="General">
         <setting id="content.path"        label="Content path"          type="folder" sources="auto" option="writeable" value="" />
+        <setting id="database.update"     label="Update Content"        type="action" action="RunScript(script.cinemavision,update.database)" />
+        <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
         <setting id="sequence.2D"         label="2D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
         <setting id="sequence.3D"         label="3D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
         <setting id="allow.video.skip"    label="Allow video skipping"  type="bool"   default="true" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper" type="bool"   default="false" />
-        <setting id="database.update"     label="Update Content"        type="action" action="RunScript(script.cinemavision,update.database)" />
-        <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
+
     </category>
     <category label="Feature">
         <setting label="Module Defaults" type="lsep"/>

@@ -1,4 +1,10 @@
-1.0.10
-- add       - something added to the script
-- fix       - fix of an existing (broken) process
-- change    - modification of an existing process
+Changelog for CinemaVision
+
+[- 0.0.30 -]
+- add:    When the experience is run with no queue, it uses the selected item
+- add:    When the user tries to update content with no content directory set, it shows a dialog saying it is not set or applied
+- change: Moved the 'Update content' and 'Auto update when editor starts' settings to under 'Content path' setting
+- add:    Set the window properties when running for skin integration
+- add:    Now logs disabled modules as disabled when building the sequence. Previously not logged at all
+- add:    Updating content is now cancelable
+- add:    Asks if you want to set the save as a default when default 2D sequence is not set or save does not match 2D/3D sequences

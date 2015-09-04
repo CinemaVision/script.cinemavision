@@ -23,7 +23,8 @@ def begin():
     e = experience.ExperiencePlayer().create()
 
     if not e.hasFeatures():
-        return showNoFeaturesDialog()
+        if not e.addSelectedFeature():
+            return showNoFeaturesDialog()
 
     e.features = featureComfirmationDialog(e.features)
     if not e.features:

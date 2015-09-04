@@ -42,10 +42,15 @@ def getDBPath(from_load=False):
     return None
 
 
-def loadContent():
+def loadContent(from_settings=False):
     from cinemavision import content
+    import xbmcgui
 
     contentPath = kodiutil.getSetting('content.path')
+    if from_settings and not contentPath:
+        xbmcgui.Dialog().ok('No Content Path', ' ', 'Content path not set or not applied')
+        return
+
     dbPath = getDBPath(from_load=True)
     if not contentPath:
         contentPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')

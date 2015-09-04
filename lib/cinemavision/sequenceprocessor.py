@@ -362,7 +362,7 @@ class FeatureHandler:
     def __call__(self, caller, sItem):
         count = sItem.getLive('count')
 
-        util.DEBUG_LOG('[F] x {0}'.format(count))
+        util.DEBUG_LOG('[{0}] x {1}'.format(sItem.typeChar, count))
 
         features = caller.featureQueue[:count]
         caller.featureQueue = caller.featureQueue[count:]
@@ -392,7 +392,7 @@ class TriviaHandler:
     def __call__(self, caller, sItem):
         duration = sItem.getLive('duration')
 
-        util.DEBUG_LOG('[Q] {0}m'.format(duration))
+        util.DEBUG_LOG('[{0}] {1}m'.format(sItem.typeChar, duration))
 
         durationLimit = duration * 60
         queue = ImageQueue(self, sItem)
@@ -579,7 +579,7 @@ class TrailerHandler:
             playables = self.fileHandler(sItem)
 
         if not playables:
-            util.DEBUG_LOG('[T] {0}: NOT SHOWING'.format(source))
+            util.DEBUG_LOG('[{0}] {1}: NOT SHOWING'.format(sItem.typeChar, source))
 
         return playables
 
@@ -660,7 +660,7 @@ class TrailerHandler:
     def scraperHandler(self, sItem, source):
         count = sItem.getLive('count')
 
-        util.DEBUG_LOG('[T] {0} x {1}'.format(source, count))
+        util.DEBUG_LOG('[{0}] {1} x {2}'.format(sItem.typeChar, source, count))
 
         trailers = scrapers.getTrailers(source)
         trailers = self.filter(sItem, trailers)
@@ -718,7 +718,7 @@ class TrailerHandler:
 
         count = sItem.getLive('count')
 
-        util.DEBUG_LOG('[T] Directory x {0}'.format(count))
+        util.DEBUG_LOG('[{0}] Directory x {1}'.format(sItem.typeChar, count))
 
         try:
             files = util.vfs.listdir(path)
@@ -733,7 +733,7 @@ class TrailerHandler:
         if not path:
             return []
 
-        util.DEBUG_LOG('[T] File: {0}'.format(repr(path)))
+        util.DEBUG_LOG('[{0}] File: {1}'.format(sItem.typeChar, repr(path)))
 
         return [Video(path)]
 
@@ -763,8 +763,10 @@ class VideoBumperHandler:
     def __call__(self, caller, sItem):
         self.caller = caller
         playables = self.handlers[sItem.vtype](sItem)
-        util.DEBUG_LOG('[V] {0}{1}'.format(
-            sItem.vtype, not playables and ': NOT SHOWING' or '{0}'.format(sItem.vtype == 'dir' and ' x {0}'.format(sItem.count) or ''))
+        util.DEBUG_LOG('[{0}] {1}{2}'.format(
+            sItem.typeChar,
+            sItem.display(),
+            not playables and ': NOT SHOWING' or '{0}'.format(sItem.vtype == 'dir' and ' x {0}'.format(sItem.count) or ''))
         )
         return playables
 
@@ -866,7 +868,7 @@ class AudioFormatHandler:
         fallback = sItem.getLive('fallback')
         format_ = sItem.getLive('format')
 
-        util.DEBUG_LOG('[A] Method: {0} Fallback: {1} Format: {2}'.format(method, fallback, format_))
+        util.DEBUG_LOG('[{0}] Method: {1} Fallback: {2} Format: {3}'.format(sItem.typeChar, method, fallback, format_))
 
         is3D = caller.currentFeature.is3D and sItem.play3D
 
@@ -929,10 +931,10 @@ class AudioFormatHandler:
 class ActionHandler:
     def __call__(self, caller, sItem):
         if not sItem.file:
-            util.DEBUG_LOG('[!] NO PATH SET')
+            util.DEBUG_LOG('[{0}] NO PATH SET'.format(sItem.typeChar))
             return []
 
-        util.DEBUG_LOG('[!] {0}'.format(sItem.file))
+        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, sItem.file))
         processor = actions.ActionFileProcessor(sItem.file)
         return [Action(processor)]
 
@@ -1013,6 +1015,7 @@ class SequenceProcessor:
             sItem = self.sequence[pos]
 
             if not sItem.enabled:
+                util.DEBUG_LOG('[{0}] ({1}) DISABLED'.format(sItem.typeChar, sItem.display()))
                 pos += 1
                 continue
 

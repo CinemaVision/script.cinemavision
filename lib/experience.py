@@ -481,6 +481,42 @@ class ExperiencePlayer(xbmc.Player):
 
             self.features.append(feature)
 
+    def addSelectedFeature(self):
+        title = xbmc.getInfoLabel('ListItem.Title')
+        if not title:
+            return False
+        feature = sequenceprocessor.Feature(xbmc.getInfoLabel('ListItem.FileNameAndPath'))
+        feature.title = title
+
+        ratingSplit = (xbmc.getInfoLabel('ListItem.Mpaa') or ' ').split()
+        if len(ratingSplit) == 1:
+            ratingSplit.append('')
+        feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
+
+        feature.ratingSystem = 'MPAA'
+        feature.genres = xbmc.getInfoLabel('ListItem.Genre').split(' / ')
+        feature.thumb = xbmc.getInfoLabel('ListItem.Thumb')
+
+        try:
+            feature.runtime = int(xbmc.getInfoLabel('ListItem.Duration')) * 60
+        except TypeError:
+            pass
+
+        feature.is3D = xbmc.getCondVisibility('ListItem.IsStereoscopic')
+
+        if not feature.is3D:
+            feature.is3D = bool(re.findall(TAGS_3D, feature.path))
+
+        codec = xbmc.getInfoLabel('ListItem.AudioCodec')
+        if codec:
+            feature.audioFormat = AUDIO_FORMATS.get(codec)
+            self.log('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+        else:
+            self.log('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+
+        self.features.append(feature)
+        return True
+
     def hasFeatures(self):
         return bool(self.features)
 
@@ -527,6 +563,15 @@ class ExperiencePlayer(xbmc.Player):
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
     def start(self, sequence_path):
+        kodiutil.setGlobalProperty('running', '1')
+        xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', 'True')
+        try:
+            return self._start(sequence_path)
+        finally:
+            kodiutil.setGlobalProperty('running', '')
+            xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', '')
+
+    def _start(self, sequence_path):
         import cvutil
         dbPath = cvutil.getDBPath()
 

@@ -156,7 +156,8 @@ class UserContent:
         total = float(len(paths))
         for ct, path in enumerate(paths):
             pct = int((ct/total)*20)
-            self._callback(pct=pct)
+            if not self._callback(pct=pct):
+                break
             self.musicHandler(basePath, path)
 
     def loadTrivia(self):
@@ -168,7 +169,8 @@ class UserContent:
         total = float(len(paths))
         for ct, sub in enumerate(paths):
             pct = 20 + int((ct/total)*20)
-            self._callback(pct=pct)
+            if not self._callback(pct=pct):
+                break
             path = os.path.join(basePath, sub)
             if util.isDir(path):
                 if sub.startswith('_Exclude'):
@@ -214,7 +216,8 @@ class UserContent:
 
         for ct, sub in enumerate(paths):
             pct = pct_start + int((ct/total)*20)
-            self._callback(pct=pct)
+            if not self._callback(pct=pct):
+                break
 
             path = util.pathJoin(basePath, sub)
             if not util.isDir(path):
