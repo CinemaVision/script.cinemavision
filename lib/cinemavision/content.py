@@ -194,23 +194,23 @@ class UserContent:
 
         basePath = util.pathJoin(self._contentDirectory, 'Audio Format Bumpers')
 
-        self.createBumpers(basePath, DB.AudioFormatBumpers, 'format', 40)
+        self.createBumpers(basePath, DB.AudioFormatBumpers, 'format', None, 40)
 
     def loadVideoBumpers(self):
         self.logHeading('LOADING VIDEO BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Video Bumpers')
 
-        self.createBumpers(basePath, DB.VideoBumpers, 'type', 60)
+        self.createBumpers(basePath, DB.VideoBumpers, 'type', None, 60)
 
     def loadRatingsBumpers(self):
         self.logHeading('LOADING RATINGS BUMPERS')
 
         basePath = util.pathJoin(self._contentDirectory, 'Ratings Bumpers')
 
-        self.createBumpers(basePath, DB.RatingsBumpers, 'system', 80)
+        self.createBumpers(basePath, DB.RatingsBumpers, 'system', 'style', 80)
 
-    def createBumpers(self, basePath, model, type_name, pct_start):
+    def createBumpers(self, basePath, model, type_name, sub_name, pct_start):
         paths = util.vfs.listdir(basePath)
         total = float(len(paths))
 
@@ -228,26 +228,44 @@ class UserContent:
                 continue
 
             type_ = sub.replace(' Bumpers', '')
-            for v in util.vfs.listdir(path):
-                name, ext = os.path.splitext(v)
-                isImage = False
-                if ext in util.videoExtensions:
-                    isImage = False
-                elif ext in util.imageExtensions:
-                    isImage = True
-                else:
-                    continue
+            self.addBumper(model, sub, path, type_name, sub_name, type_)
 
+    def addBumper(self, model, sub, path, type_name, sub_name, type_, sub_val=None):
+        for v in util.vfs.listdir(path):
+            vpath = os.path.join(path, v)
+
+            if util.isDir(vpath):
+                if not sub_val:
+                    self.addBumper(model, sub, vpath, type_name, sub_name, type_, v)
+                continue
+
+            name, ext = os.path.splitext(v)
+            isImage = False
+            if ext in util.videoExtensions:
+                isImage = False
+            elif ext in util.imageExtensions:
+                isImage = True
+            else:
+                continue
+
+            defaults = {
+                type_name: TYPE_IDS.get(type_, type_),
+                'name': name,
+                'is3D': '3D' in v,
+                'isImage': isImage
+            }
+
+            if sub_name:
+                sub_val = sub_val or 'DEFAULT'
+                defaults[sub_name] = sub_val
+                self.log('Loading {0} ({1} - {2}): [ {3} ]'.format(model.__name__, sub, sub_val, name))
+            else:
                 self.log('Loading {0} ({1}): [ {2} ]'.format(model.__name__, sub, name))
-                model.get_or_create(
-                    path=os.path.join(path, v),
-                    defaults={
-                        type_name: TYPE_IDS.get(type_, type_),
-                        'name': name,
-                        'is3D': '3D' in v,
-                        'isImage': isImage
-                    }
-                )
+
+            model.get_or_create(
+                path=vpath,
+                defaults=defaults
+            )
 
 
 class MusicHandler:

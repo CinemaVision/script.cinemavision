@@ -103,13 +103,13 @@ from collections import namedtuple
 import functools
 import re
 
-from peewee import *
-from peewee import CommaClause
-from peewee import EnclosedClause
-from peewee import Entity
-from peewee import Expression
-from peewee import Node
-from peewee import OP
+from peewee.peewee import *
+from peewee.peewee import CommaClause
+from peewee.peewee import EnclosedClause
+from peewee.peewee import Entity
+from peewee.peewee import Expression
+from peewee.peewee import Node
+from peewee.peewee import OP
 
 
 class Operation(object):

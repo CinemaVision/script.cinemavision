@@ -6,15 +6,21 @@
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
         <setting id="sequence.2D"         label="2D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
         <setting id="sequence.3D"         label="3D Sequence"           type="file"   sources="auto" value="" mask="*.cvseq" />
-        <setting id="allow.video.skip"    label="Allow video skipping"  type="bool"   default="true" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper" type="bool"   default="false" />
-
     </category>
+
+    <category label="Playback">
+        <setting id="hide.queue.dialog"        label="Hide queue dialog"       type="bool" default="false" />
+        <setting id="hide.queue.dialog.single" label="If only one item queued" type="bool" default="false" subsetting="true" enable="eq(-1,true)"/>
+        <setting id="allow.video.skip"         label="Allow video skipping"    type="bool" default="true" />
+    </category>
+
     <category label="Feature">
         <setting label="Module Defaults" type="lsep"/>
         <setting id="feature.count"        label="Count"         type="slider" default="1" range="1,10" option="int" />
         <setting id="feature.ratingBumper" label="Rating bumper" type="enum"   values="None|Video|Image"  default="1" />
     </category>
+
     <category label="Trivia">
         <setting label="Music" type="lsep"/>
         <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="75"  range="1,100"    option="percent" />
@@ -23,7 +29,7 @@
         <setting label="Module Defaults" type="lsep"/>
         <setting id="trivia.format"      label="Format"                      type="enum"   values="Slide|Video"  default="0" />
         <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
-        <setting id="trivia.transitionDuration"   label="Duration (ms)"      type="slider" default="400" range="100,100,2000" option="int" subsetting="true" />
+        <setting id="trivia.transitionDuration" label="Duration (ms)"        type="slider" default="400" range="100,100,2000" option="int" subsetting="true" />
         <setting id="trivia.duration"    label="Duration (minutes)"          type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.qDuration"   label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
         <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
@@ -33,19 +39,21 @@
         <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="auto" value="" />
         <setting id="trivia.musicFile"   label="File"                        type="file"   subsetting="true" sources="auto" value="" />
     </category>
+
     <category label="Trailer">
-        <setting id="trailer.playUnwatched"     label="Play unwatched trailers first"     type="bool"   default="true" />
+        <setting id="trailer.playUnwatched"     label="Play unwatched trailers first" type="bool"   default="true" />
         <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting id="trailer.globalRatingLimit" label="Rating limit"                  type="enum"   values="No Limit|G|PG|PG-13|R|NC-17" default="0" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"      label="Trailer source"  type="enum"       values="Apple iTunes|Kodi Database|Directory|Single File" default="0" />
-        <setting id="trailer.dir"         label="Path"            type="folder"     subsetting="true" sources="auto" value="" />
-        <setting id="trailer.file"        label="File"            type="file"       subsetting="true" sources="auto" value="" />
-        <setting id="trailer.count"       label="Count"           type="slider"     subsetting="true" default="1" range="1,10" option="int" />
-        <setting id="trailer.limitRating" label="Match feature rating"    type="bool"       subsetting="true" default="true" />
-        <setting id="trailer.LimitGenre"  label="Match feature genre"     type="bool"       subsetting="true" default="true" />
-        <setting id="trailer.quality"     label="Trailer quality" type="labelenum"  subsetting="true" values="480p|720p|1080p" default="720p" />
+        <setting id="trailer.source"      label="Trailer source"       type="enum"       values="Apple iTunes|Kodi Database|Directory|Single File" default="0" />
+        <setting id="trailer.dir"         label="Path"                 type="folder"     subsetting="true" sources="auto" value="" />
+        <setting id="trailer.file"        label="File"                 type="file"       subsetting="true" sources="auto" value="" />
+        <setting id="trailer.count"       label="Count"                type="slider"     subsetting="true" default="1" range="1,10" option="int" />
+        <setting id="trailer.limitRating" label="Match feature rating" type="bool"       subsetting="true" default="true" />
+        <setting id="trailer.LimitGenre"  label="Match feature genre"  type="bool"       subsetting="true" default="true" />
+        <setting id="trailer.quality"     label="Trailer quality"      type="labelenum"  subsetting="true" values="480p|720p|1080p" default="720p" />
     </category>
+
     <category label="Audio Format">
         <setting label="Module Defaults" type="lsep"/>
         <setting id="audioformat.method"   label="Method"   type="enum" values="Auto-detect from source|Choose format|Choose file" default="0" />

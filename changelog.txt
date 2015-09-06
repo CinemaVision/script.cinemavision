@@ -1,5 +1,14 @@
 Changelog for CinemaVision
 
+[- 0.0.31 -]
+
+- add:    Support for BBFC, DEJUS, FSK ratings systems
+- change: Improve Kodi rating parsing
+- change: Add settings category 'Playback'
+- change: Move setting 'Allow video skipping' to 'Playback' category
+- add:    Settings option 'Hide queue dialog' and subsetting 'If only one item queued'
+- add:    Initial support for ratings 'style' sub-folders (reads them into the database)
+
 [- 0.0.30 -]
 - add:    When the experience is run with no queue, it uses the selected item
 - add:    When the user tries to update content with no content directory set, it shows a dialog saying it is not set or applied

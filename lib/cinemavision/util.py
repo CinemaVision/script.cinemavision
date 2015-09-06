@@ -1,5 +1,4 @@
 import os
-import ratings
 
 DEBUG = True
 
@@ -163,6 +162,7 @@ try:
                 'Dolby Atmos', 'DTS', 'DTS-HD Master Audio', 'DTS-X', 'Datasat', 'THX', 'Other'
             ][int(default)]
         elif key == 'trailer.globalRatingLimit':
+            import ratings
             return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
         elif key == 'feature.ratingBumper':
             return ['none', 'video', 'image'][int(default)]

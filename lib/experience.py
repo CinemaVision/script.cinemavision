@@ -57,6 +57,25 @@ def resolveURLFile(path):
 
     return vid.streamURL()
 
+RATING_REs = (
+    ('MPAA', r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)'),
+    ('BBFC', r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)'),
+    ('FSK', r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)'),
+    ('DEJUS', r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)')
+)
+
+
+def getActualRatingFromMPAA(rating):
+    if not rating:
+        return 'MPAA:NA'
+
+    for system, ratingRE in RATING_REs:
+        m = re.search(ratingRE, rating)
+        if m:
+            return '{0}:{1}'.format(system, m.group('rating'))
+
+    return 'MPAA:NA'
+
 
 class KodiVolumeControl:
     def __init__(self, abort_flag):
@@ -442,11 +461,9 @@ class ExperiencePlayer(xbmc.Player):
         for r in result.get('items', []):
             feature = sequenceprocessor.Feature(r['file'])
             feature.title = r.get('title') or r.get('label', '')
-            ratingSplit = r.get('mpaa', ' ').split()
-            if len(ratingSplit) == 1:
-                ratingSplit.append('')
-            feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
-            feature.ratingSystem = 'MPAA'
+            ratingString = getActualRatingFromMPAA(r.get('mpaa', ''))
+            if ratingString:
+                feature.rating = ratingString
             feature.genres = r.get('genre', [])
             feature.thumb = r.get('thumbnail', '')
             feature.runtime = r.get('runtime', '')
@@ -475,8 +492,7 @@ class ExperiencePlayer(xbmc.Player):
         if self.fromEditor and not self.features:
             feature = sequenceprocessor.Feature(self.featureStub)
             feature.title = 'Feature Stub'
-            feature.rating = 'PG-13'
-            feature.ratingSystem = 'MPAA'
+            feature.rating = 'MPAA:PG-13'
             feature.audioFormat = 'Dolby Digital'
 
             self.features.append(feature)
@@ -488,12 +504,10 @@ class ExperiencePlayer(xbmc.Player):
         feature = sequenceprocessor.Feature(xbmc.getInfoLabel('ListItem.FileNameAndPath'))
         feature.title = title
 
-        ratingSplit = (xbmc.getInfoLabel('ListItem.Mpaa') or ' ').split()
-        if len(ratingSplit) == 1:
-            ratingSplit.append('')
-        feature.rating = ratingSplit and ratingSplit[-1] or 'NR'
+        ratingString = getActualRatingFromMPAA(xbmc.getInfoLabel('ListItem.Mpaa'))
+        if ratingString:
+            feature.rating = ratingString
 
-        feature.ratingSystem = 'MPAA'
         feature.genres = xbmc.getInfoLabel('ListItem.Genre').split(' / ')
         feature.thumb = xbmc.getInfoLabel('ListItem.Thumb')
 

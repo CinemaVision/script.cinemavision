@@ -15,8 +15,11 @@ except TypeError:
 from peewee import peewee
 import util
 
+DATABASE_VERSION = 1
+
 fn = peewee.fn
 
+DBVersion = None
 Song = None
 Trivia = None
 AudioFormatBumpers = None
@@ -26,9 +29,29 @@ WatchedTrailers = None
 WatchedTrivia = None
 
 
+def migrateDB(DB, version):
+    util.DEBUG_LOG('Migrating database from version {0} to {1}'.format(version, DATABASE_VERSION))
+    from peewee.playhouse import migrate
+    migrator = migrate.SqliteMigrator(DB)
+    try:
+        migrate.migrate(
+            migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='DEFAULT'))
+        )
+    except peewee.OperationalError:
+        util.ERROR()
+
+
+def checkDBVersion(DB):
+    vm = DBVersion.get_or_create(id=1, defaults={'version': 0})[0]
+    if vm.version < DATABASE_VERSION:
+        migrateDB(DB, vm.version)
+        vm.update(version=DATABASE_VERSION).execute()
+
+
 def initialize(path=None):
     util.callback(None, 'Creating/updating database...')
 
+    global DBVersion
     global Song
     global Trivia
     global AudioFormatBumpers
@@ -41,6 +64,16 @@ def initialize(path=None):
     # Watched Database
     ###########################################################################################
     DB = peewee.SqliteDatabase(util.pathJoin(path or util.STORAGE_PATH, 'content.db'))
+
+    class DBVersion(peewee.Model):
+        version = peewee.IntegerField(default=0)
+
+        class Meta:
+            database = DB
+
+    DBVersion.create_table(fail_silently=True)
+
+    checkDBVersion(DB)
 
     class ContentBase(peewee.Model):
         name = peewee.CharField()
@@ -105,6 +138,7 @@ def initialize(path=None):
 
     class RatingsBumpers(BumperBase):
         system = peewee.CharField(default='MPAA')
+        style = peewee.CharField(default='DEFAULT')
 
     RatingsBumpers.create_table(fail_silently=True)
 

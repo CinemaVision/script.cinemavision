@@ -246,10 +246,9 @@ class Feature(Video):
     type = 'FEATURE'
 
     def __repr__(self):
-        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating ({2}): {3}\n    Genres: {4}\n    3D: {5}\n    Audio: {6}'.format(
+        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Genres: {3}\n    3D: {4}\n    Audio: {5}'.format(
             repr(self.title),
             repr(self.path),
-            self.ratingSystem,
             self.rating,
             ', '.join(self.genres),
             self.is3D and 'Yes' or 'No',
@@ -266,19 +265,13 @@ class Feature(Video):
 
     @property
     def rating(self):
-        return self.get('rating', '')
+        if not getattr(self, '_rating', None):
+            self._rating = ratings.getRating(self.get('rating'))
+        return self._rating
 
     @rating.setter
     def rating(self, val):
         self['rating'] = val
-
-    @property
-    def ratingSystem(self):
-        return self.get('ratingSystem', '')
-
-    @ratingSystem.setter
-    def ratingSystem(self, val):
-        self['ratingSystem'] = val
 
     @property
     def genres(self):
@@ -349,8 +342,8 @@ class FeatureHandler:
             return random.choice(
                 [
                     x for x in DB.RatingsBumpers.select().where(
-                        (DB.RatingsBumpers.system == feature.ratingSystem) &
-                        (DB.RatingsBumpers.name == feature.rating) &
+                        (DB.RatingsBumpers.system == feature.rating.system) &
+                        (DB.RatingsBumpers.name == feature.rating.name) &
                         (DB.RatingsBumpers.is3D == feature.is3D) &
                         (DB.RatingsBumpers.isImage == image)
                     )
@@ -628,7 +621,7 @@ class TrailerHandler:
         util.DEBUG_LOG('    - All scraper trailers watched - using oldest trailers')
 
         if sItem.getLive('limitRating') and self.caller.ratings:
-            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings).order_by(DB.WatchedTrailers.date)]
+            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings.keys()).order_by(DB.WatchedTrailers.date)]
         else:
             trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.source == source).order_by(DB.WatchedTrailers.date)]
 
@@ -947,7 +940,7 @@ class SequenceProcessor:
         self.sequence = []
         self.featureQueue = []
         self.playables = []
-        self.ratings = []
+        self.ratings = {}
         self.genres = []
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
@@ -962,15 +955,12 @@ class SequenceProcessor:
     def createDefaultFeature(self):
         self.defaultFeature = Feature('')
         self.defaultFeature.title = 'Default Feature'
-        self.defaultFeature.rating = 'NR'
-        self.defaultFeature.ratingSystem = 'MPAA'
+        self.defaultFeature.rating = 'MPAA:NR'
         self.defaultFeature.audioFormat = 'Other'
 
     def addFeature(self, feature):
         if feature.rating:
-            rating = '{0}:{1}'.format(feature.ratingSystem, feature.rating)
-            if rating not in self.ratings:
-                self.ratings.append(rating)
+            self.ratings[str(feature.rating)] = feature.rating
 
         if feature.genres:
             self.genres += feature.genres
@@ -1001,7 +991,7 @@ class SequenceProcessor:
     def process(self):
         util.DEBUG_LOG('Processing sequence...')
         util.DEBUG_LOG('Feature count: {0}'.format(len(self.featureQueue)))
-        util.DEBUG_LOG('Ratings: {0}'.format(', '.join(self.ratings)))
+        util.DEBUG_LOG('Ratings: {0}'.format(', '.join(self.ratings.keys())))
         util.DEBUG_LOG('Genres: {0}'.format(', '.join(self.genres)))
 
         if self.featureQueue:

@@ -26,7 +26,9 @@ def begin():
         if not e.addSelectedFeature():
             return showNoFeaturesDialog()
 
-    e.features = featureComfirmationDialog(e.features)
+    if not kodiutil.getSetting('hide.queue.dialog', False) or (kodiutil.getSetting('hide.queue.dialog.single', False) and len(e.features) > 1):
+        e.features = featureComfirmationDialog(e.features)
+
     if not e.features:
         return
 
@@ -88,7 +90,7 @@ class PlaylistDialog(kodigui.BaseDialog):
         items = []
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
-            mli.setProperty('rating', f.rating)
+            mli.setProperty('rating', str(f.rating))
             items.append(mli)
 
         self.videoListControl.addItems(items)
