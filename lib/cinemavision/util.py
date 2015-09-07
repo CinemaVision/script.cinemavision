@@ -21,6 +21,8 @@ def _getSettingDefault(key):
     defaults = {
         'feature.count': 1,
         'feature.ratingBumper': 'video',
+        'feature.ratingStyleSelection': 'style',
+        'feature.ratingStyle': 'Classic',
         'trivia.format': 'slide',
         'trivia.duration': 10,
         'trivia.qDuration': 8,
@@ -166,6 +168,8 @@ try:
             return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
         elif key == 'feature.ratingBumper':
             return ['none', 'video', 'image'][int(default)]
+        elif key == 'feature.ratingStyleSelection':
+            return ['random', 'style'][int(default)]
         elif default in ['true', 'false']:
             return default == 'true'
         elif default.isdigit():

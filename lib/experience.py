@@ -29,7 +29,7 @@ TAGS_3D = '3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HA
 
 
 def isURLFile(path):
-    if path.endswith('.cvurl'):
+    if path and path.endswith('.cvurl'):
         return True
     return False
 

@@ -1,5 +1,6 @@
 import scraper
 import re
+import util
 
 
 class Trailer:
@@ -42,8 +43,20 @@ class Trailer:
         return scraper.USER_AGENT
 
     def getPlayableURL(self, res='720p'):
+        try:
+            return self._getPlayableURL(res)
+        except:
+            util.ERROR()
+
+        return None
+
+    def _getPlayableURL(self, res='720p'):
         ts = scraper.TrailerScraper()
-        all_ = [t for t in ts.get_trailers(self.data['location'])]
+        all_ = [t for t in ts.get_trailers(self.data['location']) if t]
+
+        if not all_:
+            return None
+
         try:
             versions = [t for t in all_ if t['title'] == 'Trailer']
         except IndexError:

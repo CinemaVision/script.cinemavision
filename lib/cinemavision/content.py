@@ -89,6 +89,8 @@ class UserContent:
         self.setContentDirectoryPath(content_dir)
         if not db_path:
             self.setupContentDirectory()
+
+        self.clean()
         self.loadContent()
 
     def setupDB(self, db_path):
@@ -139,6 +141,17 @@ class UserContent:
         if not self._contentDirectory:  # or util.vfs.exists(self._contentDirectory):
             return
         self._addDirectory(self._contentDirectory, self._tree)
+
+    def clean(self):
+        self.logHeading('CLEANING DATABASE')
+        self.musicHandler.clean()
+        self.triviaDirectoryHandler.clean()
+        for bumper, name in ((DB.AudioFormatBumpers, 'AudioFormatBumper'), (DB.VideoBumpers, 'VideoBumper'), (DB.RatingsBumpers, 'RatingBumper')):
+            for b in bumper.select():
+                path = b.path
+                if not util.vfs.exists(path):
+                    b.delete().execute()
+                    self.log('{0} Missing: {1} - REMOVED'.format(name, path))
 
     def loadContent(self):
         self.loadMusic()
@@ -208,9 +221,9 @@ class UserContent:
 
         basePath = util.pathJoin(self._contentDirectory, 'Ratings Bumpers')
 
-        self.createBumpers(basePath, DB.RatingsBumpers, 'system', 'style', 80)
+        self.createBumpers(basePath, DB.RatingsBumpers, 'system', 'style', 80, sub_default='Classic')
 
-    def createBumpers(self, basePath, model, type_name, sub_name, pct_start):
+    def createBumpers(self, basePath, model, type_name, sub_name, pct_start, sub_default=''):
         paths = util.vfs.listdir(basePath)
         total = float(len(paths))
 
@@ -228,15 +241,15 @@ class UserContent:
                 continue
 
             type_ = sub.replace(' Bumpers', '')
-            self.addBumper(model, sub, path, type_name, sub_name, type_)
+            self.addBumper(model, sub, path, type_name, sub_name, type_, sub_default)
 
-    def addBumper(self, model, sub, path, type_name, sub_name, type_, sub_val=None):
+    def addBumper(self, model, sub, path, type_name, sub_name, type_, sub_default, sub_val=None):
         for v in util.vfs.listdir(path):
             vpath = os.path.join(path, v)
 
             if util.isDir(vpath):
                 if not sub_val:
-                    self.addBumper(model, sub, vpath, type_name, sub_name, type_, v)
+                    self.addBumper(model, sub, vpath, type_name, sub_name, type_, sub_default, v)
                 continue
 
             name, ext = os.path.splitext(v)
@@ -256,7 +269,7 @@ class UserContent:
             }
 
             if sub_name:
-                sub_val = sub_val or 'DEFAULT'
+                sub_val = sub_val or sub_default
                 defaults[sub_name] = sub_val
                 self.log('Loading {0} ({1} - {2}): [ {3} ]'.format(model.__name__, sub, sub_val, name))
             else:
@@ -294,6 +307,13 @@ class MusicHandler:
                     name=name,
                     duration=duration
                 )
+
+    def clean(self):
+        for s in DB.Song.select():
+            path = s.path
+            if not util.vfs.exists(path):
+                s.delete().execute()
+                self._callback('Song Missing: {0} - REMOVED'.format(path))
 
 
 class TriviaDirectoryHandler:
@@ -469,3 +489,10 @@ class TriviaDirectoryHandler:
         if subNode is not None:
             return subNode.attrib.get(attr_name)
         return None
+
+    def clean(self):
+        for t in DB.Trivia.select():
+            path = t.answerPath
+            if not util.vfs.exists(path):
+                t.delete().execute()
+                self._callback('Trivia Missing: {0} - REMOVED'.format(path))

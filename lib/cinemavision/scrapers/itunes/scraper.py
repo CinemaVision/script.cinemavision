@@ -129,7 +129,12 @@ class TrailerScraper(object):
             return [trailer_url.replace('h720p', res)
                     for res in ('h480p', 'h720p', 'h1080p')]
 
-        tree = self.__get_tree(self.TRAILERS_URL % location)
+        try:
+            tree = self.__get_tree(self.TRAILERS_URL % location)
+        except NetworkError:
+            yield None
+            return
+
         for li in tree.findAll('li', {'class': re.compile('trailer')}):
             slug = li.find('h3').string.replace(' ', '').replace('-', '').lower()
             playlist = self.__get_url(self.PLAY_LIST_URL % (location, slug))

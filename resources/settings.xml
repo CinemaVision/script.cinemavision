@@ -17,8 +17,10 @@
 
     <category label="Feature">
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="feature.count"        label="Count"         type="slider" default="1" range="1,10" option="int" />
-        <setting id="feature.ratingBumper" label="Rating bumper" type="enum"   values="None|Video|Image"  default="1" />
+        <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
+        <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
+        <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
+        <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="Classic" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" />
     </category>
 
     <category label="Trivia">

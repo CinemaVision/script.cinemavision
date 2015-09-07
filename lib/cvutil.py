@@ -102,3 +102,16 @@ def copyDemoContent():
     dest = os.path.join(kodiutil.PROFILE_PATH, 'demo')
     import shutil
     shutil.copytree(source, dest)
+
+
+def setRatingBumperStyle():
+    import cinemavision
+    import xbmcgui
+
+    styles = cinemavision.sequence.Feature.DBChoices('ratingStyle')
+    idx = xbmcgui.Dialog().select('Select Style', [x[1] for x in styles])
+
+    if idx < 0:
+        return
+
+    kodiutil.setSetting('feature.ratingStyle', styles[idx][0])

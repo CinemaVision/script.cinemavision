@@ -196,6 +196,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             if not options:
                 xbmcgui.Dialog().ok('No Content', '', 'No content found for this bumper type')
                 return False
+            options.insert(0, (None, 'Default'))
             idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
             if idx < 0:
                 return False

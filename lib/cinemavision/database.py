@@ -35,7 +35,7 @@ def migrateDB(DB, version):
     migrator = migrate.SqliteMigrator(DB)
     try:
         migrate.migrate(
-            migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='DEFAULT'))
+            migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='Classic'))
         )
     except peewee.OperationalError:
         util.ERROR()
@@ -138,7 +138,7 @@ def initialize(path=None):
 
     class RatingsBumpers(BumperBase):
         system = peewee.CharField(default='MPAA')
-        style = peewee.CharField(default='DEFAULT')
+        style = peewee.CharField(default='Classic')
 
     RatingsBumpers.create_table(fail_silently=True)
 

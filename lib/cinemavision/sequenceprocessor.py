@@ -337,18 +337,28 @@ class Action(dict):
 
 
 class FeatureHandler:
-    def getRatingBumper(self, feature, image=False):
+    def getRatingBumper(self, sItem, feature, image=False):
         try:
-            return random.choice(
-                [
-                    x for x in DB.RatingsBumpers.select().where(
-                        (DB.RatingsBumpers.system == feature.rating.system) &
-                        (DB.RatingsBumpers.name == feature.rating.name) &
-                        (DB.RatingsBumpers.is3D == feature.is3D) &
-                        (DB.RatingsBumpers.isImage == image)
-                    )
-                ]
-            )
+            if sItem.getLive('ratingStyleSelection') == 'style':
+                return DB.RatingsBumpers.select().where(
+                    (DB.RatingsBumpers.system == feature.rating.system) &
+                    (DB.RatingsBumpers.name == feature.rating.name) &
+                    (DB.RatingsBumpers.is3D == feature.is3D) &
+                    (DB.RatingsBumpers.isImage == image) &
+                    (DB.RatingsBumpers.style == sItem.ratingStyle)
+                )[0]
+
+            else:
+                return random.choice(
+                    [
+                        x for x in DB.RatingsBumpers.select().where(
+                            (DB.RatingsBumpers.system == feature.rating.system) &
+                            (DB.RatingsBumpers.name == feature.rating.name) &
+                            (DB.RatingsBumpers.is3D == feature.is3D) &
+                            (DB.RatingsBumpers.isImage == image)
+                        )
+                    ]
+                )
         except IndexError:
             return None
 
@@ -365,13 +375,15 @@ class FeatureHandler:
         for f in features:
             bumper = None
             if mediaType == 'video':
-                bumper = self.getRatingBumper(f)
+                bumper = self.getRatingBumper(sItem, f)
                 if bumper:
                     playables.append(Video(bumper.path))
+                    util.DEBUG_LOG('    - Video Rating: {0}'.format(repr(bumper.path)))
             if mediaType == 'image' or mediaType == 'video' and not bumper:
-                bumper = self.getRatingBumper(f, image=True)
+                bumper = self.getRatingBumper(sItem, f, image=True)
                 if bumper:
                     playables.append(Image(bumper.path, duration=10, fade=3000))
+                    util.DEBUG_LOG('    - Image Rating: {0}'.format(repr(bumper.path)))
 
             playables.append(f)
 
@@ -621,9 +633,17 @@ class TrailerHandler:
         util.DEBUG_LOG('    - All scraper trailers watched - using oldest trailers')
 
         if sItem.getLive('limitRating') and self.caller.ratings:
-            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.rating << self.caller.ratings.keys()).order_by(DB.WatchedTrailers.date)]
+            trailers = [
+                t for t in DB.WatchedTrailers.select().where(
+                    DB.WatchedTrailers.rating << self.caller.ratings.keys() & DB.WatchedTrailers.url != 'BROKEN'
+                ).order_by(DB.WatchedTrailers.date)
+            ]
         else:
-            trailers = [t for t in DB.WatchedTrailers.select().where(DB.WatchedTrailers.source == source).order_by(DB.WatchedTrailers.date)]
+            trailers = [
+                t for t in DB.WatchedTrailers.select().where(
+                    DB.WatchedTrailers.source == source & DB.WatchedTrailers.url != 'BROKEN'
+                ).order_by(DB.WatchedTrailers.date)
+            ]
 
         if not trailers:
             return []
@@ -671,19 +691,22 @@ class TrailerHandler:
         now = datetime.datetime.now()
         quality = sItem.getLive('quality')
 
-        for t in trailers:
-            try:
-                url = t.getPlayableURL(quality)
-                if not url:
-                    continue
+        valid = []
 
+        for t in trailers:
+            url = t.getPlayableURL(quality)
+
+            if url:
+                valid.append(t)
+
+            try:
                 trailer = DB.WatchedTrailers.get(DB.WatchedTrailers.WID == t.ID)
                 trailer.update(
                     source=source,
                     watched=True,
                     date=now,
                     title=t.title,
-                    url=url,
+                    url=url or 'BROKEN',
                     userAgent=t.userAgent,
                     rating=t.fullRating,
                     genres=','.join(t.genres)
@@ -695,13 +718,16 @@ class TrailerHandler:
                     watched=True,
                     date=now,
                     title=t.title,
-                    url=t.getPlayableURL(quality),
+                    url=url or 'BROKEN',
                     userAgent=t.userAgent,
                     rating=t.fullRating,
                     genres=','.join(t.genres)
                 )
 
-        return [Video(t.getPlayableURL(quality), t.userAgent) for t in trailers]
+        if not valid:
+            return self.oldest(sItem, source)
+
+        return [Video(url, t.userAgent) for t in valid]
 
     def dirHandler(self, sItem):
         path = sItem.getLive('dir')

@@ -14,6 +14,9 @@ if __name__ == '__main__':
     elif arg == 'update.database':
         from lib import cvutil
         cvutil.loadContent(from_settings=True)
+    elif arg == 'feature.setRatingBumperStyle':
+        from lib import cvutil
+        cvutil.setRatingBumperStyle()
     else:
         from lib import main
         main.main()

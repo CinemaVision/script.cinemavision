@@ -51,6 +51,8 @@ SETTINGS_DISPLAY = {
     'video': 'Video',
     'image': 'Image',
     'slide': 'Slide',
+    'random':  'Random',
+    'style': 'Style',
     'DTS-X': 'DTS:X'
 }
 
@@ -228,6 +230,20 @@ class Feature(Item):
             'name': 'Rating Bumper',
             'default': None
         },
+        {
+            'attr': 'ratingStyleSelection',
+            'type': None,
+            'limits': [None, 'random', 'style'],
+            'name': 'Style Selection',
+            'default': None
+        },
+        {
+            'attr': 'ratingStyle',
+            'type': None,
+            'limits': LIMIT_DB_CHOICE,
+            'name': 'Style',
+            'default': None
+        }
     )
     displayName = 'Feature'
     typeChar = 'F'
@@ -236,12 +252,30 @@ class Feature(Item):
         Item.__init__(self)
         self.count = 0
         self.ratingBumper = None
+        self.ratingStyleSelection = None
+        self.ratingStyle = None
 
     def display(self):
         name = self.name or self.displayName
         if self.count > 1:
             return '{0} x {1}'.format(name, self.count)
         return name
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'ratingStyle':
+            return self.getLive('ratingStyleSelection') == 'style' and self.getLive('ratingBumper') in ('video', 'image')
+        elif attr == 'ratingStyleSelection':
+            return self.getLive('ratingBumper') in ('video', 'image')
+
+        return True
+
+    @staticmethod
+    def DBChoices(attr):
+        import database as DB
+        DB.initialize()
+
+        return [(x.style, x.style) for x in DB.RatingsBumpers.select(DB.fn.Distinct(DB.RatingsBumpers.style))]
 
 
 ################################################################################
@@ -549,6 +583,8 @@ class Video(Item):
 
     def DBChoices(self, attr):
         import database as DB
+        DB.initialize()
+
         return [(x.path, os.path.basename(x.path)) for x in DB.VideoBumpers.select().where(DB.VideoBumpers.type == self.vtype)]
 
 
