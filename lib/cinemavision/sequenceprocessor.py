@@ -697,7 +697,7 @@ class TrailerHandler:
             url = t.getPlayableURL(quality)
 
             if url:
-                valid.append(t)
+                valid.append((url, t))
 
             try:
                 trailer = DB.WatchedTrailers.get(DB.WatchedTrailers.WID == t.ID)
@@ -727,7 +727,7 @@ class TrailerHandler:
         if not valid:
             return self.oldest(sItem, source)
 
-        return [Video(url, t.userAgent) for t in valid]
+        return [Video(url, trailer.userAgent) for url, trailer in valid]
 
     def dirHandler(self, sItem):
         path = sItem.getLive('dir')

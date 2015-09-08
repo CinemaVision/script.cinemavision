@@ -1,5 +1,13 @@
 Changelog for CinemaVision
 
+[- 0.0.32 -]
+
+- fix:    Sequence saves on some platforms were generated with extraneous characters causing errors on load
+- fix:    When playing a sequence from the editor, the addon was asking if you wanted to set as default the temporary sequence
+- fix:    Queue dialog now allows moving items with a mouse
+- fix:    Video bumpers failed to play when 'Random' was selected and 'Directory' set as source
+- fix:    Trailers module playing repeats when source was iTunes or Kodi DB
+
 [- 0.0.31 -]
 
 - add:    Support for BBFC, DEJUS, FSK ratings systems

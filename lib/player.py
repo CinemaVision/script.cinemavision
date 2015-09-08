@@ -73,7 +73,13 @@ class PlaylistDialog(kodigui.BaseDialog):
             if action == xbmcgui.ACTION_CONTEXT_MENU:
                 self.delete()
                 return
-            elif action == xbmcgui.ACTION_MOVE_UP or action == xbmcgui.ACTION_MOVE_DOWN:
+            elif action in (
+                xbmcgui.ACTION_MOVE_UP,
+                xbmcgui.ACTION_MOVE_DOWN,
+                xbmcgui.ACTION_MOUSE_MOVE,
+                xbmcgui.ACTION_MOUSE_WHEEL_UP,
+                xbmcgui.ACTION_MOUSE_WHEEL_DOWN
+            ):
                 if self.getFocusId() == self.VIDEOS_LIST_ID:
                     self.moveItem(True)
                 return

@@ -56,13 +56,60 @@ def _getSettingDefault(key):
     return defaults.get(key)
 
 try:
-    import xbmcvfs as vfs
+    import xbmcvfs
     import xbmc
     import xbmcaddon
     import stat
     import time
 
     STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
+
+    class VFS:
+        def __getattr__(self, attr):
+            return getattr(xbmcvfs, attr)
+
+        def listdir(self, path):
+            lists = xbmcvfs.listdir(path)
+            return lists[0] + lists[1]
+
+        class File(xbmcvfs.File):
+            def __init__(self, *args, **kwargs):
+                xbmcvfs.File.__init__(self, *args, **kwargs)
+                self._size = self.size()  # size() returns size at open, so we need to keep track ourselves
+                self._pos = 0
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                self.close()
+
+            def flush(self):
+                pass
+
+            def tell(self):
+                return self._pos
+
+            def read(self, nbytes=0):
+                self._pos += nbytes
+                if self._pos >= self._size or not nbytes:
+                    self._pos = self._size - 1
+                return xbmcvfs.File.read(self, nbytes)
+
+            def write(self, data):
+                self._pos += len(data)
+                self._size = max(self._pos, self._size)
+                return xbmcvfs.File.write(self, data)
+
+            def seek(self, offset, whence=0):
+                if whence == 0:
+                    self._pos = 0
+                elif whence == 2:
+                    self._pos = self._size - 1
+                self._pos += offset
+                return xbmcvfs.File.seek(self, offset, whence)
+
+    vfs = VFS()
 
     def pathJoin(*args):
         args = list(args)
@@ -73,19 +120,11 @@ try:
         return sep.join(ret)
 
     def isDir(path):
-        vstat = vfs.Stat(path)
+        vstat = xbmcvfs.Stat(path)
         return stat.S_ISDIR(vstat.st_mode())
 
     def LOG(msg):
         xbmc.log('[- CinemaVison -] (API): {0}'.format(msg))
-
-    old_listdir = vfs.listdir
-
-    def vfs_listdir(path):
-        lists = old_listdir(path)
-        return lists[0] + lists[1]
-
-    vfs.listdir = vfs_listdir
 
     try:
         xbmc.Monitor().waitForAbort
@@ -98,47 +137,6 @@ try:
             while not xbmc.abortRequested and time.time() - start < timeout:
                 xbmc.sleep(100)
             return xbmc.abortRequested
-
-    old_vfs_File = vfs.File
-
-    class vfs_File(old_vfs_File):
-        def __init__(self, *args, **kwargs):
-            old_vfs_File.__init__(self, *args, **kwargs)
-            self._size = self.size()  # size() returns size at open, so we need to keep track ourselves
-            self._pos = 0
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc_value, traceback):
-            self.close()
-
-        def flush(self):
-            pass
-
-        def tell(self):
-            return self._pos
-
-        def read(self, nbytes=0):
-            self._pos += nbytes
-            if self._pos >= self._size or not nbytes:
-                self._pos = self._size - 1
-            return old_vfs_File.read(self, nbytes)
-
-        def write(self, data):
-            self._pos += len(data)
-            self._size = max(self._pos, self._size)
-            return old_vfs_File.write(self, data)
-
-        def seek(self, offset, whence=0):
-            if whence == 0:
-                self._pos = 0
-            elif whence == 2:
-                self._pos = self._size - 1
-            self._pos += offset
-            return old_vfs_File.seek(self, offset, whence)
-
-    vfs.File = vfs_File
 
     def getSettingDefault(key):
         default = xbmcaddon.Addon().getSetting(key)

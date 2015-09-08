@@ -1,6 +1,7 @@
 from xml.etree import ElementTree as ET
 import xml.dom.minidom as minidom
 import os
+import re
 
 import util
 
@@ -803,7 +804,12 @@ def prettify(elem):
     """
     rough_string = ET.tostring(elem)
     reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
+
+    uglyXml = reparsed.toprettyxml(indent='    ').encode('ascii', 'xmlcharrefreplace')
+    text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
+    prettyXml = text_re.sub('>\g<1></', uglyXml)
+    return prettyXml
+    # return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
 
 
 def getSaveString(items):

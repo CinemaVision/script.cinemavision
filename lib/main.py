@@ -747,16 +747,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.modified = False
             self.saveDefault()
 
-        sequence2D = kodiutil.getSetting('sequence.2D')
-        sequence3D = kodiutil.getSetting('sequence.3D')
-        if not sequence2D or (full_path != sequence2D and full_path != sequence3D):
-            yes = xbmcgui.Dialog().yesno('Set Default', 'Would you like to set this as the default for playback?')
-            if yes:
-                as3D = xbmcgui.Dialog().yesno('2D/3D', 'For 2D or 3D?', nolabel='2D', yeslabel='3D')
-                if as3D:
-                    kodiutil.setSetting('sequence.3D', full_path)
-                else:
-                    kodiutil.setSetting('sequence.2D', full_path)
+            sequence2D = kodiutil.getSetting('sequence.2D')
+            sequence3D = kodiutil.getSetting('sequence.3D')
+            if not sequence2D or (full_path != sequence2D and full_path != sequence3D):
+                yes = xbmcgui.Dialog().yesno('Set Default', 'Would you like to set this as the default for playback?')
+                if yes:
+                    as3D = xbmcgui.Dialog().yesno('2D/3D', 'For 2D or 3D?', nolabel='2D', yeslabel='3D')
+                    if as3D:
+                        kodiutil.setSetting('sequence.3D', full_path)
+                    else:
+                        kodiutil.setSetting('sequence.2D', full_path)
 
     def load(self, path=None):
         path = path or xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False, self.path)
