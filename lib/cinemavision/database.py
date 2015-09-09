@@ -25,6 +25,8 @@ Trivia = None
 AudioFormatBumpers = None
 RatingsBumpers = None
 VideoBumpers = None
+RatingSystem = None
+Rating = None
 WatchedTrailers = None
 WatchedTrivia = None
 
@@ -57,6 +59,8 @@ def initialize(path=None):
     global AudioFormatBumpers
     global RatingsBumpers
     global VideoBumpers
+    global RatingSystem
+    global Rating
     global WatchedTrailers
     global WatchedTrivia
 
@@ -152,6 +156,30 @@ def initialize(path=None):
         year = peewee.CharField(null=True)
 
     VideoBumpers.create_table(fail_silently=True)
+
+    ###########################################################################################
+    # Ratings
+    ###########################################################################################
+    class RatingSystem(peewee.Model):
+        name = peewee.CharField()
+        context = peewee.CharField()
+        regEx = peewee.CharField()
+
+        class Meta:
+            database = DB
+
+    RatingSystem.create_table(fail_silently=True)
+
+    class Rating(peewee.Model):
+        name = peewee.CharField(unique=True)
+        internal = peewee.CharField()
+        value = peewee.IntegerField(default=0)
+        system = peewee.CharField()
+
+        class Meta:
+            database = DB
+
+    Rating.create_table(fail_silently=True)
 
     ###########################################################################################
     # Watched Database

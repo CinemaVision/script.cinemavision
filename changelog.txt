@@ -1,5 +1,17 @@
 Changelog for CinemaVision
 
+[- 0.0.33 -]
+
+- fix:    Queue dialog was showing : when rating was not available
+- change: 'Music' setting now shows 'None' instead of 'Off'
+- change: 'Rating limit' setting now shows 'None' instead of 'No Limit'
+- fix:    Possible fix for crash on Fire TV with MediaCodec acceleration enabled - needs testing
+- add:    New setting '3D tag detection regex' for modifying 3D detection
+- fix:    Queue dialog showing wrong text color on buttons in some skins
+- fix:    Now disables visualization and closes visualization window when trivia is playing
+- add:    Support for ratings systems added via system.xml in rating system folder
+- fix:    Fix for failure to update content when some types of audio files are present in the music folder
+
 [- 0.0.32 -]
 
 - fix:    Sequence saves on some platforms were generated with extraneous characters causing errors on load

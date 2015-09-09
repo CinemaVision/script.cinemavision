@@ -7,6 +7,10 @@ import mutagen
 import hachoir
 import database as DB
 
+try:
+    ET.ParseError
+except:
+    ET.ParseError = Exception
 
 mutagen.setFileOpener(util.vfs.File)
 
@@ -240,6 +244,9 @@ class UserContent:
                 util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(sub))
                 continue
 
+            if util.vfs.exists(util.pathJoin(path, 'system.xml')): #For ratings
+                self.loadRatingSystem(util.pathJoin(path, 'system.xml'))
+
             type_ = sub.replace(' Bumpers', '')
             self.addBumper(model, sub, path, type_name, sub_name, type_, sub_default)
 
@@ -278,6 +285,26 @@ class UserContent:
             model.get_or_create(
                 path=vpath,
                 defaults=defaults
+            )
+
+    def loadRatingSystem(self, path):
+        import ratings
+        with util.vfs.File(path, 'r') as f:
+            system = ratings.addRatingSystemFromXML(f.read())
+
+        for context, regEx in system.regEx.items():
+            DB.RatingSystem.get_or_create(
+                name=system.name,
+                context=context,
+                regEx=regEx
+            )
+
+        for rating in system.ratings:
+            DB.Rating.get_or_create(
+                name=rating.name,
+                internal=rating.internal,
+                value=rating.value,
+                system=system.name
             )
 
 

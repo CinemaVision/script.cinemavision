@@ -17,6 +17,8 @@ import struct
 from struct import pack
 
 from ._compat import endswith, text_type, PY3
+
+import mutagen
 from mutagen import StreamInfo, FileType
 
 from mutagen.id3 import ID3
@@ -269,7 +271,7 @@ class _IFFID3(ID3):
 
         # Unlike the parent ID3.save method, we won't save to a blank file
         # since we would have to construct a empty AIFF file
-        fileobj = open(filename, 'rb+')
+        fileobj = mutagen.FileOpener(filename, 'rb+')
         iff_file = IFFFile(fileobj)
 
         try:
@@ -312,7 +314,7 @@ class _IFFID3(ID3):
 def delete(filename):
     """Completely removes the ID3 chunk from the AIFF file"""
 
-    with open(filename, "rb+") as file_:
+    with mutagen.FileOpener(filename, "rb+") as file_:
         try:
             del IFFFile(file_)[u'ID3']
         except KeyError:
@@ -354,7 +356,7 @@ class AIFF(FileType):
             raise error(e)
 
         try:
-            fileobj = open(filename, "rb")
+            fileobj = mutagen.FileOpener(filename, "rb")
             self.info = AIFFInfo(fileobj)
         finally:
             fileobj.close()

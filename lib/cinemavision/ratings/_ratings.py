@@ -18,6 +18,7 @@ def genValidIdentifier(seq):
 class RatingSystem:
     name = ''
     ratings = None
+    regEx = None
 
     def __repr__(self):
         return '{0}: {1}'.format(self.name, self.ratings)
@@ -38,23 +39,38 @@ class RatingSystem:
         rating.system = self.name
         self.ratings.append(rating)
 
+    def addRegEx(self, context, regex):
+        if not self.regEx:
+            self.regEx = {}
+        self.regEx[context] = regex
+
+    def getRegEx(self, context):
+        if not self.regEx or context not in self.regEx:
+            return None
+
+        return self.regEx[context]
+
 
 class Rating:
     system = ''
 
-    def __init__(self, name, value):
+    def __init__(self, name, value, internal=None):
         self.name = name
         self.value = value
+        self.internal = internal or self.name
 
     def __repr__(self):
         return self.name
 
     def __str__(self):
-        return '{0}:{1}'.format(self.system, self.name)
+        return self.system and '{0}:{1}'.format(self.system, self.name) or 'Unknown'
+
+    def __nonzero__(self):
+        return bool(self.system)
 
     @classmethod
     def fromNode(cls, node):
-        return cls(node.text, int(node.attrib.get('value')))
+        return cls(node.text, int(node.attrib.get('value')), node.attrib.get('internal'))
 
     def __lt__(self, other):
         return self.value < other.value
@@ -100,6 +116,9 @@ class XMLRatingSystem(RatingSystem):
         system.name = e.attrib.get('name')
         system.ratings = []
 
+        for node in e.findall('regex'):
+            system.addRegEx(node.attrib.get('context'), node.text)
+
         for node in e.findall('rating'):
             rating = Rating.fromNode(node)
             name = genValidIdentifier(rating.name)
@@ -114,7 +133,7 @@ RATINGS_SYSTEMS = {
 }
 
 
-NO_RATING = Rating('', 100)
+NO_RATING = Rating('', 1000)
 
 
 def getRatingsSystem(name):
@@ -140,3 +159,14 @@ def addRatingSystemFromXML(xml):
     system = XMLRatingSystem.fromXML(xml)
 
     RATINGS_SYSTEMS[system.name.upper()] = system
+
+    return system
+
+
+def getRegExs(context):
+    ret = {}
+    for system in RATINGS_SYSTEMS.values():
+        regEx = system.getRegEx(context)
+        if regEx:
+            ret[system.name] = regEx
+    return ret

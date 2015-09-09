@@ -32,6 +32,7 @@ import sys
 from cStringIO import StringIO
 
 from ._compat import reraise
+import mutagen
 from mutagen import FileType, Metadata, StreamInfo
 from mutagen._constants import GENRES
 from mutagen._util import cdata, insert_bytes, delete_bytes, DictProxy, \
@@ -266,7 +267,7 @@ class M4ATags(DictProxy, Metadata):
         data = Atom.render("ilst", "".join(values))
 
         # Find the old atoms.
-        fileobj = open(filename, "rb+")
+        fileobj = mutagen.FileOpener(filename, "rb+")
         try:
             atoms = Atoms(fileobj)
 
@@ -513,7 +514,7 @@ class M4A(FileType):
 
     def load(self, filename):
         self.filename = filename
-        fileobj = open(filename, "rb")
+        fileobj = mutagen.FileOpener(filename, "rb")
         try:
             atoms = Atoms(fileobj)
             try:

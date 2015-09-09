@@ -42,7 +42,7 @@ SETTINGS_DISPLAY = {
     'af.file': 'Choose file',
     'True': 'Yes',
     'False': 'No',
-    'off': 'Off',
+    'off': 'None',
     'none': 'None',
     'fade': 'Fade',
     'slideL': 'Slide Left',

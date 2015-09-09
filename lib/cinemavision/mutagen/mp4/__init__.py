@@ -26,6 +26,8 @@ were all consulted.
 import struct
 import sys
 
+import mutagen
+
 from mutagen import FileType, Metadata, StreamInfo
 from mutagen._constants import GENRES
 from mutagen._util import (cdata, insert_bytes, DictProxy, MutagenError,
@@ -362,7 +364,7 @@ class MP4Tags(DictProxy, Metadata):
         data = Atom.render(b"ilst", b"".join(values))
 
         # Find the old atoms.
-        with open(filename, "rb+") as fileobj:
+        with mutagen.FileOpener(filename, "rb+") as fileobj:
             try:
                 atoms = Atoms(fileobj)
             except AtomError as err:
@@ -917,7 +919,7 @@ class MP4(FileType):
 
     def load(self, filename):
         self.filename = filename
-        with open(filename, "rb") as fileobj:
+        with mutagen.FileOpener(filename, "rb") as fileobj:
             try:
                 atoms = Atoms(fileobj)
             except AtomError as err:

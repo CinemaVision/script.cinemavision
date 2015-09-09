@@ -20,6 +20,8 @@ import struct
 import sys
 import zlib
 
+import mutagen
+
 from mutagen import FileType
 from mutagen._util import cdata, insert_bytes, delete_bytes, MutagenError
 from ._compat import cBytesIO, reraise, chr_
@@ -454,7 +456,7 @@ class OggFileType(FileType):
         """Load file information from a filename."""
 
         self.filename = filename
-        fileobj = open(filename, "rb")
+        fileobj = mutagen.FileOpener(filename, "rb")
         try:
             try:
                 self.info = self._Info(fileobj)
@@ -477,7 +479,7 @@ class OggFileType(FileType):
             filename = self.filename
 
         self.tags.clear()
-        fileobj = open(filename, "rb+")
+        fileobj = mutagen.FileOpener(filename, "rb+")
         try:
             try:
                 self.tags._inject(fileobj)
@@ -496,7 +498,7 @@ class OggFileType(FileType):
 
         if filename is None:
             filename = self.filename
-        fileobj = open(filename, "rb+")
+        fileobj = mutagen.FileOpener(filename, "rb+")
         try:
             try:
                 self.tags._inject(fileobj)

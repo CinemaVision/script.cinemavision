@@ -223,6 +223,7 @@
                     <height>70</height>
                     <label>[B]PLAY[/B]</label>
                     <font>font13</font>
+                    <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
                     <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
@@ -245,6 +246,7 @@
                     <height>70</height>
                     <label>[B]CANCEL[/B]</label>
                     <font>font13</font>
+                    <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
                     <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>

@@ -738,7 +738,7 @@ class FLAC(mutagen.FileType):
         self.cuesheet = None
         self.seektable = None
         self.filename = filename
-        fileobj = StrictFileObject(open(filename, "rb"))
+        fileobj = StrictFileObject(mutagen.FileOpener(filename, "rb"))
         try:
             self.__check_header(fileobj)
             while self.__read_metadata_block(fileobj):
@@ -779,7 +779,7 @@ class FLAC(mutagen.FileType):
 
         if filename is None:
             filename = self.filename
-        f = open(filename, 'rb+')
+        f = mutagen.FileOpener(filename, 'rb+')
 
         try:
             # Ensure we've got padding at the end, and only at the end.

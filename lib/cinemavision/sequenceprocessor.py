@@ -266,7 +266,11 @@ class Feature(Video):
     @property
     def rating(self):
         if not getattr(self, '_rating', None):
-            self._rating = ratings.getRating(self.get('rating'))
+            ratingString = self.get('rating')
+            if ratingString:
+                self._rating = ratings.getRating(ratingString)
+            else:
+                self._rating = None
         return self._rating
 
     @rating.setter

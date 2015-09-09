@@ -14,6 +14,7 @@ __all__ = ["ASF", "Open"]
 
 import sys
 import struct
+import mutagen
 from mutagen import FileType, Metadata, StreamInfo
 from mutagen._util import (insert_bytes, delete_bytes, DictMixin,
                            total_ordering, MutagenError)
@@ -743,7 +744,7 @@ class ASF(FileType):
 
     def load(self, filename):
         self.filename = filename
-        with open(filename, "rb") as fileobj:
+        with mutagen.FileOpener(filename, "rb") as fileobj:
             self.size = 0
             self.size1 = 0
             self.size2 = 0
@@ -810,7 +811,7 @@ class ASF(FileType):
                 struct.pack("<QL", len(data) + 30, len(self.objects)) +
                 b"\x01\x02" + data)
 
-        with open(self.filename, "rb+") as fileobj:
+        with mutagen.FileOpener(self.filename, "rb+") as fileobj:
             size = len(data)
             if size > self.size:
                 insert_bytes(fileobj, size - self.size, self.size)

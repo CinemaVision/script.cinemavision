@@ -11,6 +11,7 @@ from kodijsonrpc import rpc
 import kodigui
 import kodiutil
 from cinemavision import sequenceprocessor
+from cinemavision import ratings
 
 AUDIO_FORMATS = {
     "dts":       "DTS",
@@ -24,8 +25,6 @@ AUDIO_FORMATS = {
     "a_truehd":  "Dolby TrueHD",
     "truehd":    "Dolby TrueHD"
 }
-
-TAGS_3D = '3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU| HOU | OU |HALF-TAB'
 
 
 def isURLFile(path):
@@ -57,24 +56,26 @@ def resolveURLFile(path):
 
     return vid.streamURL()
 
-RATING_REs = (
-    ('MPAA', r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)'),
-    ('BBFC', r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)'),
-    ('FSK', r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)'),
-    ('DEJUS', r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)')
-)
+RATING_REs = {
+    'MPAA': r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
+    'BBFC': r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
+    'FSK': r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)',
+    'DE}US': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
+}
+
+RATING_REs.update(ratings.getRegExs('kodi'))
 
 
 def getActualRatingFromMPAA(rating):
     if not rating:
-        return 'MPAA:NA'
+        return 'UNKNOWN:NR'
 
-    for system, ratingRE in RATING_REs:
+    for system, ratingRE in RATING_REs.items():
         m = re.search(ratingRE, rating)
         if m:
             return '{0}:{1}'.format(system, m.group('rating'))
 
-    return 'MPAA:NA'
+    return 'UNKNOWN:NR'
 
 
 class KodiVolumeControl:
@@ -169,24 +170,26 @@ class KodiVolumeControl:
         kodiutil.DEBUG_LOG('Fade: END ({0})'.format(step))
 
 
-class ScreensaverControl:
-    def __init__(self):
+class SettingControl:
+    def __init__(self, setting, log_display):
+        self.setting = setting
+        self.logDisplay = log_display
         self._originalMode = None
         self.store()
 
     def disable(self):
-        rpc.Settings.SetSettingValue(setting='screensaver.mode', value='')
-        kodiutil.DEBUG_LOG('Screensaver: DISABLED')
+        rpc.Settings.SetSettingValue(setting=self.setting, value='')
+        kodiutil.DEBUG_LOG('{0}: DISABLED'.format(self.logDisplay))
 
     def store(self):
-        self._originalMode = rpc.Settings.GetSettingValue(setting='screensaver.mode').get('value')
-        kodiutil.DEBUG_LOG('Screensaver: Mode stored ({0})'.format(self._originalMode))
+        self._originalMode = rpc.Settings.GetSettingValue(setting=self.setting).get('value')
+        kodiutil.DEBUG_LOG('{0}: Mode stored ({1})'.format(self.logDisplay, self._originalMode))
 
     def restore(self):
         if not self._originalMode:
             return
-        rpc.Settings.SetSettingValue(setting='screensaver.mode', value=self._originalMode)
-        kodiutil.DEBUG_LOG('Screensaver: RESTORED')
+        rpc.Settings.SetSettingValue(setting=self.setting, value=self._originalMode)
+        kodiutil.DEBUG_LOG('{0}: RESTORED'.format(self.logDisplay))
 
 
 class ExperienceWindow(kodigui.BaseWindow):
@@ -454,8 +457,11 @@ class ExperiencePlayer(xbmc.Player):
         self.abortFlag = threading.Event()
         self.window = None
         self.volume = KodiVolumeControl(self.abortFlag)
-        self.screensaver = ScreensaverControl()
+        self.screensaver = SettingControl('screensaver.mode', 'Screensaver')
+        self.visualization = SettingControl('musicplayer.visualisation', 'Visualization')
         self.features = []
+
+        tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
 
         result = rpc.Playlist.GetItems(playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime'])
         for r in result.get('items', []):
@@ -476,7 +482,7 @@ class ExperiencePlayer(xbmc.Player):
             if stereomode not in ('mono', ''):
                 feature.is3D = True
             else:
-                feature.is3D = bool(re.findall(TAGS_3D, r['file']))
+                feature.is3D = bool(re.findall(tags3DRegEx, r['file']))
 
             self.has3D = self.has3D or feature.is3D
 
@@ -519,7 +525,9 @@ class ExperiencePlayer(xbmc.Player):
         feature.is3D = xbmc.getCondVisibility('ListItem.IsStereoscopic')
 
         if not feature.is3D:
-            feature.is3D = bool(re.findall(TAGS_3D, feature.path))
+            tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
+
+            feature.is3D = bool(re.findall(tags3DRegEx, feature.path))
 
         codec = xbmc.getInfoLabel('ListItem.AudioCodec')
         if codec:
@@ -739,8 +747,14 @@ class ExperiencePlayer(xbmc.Player):
 
         xbmc.enableNavSounds(False)
         self.screensaver.disable()
+        self.visualization.disable()
 
         self.playMusic(image_queue)
+
+        if xbmc.getCondVisibility('Window.IsVisible(visualisation)'):
+            kodiutil.DEBUG_LOG('Closing visualisation window')
+            xbmc.executebuiltin('Action(back)')
+
         self.window.setTransition(image_queue.transition, image_queue.transitionDuration)
 
         try:
@@ -771,6 +785,7 @@ class ExperiencePlayer(xbmc.Player):
                     return
         finally:
             self.screensaver.restore()
+            self.visualization.restore()
             xbmc.enableNavSounds(True)
             self.stopMusic(action != 'BACK' and image_queue or None)
             if self. window.hasAction():

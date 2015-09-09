@@ -74,7 +74,7 @@ try:
 
         class File(xbmcvfs.File):
             def __init__(self, *args, **kwargs):
-                xbmcvfs.File.__init__(self, *args, **kwargs)
+                xbmcvfs.File.__init__(self)
                 self._size = self.size()  # size() returns size at open, so we need to keep track ourselves
                 self._pos = 0
 

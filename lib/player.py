@@ -96,7 +96,7 @@ class PlaylistDialog(kodigui.BaseDialog):
         items = []
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
-            mli.setProperty('rating', str(f.rating))
+            mli.setProperty('rating', str(f.rating or ''))
             items.append(mli)
 
         self.videoListControl.addItems(items)

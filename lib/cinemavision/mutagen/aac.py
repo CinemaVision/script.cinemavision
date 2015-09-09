@@ -11,6 +11,7 @@
 * See ISO/IEC 13818-7 / 14496-03
 """
 
+import mutagen
 from mutagen import StreamInfo
 from mutagen._file import FileType
 from mutagen._util import BitReader, BitReaderError, MutagenError
@@ -389,7 +390,7 @@ class AAC(FileType):
 
     def load(self, filename):
         self.filename = filename
-        with open(filename, "rb") as h:
+        with mutagen.FileOpener(filename, "rb") as h:
             self.info = AACInfo(h)
 
     @staticmethod

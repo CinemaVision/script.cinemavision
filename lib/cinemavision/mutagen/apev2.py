@@ -36,6 +36,8 @@ from collections import MutableSequence
 
 from ._compat import (cBytesIO, PY3, text_type, PY2, reraise, swap_to_string,
                       xrange)
+
+import mutagen
 from mutagen import Metadata, FileType, StreamInfo
 from mutagen._util import (DictMixin, cdata, delete_bytes, total_ordering,
                            MutagenError)
@@ -273,7 +275,7 @@ class APEv2(_CIDictProxy, Metadata):
         """Load tags from a filename."""
 
         self.filename = filename
-        fileobj = open(filename, "rb")
+        fileobj = mutagen.FileOpener(filename, "rb")
         try:
             data = _APEv2Data(fileobj)
         finally:
@@ -402,9 +404,9 @@ class APEv2(_CIDictProxy, Metadata):
 
         filename = filename or self.filename
         try:
-            fileobj = open(filename, "r+b")
+            fileobj = mutagen.FileOpener(filename, "r+b")
         except IOError:
-            fileobj = open(filename, "w+b")
+            fileobj = mutagen.FileOpener(filename, "w+b")
         data = _APEv2Data(fileobj)
 
         if data.is_at_start:
@@ -459,7 +461,7 @@ class APEv2(_CIDictProxy, Metadata):
         """Remove tags from a file."""
 
         filename = filename or self.filename
-        fileobj = open(filename, "r+b")
+        fileobj = mutagen.FileOpener(filename, "r+b")
         try:
             data = _APEv2Data(fileobj)
             if data.start is not None and data.size is not None:
@@ -692,7 +694,7 @@ class APEv2File(FileType):
 
     def load(self, filename):
         self.filename = filename
-        self.info = self._Info(open(filename, "rb"))
+        self.info = self._Info(mutagen.FileOpener(filename, "rb"))
         try:
             self.tags = APEv2(filename)
         except APENoHeaderError:
