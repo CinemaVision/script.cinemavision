@@ -88,7 +88,7 @@ try:
             def tell(self):
                 return self._pos
 
-            def read(self, nbytes=0):
+            def read(self, nbytes=-1):
                 self._pos += nbytes
                 if self._pos >= self._size or not nbytes:
                     self._pos = self._size - 1
