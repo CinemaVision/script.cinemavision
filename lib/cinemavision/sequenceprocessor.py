@@ -448,7 +448,12 @@ class TriviaHandler:
 
             queue.music = []
             for p in util.listFilePaths(path):
-                data = mutagen.File(p)
+                try:
+                    data = mutagen.File(p)
+                except:
+                    data = None
+                    util.ERROR()
+
                 d = 0
                 if data:
                     d = data.info.length
