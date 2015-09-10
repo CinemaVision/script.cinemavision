@@ -3,10 +3,10 @@ import time
 import datetime
 import database as DB
 import sequence
-import util
 import scrapers
 import ratings
 import actions
+import util
 
 
 # Playabe is implemented as a dict to be easily serializable to JSON

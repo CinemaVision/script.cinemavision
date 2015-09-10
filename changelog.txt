@@ -1,5 +1,12 @@
 Changelog for CinemaVision
 
+[- 0.0.34 -]
+
+- add:    'Advanced' section in addon settings
+- add:    'Debug logging' to 'Advanced' in addon settings
+- add:    'Send log to xbmclogs.com (via Kodi Log Uploader)' to 'Advanced' in addon settings
+- fix:    Possible fix to black screen with audio when playing a bumper video
+
 [- 0.0.33 -]
 
 - fix:    Queue dialog was showing : when rating was not available

@@ -4,8 +4,6 @@ DEBUG = True
 
 STORAGE_PATH = None
 
-CALLBACK = None
-
 
 def getSep(path):
     if '\\' not in path:
@@ -290,10 +288,3 @@ def ERROR(msg=None):
         LOG(msg)
     import traceback
     traceback.print_exc()
-
-
-def callback(msg=None, heading=None):
-    DEBUG_LOG(msg or heading)
-
-    if CALLBACK:
-        CALLBACK(msg, heading)

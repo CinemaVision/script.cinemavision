@@ -1,3 +1,5 @@
+import util
+import database as DB
 from xml.etree import ElementTree as ET
 
 
@@ -170,3 +172,44 @@ def getRegExs(context):
         if regEx:
             ret[system.name] = regEx
     return ret
+
+
+def loadFromXML():
+    import os
+    import inspect
+
+    systemsFolder = os.path.join(os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])), 'rating_systems')
+    for p in os.listdir(systemsFolder):
+        path = os.path.join(systemsFolder, p)
+
+        with open(path, 'r') as f:
+            addRatingSystemFromXML(f.read())
+
+
+def loadFromDB():
+    for system in DB.RatingSystem.select():
+        if system.name in RATINGS_SYSTEMS:
+            RATINGS_SYSTEMS[system.name].addRegEx(system.context, system.regEx)
+        else:
+            rs = RatingSystem()
+            rs.name = system.name
+            rs.addRegEx(system.context, system.regEx)
+            RATINGS_SYSTEMS[system.name] = rs
+
+    for rating in DB.Rating.select():
+        if rating.system not in RATINGS_SYSTEMS:
+            continue
+        RATINGS_SYSTEMS[rating.system].addRating(Rating(rating.name, rating.value, rating.internal))
+
+
+def load():
+    DB.initialize()
+    loadFromXML()
+    loadFromDB()
+
+    util.DEBUG_LOG('Rating Systems:')
+    for rs in RATINGS_SYSTEMS.values():
+        util.DEBUG_LOG('  {0}'.format(repr(rs)))
+
+
+load()

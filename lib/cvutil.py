@@ -1,6 +1,8 @@
 import os
 import kodiutil
-from cinemavision import util
+import cinemavision
+
+cinemavision.init(kodiutil.DEBUG())
 
 
 def defaultSavePath():
@@ -14,7 +16,7 @@ def lastSavePath():
     if not name or not path:
         return None
 
-    return util.pathJoin(path, name + '.cvseq')
+    return cinemavision.util.pathJoin(path, name + '.cvseq')
 
 
 def getSequencePath(for_3D=False):
@@ -43,7 +45,6 @@ def getDBPath(from_load=False):
 
 
 def loadContent(from_settings=False):
-    from cinemavision import content
     import xbmcgui
 
     contentPath = kodiutil.getSetting('content.path')
@@ -58,7 +59,7 @@ def loadContent(from_settings=False):
     kodiutil.DEBUG_LOG('Loading content...')
 
     with kodiutil.Progress('Loading Content') as p:
-        return content.UserContent(contentPath, callback=p.msg, db_path=dbPath)
+        return cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath)
 
 
 def downloadDemoContent():
@@ -105,7 +106,6 @@ def copyDemoContent():
 
 
 def setRatingBumperStyle():
-    import cinemavision
     import xbmcgui
 
     styles = cinemavision.sequence.Feature.DBChoices('ratingStyle')

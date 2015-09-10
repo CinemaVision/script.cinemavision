@@ -8,6 +8,8 @@ import kodigui
 
 from lib import cinemavision
 
+cinemavision.init(kodiutil.DEBUG())
+
 API_LEVEL = 1
 
 
@@ -676,6 +678,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def settings(self):
         kodiutil.ADDON.openSettings()
+
+        cinemavision.init(kodiutil.DEBUG())
+
         for item in self.sequenceControl:
             if item.dataSource:
                 self.updateItemSettings(item)

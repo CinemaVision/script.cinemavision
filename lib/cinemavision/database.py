@@ -31,8 +31,12 @@ WatchedTrailers = None
 WatchedTrivia = None
 
 
+def dummyCallback(*args, **kwargs):
+    pass
+
+
 def migrateDB(DB, version):
-    util.DEBUG_LOG('Migrating database from version {0} to {1}'.format(version, DATABASE_VERSION))
+    util.LOG('Migrating database from version {0} to {1}'.format(version, DATABASE_VERSION))
     from peewee.playhouse import migrate
     migrator = migrate.SqliteMigrator(DB)
     try:
@@ -50,8 +54,10 @@ def checkDBVersion(DB):
         vm.update(version=DATABASE_VERSION).execute()
 
 
-def initialize(path=None):
-    util.callback(None, 'Creating/updating database...')
+def initialize(path=None, callback=None):
+    callback = callback or dummyCallback
+
+    callback(None, 'Creating/updating database...')
 
     global DBVersion
     global Song
@@ -87,7 +93,7 @@ def initialize(path=None):
         class Meta:
             database = DB
 
-    util.callback(' - Music')
+    callback(' - Music')
 
     class Song(ContentBase):
         rating = peewee.CharField(null=True)
@@ -99,7 +105,7 @@ def initialize(path=None):
 
     Song.create_table(fail_silently=True)
 
-    util.callback(' - Tivia')
+    callback(' - Tivia')
 
     class Trivia(ContentBase):
         type = peewee.CharField()
@@ -126,7 +132,7 @@ def initialize(path=None):
 
     Trivia.create_table(fail_silently=True)
 
-    util.callback(' - AudioFormatBumpers')
+    callback(' - AudioFormatBumpers')
 
     class BumperBase(ContentBase):
         is3D = peewee.BooleanField(default=False)
@@ -138,7 +144,7 @@ def initialize(path=None):
 
     AudioFormatBumpers.create_table(fail_silently=True)
 
-    util.callback(' - RatingsBumpers')
+    callback(' - RatingsBumpers')
 
     class RatingsBumpers(BumperBase):
         system = peewee.CharField(default='MPAA')
@@ -146,7 +152,7 @@ def initialize(path=None):
 
     RatingsBumpers.create_table(fail_silently=True)
 
-    util.callback(' - VideoBumpers')
+    callback(' - VideoBumpers')
 
     class VideoBumpers(BumperBase):
         type = peewee.CharField()
@@ -204,13 +210,13 @@ def initialize(path=None):
 
     WatchedTrailers.create_table(fail_silently=True)
 
-    util.callback(' - Trailers (watched status)')
+    callback(' - Trailers (watched status)')
 
     class WatchedTrivia(WatchedBase):
         pass
 
     WatchedTrivia.create_table(fail_silently=True)
 
-    util.callback(' - Trivia (watched status)')
+    callback(' - Trivia (watched status)')
 
-    util.callback(None, 'Database created')
+    callback(None, 'Database created')

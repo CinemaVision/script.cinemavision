@@ -98,11 +98,12 @@ class UserContent:
         self.loadContent()
 
     def setupDB(self, db_path):
-        try:
-            util.CALLBACK = self._callback
-            DB.initialize(db_path)
-        finally:
-            util.CALLBACK = None
+        DB.initialize(db_path, self.dbCallback)
+
+    def dbCallback(self, msg=None, heading=None):
+        util.DEBUG_LOG(msg or heading)
+        if self._callback:
+            self._callback(msg, heading)
 
     def log(self, msg):
         util.DEBUG_LOG(msg)
@@ -148,14 +149,18 @@ class UserContent:
 
     def clean(self):
         self.logHeading('CLEANING DATABASE')
-        self.musicHandler.clean()
-        self.triviaDirectoryHandler.clean()
+        cleaned = self.musicHandler.clean()
+        cleaned = cleaned or self.triviaDirectoryHandler.clean()
         for bumper, name in ((DB.AudioFormatBumpers, 'AudioFormatBumper'), (DB.VideoBumpers, 'VideoBumper'), (DB.RatingsBumpers, 'RatingBumper')):
             for b in bumper.select():
                 path = b.path
                 if not util.vfs.exists(path):
+                    cleaned = True
                     b.delete().execute()
                     self.log('{0} Missing: {1} - REMOVED'.format(name, path))
+
+        if not cleaned:
+            self.log('Database clean - unchanged')
 
     def loadContent(self):
         self.loadMusic()
@@ -244,7 +249,7 @@ class UserContent:
                 util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(sub))
                 continue
 
-            if util.vfs.exists(util.pathJoin(path, 'system.xml')): #For ratings
+            if util.vfs.exists(util.pathJoin(path, 'system.xml')):  # For ratings
                 self.loadRatingSystem(util.pathJoin(path, 'system.xml'))
 
             type_ = sub.replace(' Bumpers', '')
@@ -336,11 +341,15 @@ class MusicHandler:
                 )
 
     def clean(self):
+        cleaned = False
         for s in DB.Song.select():
             path = s.path
             if not util.vfs.exists(path):
+                cleaned = True
                 s.delete().execute()
                 self._callback('Song Missing: {0} - REMOVED'.format(path))
+
+        return cleaned
 
 
 class TriviaDirectoryHandler:
@@ -518,8 +527,12 @@ class TriviaDirectoryHandler:
         return None
 
     def clean(self):
+        cleaned = False
         for t in DB.Trivia.select():
             path = t.answerPath
             if not util.vfs.exists(path):
+                cleaned = True
                 t.delete().execute()
                 self._callback('Trivia Missing: {0} - REMOVED'.format(path))
+
+        return cleaned

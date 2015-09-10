@@ -10,8 +10,13 @@ from kodijsonrpc import rpc
 
 import kodigui
 import kodiutil
+import cinemavision
+
+cinemavision.init(kodiutil.DEBUG())
+
 from cinemavision import sequenceprocessor
 from cinemavision import ratings
+
 
 AUDIO_FORMATS = {
     "dts":       "DTS",
@@ -25,6 +30,10 @@ AUDIO_FORMATS = {
     "a_truehd":  "Dolby TrueHD",
     "truehd":    "Dolby TrueHD"
 }
+
+
+def DEBUG_LOG(msg):
+    kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
 
 
 def isURLFile(path):
@@ -67,6 +76,8 @@ RATING_REs.update(ratings.getRegExs('kodi'))
 
 
 def getActualRatingFromMPAA(rating):
+    DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
+
     if not rating:
         return 'UNKNOWN:NR'
 
@@ -111,7 +122,7 @@ class KodiVolumeControl:
         if delay:
             xbmc.sleep(delay)
 
-        kodiutil.DEBUG_LOG('Restoring volume to: {0}'.format(self.saved))
+        DEBUG_LOG('Restoring volume to: {0}'.format(self.saved))
 
         self._set(self.saved)
         self.saved = None
@@ -120,10 +131,10 @@ class KodiVolumeControl:
         self.store()
         if relative:
             volume = int(self.saved * (volume_or_pct / 100.0))
-            kodiutil.DEBUG_LOG('Setting volume to: {0} ({1}%)'.format(volume, volume_or_pct))
+            DEBUG_LOG('Setting volume to: {0} ({1}%)'.format(volume, volume_or_pct))
         else:
             volume = volume_or_pct
-            kodiutil.DEBUG_LOG('Setting volume to: {0}'.format(volume))
+            DEBUG_LOG('Setting volume to: {0}'.format(volume))
 
         if fade_time:
             current = self.current()
@@ -156,10 +167,10 @@ class KodiVolumeControl:
 
         interval = fade_time_millis / count
 
-        kodiutil.DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
+        DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
         for step in steps:
             if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
-                kodiutil.DEBUG_LOG(
+                DEBUG_LOG(
                     'Fade ended early({0}): {1}'.format(step, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
                 )
                 # self._set(end)
@@ -167,7 +178,7 @@ class KodiVolumeControl:
             xbmc.sleep(interval)
             self._set(step)
 
-        kodiutil.DEBUG_LOG('Fade: END ({0})'.format(step))
+        DEBUG_LOG('Fade: END ({0})'.format(step))
 
 
 class SettingControl:
@@ -179,17 +190,17 @@ class SettingControl:
 
     def disable(self):
         rpc.Settings.SetSettingValue(setting=self.setting, value='')
-        kodiutil.DEBUG_LOG('{0}: DISABLED'.format(self.logDisplay))
+        DEBUG_LOG('{0}: DISABLED'.format(self.logDisplay))
 
     def store(self):
         self._originalMode = rpc.Settings.GetSettingValue(setting=self.setting).get('value')
-        kodiutil.DEBUG_LOG('{0}: Mode stored ({1})'.format(self.logDisplay, self._originalMode))
+        DEBUG_LOG('{0}: Mode stored ({1})'.format(self.logDisplay, self._originalMode))
 
     def restore(self):
         if not self._originalMode:
             return
         rpc.Settings.SetSettingValue(setting=self.setting, value=self._originalMode)
-        kodiutil.DEBUG_LOG('{0}: RESTORED'.format(self.logDisplay))
+        DEBUG_LOG('{0}: RESTORED'.format(self.logDisplay))
 
 
 class ExperienceWindow(kodigui.BaseWindow):
@@ -387,21 +398,21 @@ class ExperiencePlayer(xbmc.Player):
         self.playStatus = self.NOT_PLAYING
 
         if self.playlist.getposition() != -1:
-            self.log('PLAYBACK ENDED')
+            DEBUG_LOG('PLAYBACK ENDED')
             if self.playlist.size():
                 return
 
         self.next()
 
     def onPlayBackPaused(self):
-        self.log('PLAYBACK PAUSED')
+        DEBUG_LOG('PLAYBACK PAUSED')
 
     def onPlayBackResumed(self):
-        self.log('PLAYBACK RESUMED')
+        DEBUG_LOG('PLAYBACK RESUMED')
 
     def onPlayBackStarted(self):
         if self.playStatus == self.PLAYING_MUSIC:
-            kodiutil.DEBUG_LOG('MUSIC STARTED')
+            DEBUG_LOG('MUSIC STARTED')
             return
 
         self.playStatus = time.time()
@@ -416,32 +427,32 @@ class ExperiencePlayer(xbmc.Player):
         else:
             self.hasFullscreened = False
 
-        self.log('PLAYBACK STARTED')
+        DEBUG_LOG('PLAYBACK STARTED')
 
     def onPlayBackStopped(self):
         if self.playStatus == self.PLAYING_MUSIC:
-            self.log('MUSIC STOPPED')
+            DEBUG_LOG('MUSIC STOPPED')
             return
         elif self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
         elif self.playStatus == self.PLAYING_DUMMY_NEXT:
             self.playStatus = self.NOT_PLAYING
-            self.log('PLAYBACK INTERRUPTED')
+            DEBUG_LOG('PLAYBACK INTERRUPTED')
             self.next()
             return
         elif self.playStatus == self.PLAYING_DUMMY_PREV:
             self.playStatus = self.NOT_PLAYING
-            self.log('SKIP BACK')
+            DEBUG_LOG('SKIP BACK')
             self.next(prev=True)
             return
 
         self.playStatus = self.NOT_PLAYING
-        self.log('PLAYBACK STOPPED')
+        DEBUG_LOG('PLAYBACK STOPPED')
         self.abort()
 
     def onPlayBackFailed(self):
         self.playStatus = self.NOT_PLAYING
-        self.log('PLAYBACK FAILED')
+        DEBUG_LOG('PLAYBACK FAILED')
         self.next()
 
     def getPlayingFile(self):
@@ -489,9 +500,9 @@ class ExperiencePlayer(xbmc.Player):
             try:
                 codec = r['streamdetails']['audio'][0]['codec']
                 feature.audioFormat = AUDIO_FORMATS.get(codec)
-                self.log('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+                DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
             except:
-                self.log('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+                DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
 
             self.features.append(feature)
 
@@ -532,9 +543,9 @@ class ExperiencePlayer(xbmc.Player):
         codec = xbmc.getInfoLabel('ListItem.AudioCodec')
         if codec:
             feature.audioFormat = AUDIO_FORMATS.get(codec)
-            self.log('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+            DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
         else:
-            self.log('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
 
         self.features.append(feature)
         return True
@@ -553,9 +564,10 @@ class ExperiencePlayer(xbmc.Player):
         rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1})
         xbmc.sleep(100)
         while not xbmc.getCondVisibility('VideoPlayer.IsFullscreen') and not xbmc.abortRequested and not self.abortFlag.isSet() and self.isPlaying():
+            xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
             xbmc.sleep(100)
         self.hasFullscreened = True
-        kodiutil.DEBUG_LOG('VIDEO HAS GONE FULLSCREEN')
+        DEBUG_LOG('VIDEO HAS GONE FULLSCREEN')
 
     def isPlayingMinimized(self):
         # print '{0} {1}'.format(self.isPlayingVideo(), xbmc.getCondVisibility('Player.Playing'))
@@ -600,7 +612,7 @@ class ExperiencePlayer(xbmc.Player):
         self.processor = sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath)
         [self.processor.addFeature(f) for f in self.features]
 
-        self.log('[ -- Started --------------------------------------------------------------- ]')
+        DEBUG_LOG('[ -- Started --------------------------------------------------------------- ]')
 
         self.openWindow()
         self.processor.process()
@@ -609,9 +621,6 @@ class ExperiencePlayer(xbmc.Player):
 
         del self.window
         self.window = None
-
-    def log(self, msg):
-        kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
 
     def openWindow(self):
         self.window = ExperienceWindow.create()
@@ -625,10 +634,10 @@ class ExperiencePlayer(xbmc.Player):
                 break
 
             if self.isPlayingMinimized():
-                self.log('Fullscreen video closed - stopping')
+                DEBUG_LOG('Fullscreen video closed - stopping')
                 self.stop()
 
-        self.log('[ -- Finished -------------------------------------------------------------- ]')
+        DEBUG_LOG('[ -- Finished -------------------------------------------------------------- ]')
         self.window.doClose()
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
         self.stop()
@@ -644,7 +653,7 @@ class ExperiencePlayer(xbmc.Player):
 
         xbmc.sleep(100)  # Without this, it will sometimes not play anything
 
-        kodiutil.DEBUG_LOG('Playing music playlist: {0} song(s)'.format(len(pl)))
+        DEBUG_LOG('Playing music playlist: {0} song(s)'.format(len(pl)))
 
         self.volume.store()
         self.volume.set(1)
@@ -752,14 +761,14 @@ class ExperiencePlayer(xbmc.Player):
         self.playMusic(image_queue)
 
         if xbmc.getCondVisibility('Window.IsVisible(visualisation)'):
-            kodiutil.DEBUG_LOG('Closing visualisation window')
+            DEBUG_LOG('Closing visualisation window')
             xbmc.executebuiltin('Action(back)')
 
         self.window.setTransition(image_queue.transition, image_queue.transitionDuration)
 
         try:
             while image:
-                self.log(' -IMAGE.QUEUE: {0}'.format(image))
+                DEBUG_LOG(' -IMAGE.QUEUE: {0}'.format(image))
 
                 action = self.showImageFromQueue(image, first=True, image_queue=image_queue, music_end=musicEnd)
 
@@ -771,10 +780,10 @@ class ExperiencePlayer(xbmc.Player):
                         image = image_queue.prev() or image
                         continue
                     elif action == 'BACK':
-                        self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                        DEBUG_LOG(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
                         return False
                     elif action == 'SKIP':
-                        self.log(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
+                        DEBUG_LOG(' -IMAGE.QUEUE: Skipped after {0}secs'.format(int(time.time() - start)))
                         return True
                     else:
                         if action is True:
@@ -793,7 +802,7 @@ class ExperiencePlayer(xbmc.Player):
                     return False
             self.window.clear()
 
-        self.log(' -IMAGE.QUEUE: Finished after {0}secs'.format(int(time.time() - start)))
+        DEBUG_LOG(' -IMAGE.QUEUE: Finished after {0}secs'.format(int(time.time() - start)))
         return True
 
     def showVideoQueue(self, video_queue):
@@ -839,7 +848,7 @@ class ExperiencePlayer(xbmc.Player):
             self.window.doClose()
             return
 
-        self.log('Playing next item: {0}'.format(playable))
+        DEBUG_LOG('Playing next item: {0}'.format(playable))
 
         if playable.type == 'IMAGE':
             try:
@@ -869,10 +878,10 @@ class ExperiencePlayer(xbmc.Player):
             self.next()
 
         else:
-            self.log('NOT PLAYING: {0}'.format(playable))
+            DEBUG_LOG('NOT PLAYING: {0}'.format(playable))
             self.next()
 
     def abort(self):
         self.abortFlag.set()
-        self.log('ABORT')
+        DEBUG_LOG('ABORT')
         self.window.doClose()

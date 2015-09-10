@@ -64,4 +64,10 @@
         <setting id="audioformat.format"   label="Format"   type="enum" values="Auro-3D|Dolby Digital|Dolby Digital Plus|Dolby TrueHD|Dolby Atmos|DTS|DTS-HD Master Audio|DTS:X|Datasat|THX|Other" default="10" subsetting="true" />
         <setting id="audioformat.file"     label="File"     type="file" sources="auto" value="" subsetting="true" />
     </category>
+
+    <category label="Advanced">
+        <setting id="debug.log"              label="Debug logging"                                    type="bool"   default="true" />
+        <setting id="script.xbmc.debug.log"  label="Send log to xbmclogs.com (via Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="System.HasAddon(script.xbmc.debug.log)" />
+        <setting id="missing.xbmc.debug.log" label="Send log to xbmclogs.com (Needs installation of Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="!System.HasAddon(script.xbmc.debug.log)" enable="false" />
+    </category>
 </settings>
