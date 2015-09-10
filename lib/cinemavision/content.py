@@ -156,7 +156,7 @@ class UserContent:
                 path = b.path
                 if not util.vfs.exists(path):
                     cleaned = True
-                    b.delete().execute()
+                    b.delete_instance()
                     self.log('{0} Missing: {1} - REMOVED'.format(name, path))
 
         if not cleaned:
@@ -322,13 +322,17 @@ class MusicHandler:
         if ext.lower() in util.musicExtensions:
             path = util.pathJoin(base, path)
             name = os.path.basename(p)
-            data = mutagen.File(path)
 
             try:
                 DB.Song.get(DB.Song.path == path)
                 self._callback('Loading Song (exists): [ {0} ]'.format(name))
             except DB.peewee.DoesNotExist:
-                data = mutagen.File(path)
+                data = None
+                try:
+                    data = mutagen.File(path)
+                except:
+                    util.ERROR()
+
                 if data:
                     duration = data.info.length
                     self._callback('Loading Song (new): [ {0} ({1}) ]'.format(name, data.info.pprint()))
@@ -346,7 +350,7 @@ class MusicHandler:
             path = s.path
             if not util.vfs.exists(path):
                 cleaned = True
-                s.delete().execute()
+                s.delete_instance()
                 self._callback('Song Missing: {0} - REMOVED'.format(path))
 
         return cleaned
@@ -532,7 +536,7 @@ class TriviaDirectoryHandler:
             path = t.answerPath
             if not util.vfs.exists(path):
                 cleaned = True
-                t.delete().execute()
+                t.delete_instance()
                 self._callback('Trivia Missing: {0} - REMOVED'.format(path))
 
         return cleaned

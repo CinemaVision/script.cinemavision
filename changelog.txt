@@ -6,6 +6,7 @@ Changelog for CinemaVision
 - add:    'Debug logging' to 'Advanced' in addon settings
 - add:    'Send log to xbmclogs.com (via Kodi Log Uploader)' to 'Advanced' in addon settings
 - fix:    Possible fix to black screen with audio when playing a bumper video
+- fix:    When cleaning the database if an item was missing, all items of that type were removed
 
 [- 0.0.33 -]
 
