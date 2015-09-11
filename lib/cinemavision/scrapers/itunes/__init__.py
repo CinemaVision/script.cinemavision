@@ -1,6 +1,5 @@
 import scraper
 import re
-import util
 
 
 class Trailer:
@@ -46,7 +45,8 @@ class Trailer:
         try:
             return self._getPlayableURL(res)
         except:
-            util.ERROR()
+            import traceback
+            traceback.print_exc()
 
         return None
 

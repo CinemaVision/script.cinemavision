@@ -44,6 +44,8 @@ def migrateDB(DB, version):
             migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='Classic'))
         )
     except peewee.OperationalError:
+        util.MINOR_ERROR('Migration (Add style column)')
+    except:
         util.ERROR()
 
 

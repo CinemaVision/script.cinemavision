@@ -1,4 +1,5 @@
 import os
+import sys
 
 DEBUG = True
 
@@ -288,3 +289,8 @@ def ERROR(msg=None):
         LOG(msg)
     import traceback
     traceback.print_exc()
+
+
+def MINOR_ERROR(msg=''):
+    short = str(sys.exc_info()[1])
+    LOG('MINOR ERROR: {0}{1}'.format(msg and '{0} - '.format(msg) or '', short))

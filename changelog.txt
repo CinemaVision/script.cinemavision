@@ -1,5 +1,9 @@
 Changelog for CinemaVision
 
+[- 0.0.35 -]
+
+- fix:    Error in iTunes scraper causing sequence playback to fail
+
 [- 0.0.34 -]
 
 - add:    'Advanced' section in addon settings
