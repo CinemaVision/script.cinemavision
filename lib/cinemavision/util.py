@@ -90,9 +90,15 @@ try:
                 return self._pos
 
             def read(self, nbytes=-1):
+                if nbytes == 0:
+                    return ''
+                elif nbytes < 0:
+                    nbytes = 0
+
                 self._pos += nbytes
                 if self._pos >= self._size or not nbytes:
                     self._pos = self._size - 1
+
                 return xbmcvfs.File.read(self, nbytes)
 
             def write(self, data):
