@@ -10,12 +10,12 @@ from kodijsonrpc import rpc
 
 import kodigui
 import kodiutil
+
+kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
+
 import cinemavision
 
 cinemavision.init(kodiutil.DEBUG())
-
-from cinemavision import sequenceprocessor
-from cinemavision import ratings
 
 
 AUDIO_FORMATS = {
@@ -34,6 +34,79 @@ AUDIO_FORMATS = {
 
 def DEBUG_LOG(msg):
     kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
+
+
+SYSTEM_RATING_REs = {
+    # 'MPAA': r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
+    'BBFC': r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
+    'FSK': r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)',
+    'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
+}
+
+RATING_REs = {
+    'MPAA': r'(?i)(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
+    'BBFC': r'(?i)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
+    'FSK': r'(?i)(?P<rating>0|6|12|16|18|Unrated)',
+    'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
+}
+
+SYSTEM_RATING_REs.update(cinemavision.ratings.getRegExs('kodi'))
+RATING_REs.update(cinemavision.ratings.getRegExs())
+
+LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1, region=True)
+
+DEBUG_LOG('Language: {0}'.format(LANGUAGE))
+
+
+def setRatingDefaults():
+    ratingSystem = (None, 'MPAA', 'FSK', 'BBFC', 'DEJUS', False)[kodiutil.getSetting('rating.system.default', 0)]
+    if ratingSystem is False:
+        ratingSystem == kodiutil.getSetting('rating.system.default.custom').strip() or None
+
+    if not ratingSystem:
+        try:
+            countryCode = LANGUAGE.split('-')[1].strip()
+            if countryCode:
+                cinemavision.ratings.setCountry(countryCode)
+        except IndexError:
+            pass
+        except:
+            kodiutil.ERROR()
+    else:
+        cinemavision.ratings.setDefaultRatingSystem(ratingSystem)
+
+setRatingDefaults()
+
+
+def getActualRatingFromMPAA(rating):
+    DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
+
+    if not rating:
+        return 'UNKNOWN:NR'
+
+    # Try a definite match
+    for system, ratingRE in SYSTEM_RATING_REs.items():
+        m = re.search(ratingRE, rating)
+        if m:
+            return '{0}:{1}'.format(system, m.group('rating'))
+
+    rating = rating.upper().replace('RATED', '').strip(': ')
+
+    # Try to match against default system if set
+    defaultSystem = cinemavision.ratings.DEFAULT_RATING_SYSTEM
+    if defaultSystem and defaultSystem in RATING_REs:
+        m = re.search(RATING_REs[defaultSystem], rating)
+        if m:
+            return '{0}:{1}'.format(defaultSystem, m.group('rating'))
+
+    # Try to extract rating from know ratings systems
+    for system, ratingRE in RATING_REs.items():
+        m = re.search(ratingRE, rating)
+        if m:
+            return m.group('rating')
+
+    # Just return what we have
+    return rating
 
 
 def isURLFile(path):
@@ -64,29 +137,6 @@ def resolveURLFile(path):
         return None
 
     return vid.streamURL()
-
-RATING_REs = {
-    'MPAA': r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
-    'BBFC': r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
-    'FSK': r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)',
-    'DE}US': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
-}
-
-RATING_REs.update(ratings.getRegExs('kodi'))
-
-
-def getActualRatingFromMPAA(rating):
-    DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
-
-    if not rating:
-        return 'UNKNOWN:NR'
-
-    for system, ratingRE in RATING_REs.items():
-        m = re.search(ratingRE, rating)
-        if m:
-            return '{0}:{1}'.format(system, m.group('rating'))
-
-    return 'UNKNOWN:NR'
 
 
 class KodiVolumeControl:
@@ -211,6 +261,8 @@ class ExperienceWindow(kodigui.BaseWindow):
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
+        kodiutil.setGlobalProperty('paused', '')
+        self.player = None
         self.action = None
         self.volume = None
         self.abortFlag = None
@@ -218,6 +270,9 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.duration = 400
         self.lastImage = ''
         self.initialized = False
+        self._paused = False
+        self._pauseStart = 0
+        self._pauseDuration = 0
         self.clear()
 
     def onInit(self):
@@ -230,6 +285,10 @@ class ExperienceWindow(kodigui.BaseWindow):
                 return
 
     def setImage(self, url):
+        self._paused = False
+        self._pauseStart = 0
+        self._pauseDuration = 0
+
         if not self.effect:
             return
 
@@ -322,14 +381,51 @@ class ExperienceWindow(kodigui.BaseWindow):
                 self.action = 'SKIP'
             elif action == xbmcgui.ACTION_PAGE_DOWN or action == xbmcgui.ACTION_PREV_ITEM:
                 self.action = 'BACK'
+            elif action == xbmcgui.ACTION_PAUSE:
+                self.pause()
         except:
             kodiutil.ERROR()
             return kodigui.BaseWindow.onAction(self, action)
 
         kodigui.BaseWindow.onAction(self, action)
 
+    def onPause(self):
+        self.player.onPlayBackPaused()
+        kodiutil.setGlobalProperty('paused', '1')
+
+    def onResume(self):
+        self.player.onPlayBackResumed()
+        kodiutil.setGlobalProperty('paused', '')
+
     def hasAction(self):
         return bool(self.action)
+
+    def pause(self):
+        if xbmc.getCondVisibility('Player.HasAudio'):
+            if xbmc.getCondVisibility('Player.Paused'):
+                self._pauseStart = time.time()
+                self._paused = True
+            else:
+                self._pauseDuration = time.time() - self._pauseStart
+                self.action = 'RESUME'
+        else:
+            if self._paused:
+                self._pauseDuration = time.time() - self._pauseStart
+                self.action = 'RESUME'
+                self.onResume()
+            else:
+                self._pauseStart = time.time()
+                self._paused = True
+                self.onPause()
+
+    def pauseDuration(self):
+        pd = self._pauseDuration
+        self._pauseDuration = 0
+        return pd
+
+    def finishPause(self):
+        self._paused = False
+        self._pauseStart = 0
 
     def getAction(self):
         action = self.action
@@ -360,6 +456,15 @@ class ExperienceWindow(kodigui.BaseWindow):
             return True
         return False
 
+    def paused(self):
+        return self._paused
+
+    def resume(self):
+        if self.action == 'RESUME':
+            self.action = None
+            return True
+        return False
+
 
 class ExperiencePlayer(xbmc.Player):
     NOT_PLAYING = 0
@@ -380,6 +485,7 @@ class ExperiencePlayer(xbmc.Player):
         self.playStatus = 0
         self.hasFullscreened = False
         self.has3D = False
+        self.loadActions()
         self.init()
         return self
 
@@ -406,9 +512,15 @@ class ExperiencePlayer(xbmc.Player):
 
     def onPlayBackPaused(self):
         DEBUG_LOG('PLAYBACK PAUSED')
+        if self.pauseAction:
+            DEBUG_LOG('Executing pause action: {0}'.format(self.pauseAction))
+            self.pauseAction.run()
 
     def onPlayBackResumed(self):
         DEBUG_LOG('PLAYBACK RESUMED')
+        if self.resumeAction:
+            DEBUG_LOG('Executing resume action: {0}'.format(self.resumeAction))
+            self.resumeAction.run()
 
     def onPlayBackStarted(self):
         if self.playStatus == self.PLAYING_MUSIC:
@@ -455,6 +567,11 @@ class ExperiencePlayer(xbmc.Player):
         DEBUG_LOG('PLAYBACK FAILED')
         self.next()
 
+    def onAbort(self):
+        if self.abortAction:
+            DEBUG_LOG('Executing abort action: {0}'.format(self.abortAction))
+            self.abortAction.run()
+
     def getPlayingFile(self):
         if self.isPlaying():
             try:
@@ -476,7 +593,7 @@ class ExperiencePlayer(xbmc.Player):
 
         result = rpc.Playlist.GetItems(playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime'])
         for r in result.get('items', []):
-            feature = sequenceprocessor.Feature(r['file'])
+            feature = cinemavision.sequenceprocessor.Feature(r['file'])
             feature.title = r.get('title') or r.get('label', '')
             ratingString = getActualRatingFromMPAA(r.get('mpaa', ''))
             if ratingString:
@@ -507,18 +624,35 @@ class ExperiencePlayer(xbmc.Player):
             self.features.append(feature)
 
         if self.fromEditor and not self.features:
-            feature = sequenceprocessor.Feature(self.featureStub)
+            feature = cinemavision.sequenceprocessor.Feature(self.featureStub)
             feature.title = 'Feature Stub'
             feature.rating = 'MPAA:PG-13'
             feature.audioFormat = 'Dolby Digital'
 
             self.features.append(feature)
 
+    def loadActions(self):
+        self.pauseAction = None
+        self.resumeAction = None
+        self.abortAction = None
+
+        if kodiutil.getSetting('action.onPause', False):
+            actionFile = kodiutil.getSetting('action.onPause.file')
+            self.pauseAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+
+        if kodiutil.getSetting('action.onResume', False):
+            actionFile = kodiutil.getSetting('action.onResume.file')
+            self.resumeAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+
+        if kodiutil.getSetting('action.onAbort', False):
+            actionFile = kodiutil.getSetting('action.onAbort.file')
+            self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+
     def addSelectedFeature(self):
         title = xbmc.getInfoLabel('ListItem.Title')
         if not title:
             return False
-        feature = sequenceprocessor.Feature(xbmc.getInfoLabel('ListItem.FileNameAndPath'))
+        feature = cinemavision.sequenceprocessor.Feature(xbmc.getInfoLabel('ListItem.FileNameAndPath'))
         feature.title = title
 
         ratingString = getActualRatingFromMPAA(xbmc.getInfoLabel('ListItem.Mpaa'))
@@ -609,7 +743,7 @@ class ExperiencePlayer(xbmc.Player):
         import cvutil
         dbPath = cvutil.getDBPath()
 
-        self.processor = sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath)
+        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath)
         [self.processor.addFeature(f) for f in self.features]
 
         DEBUG_LOG('[ -- Started --------------------------------------------------------------- ]')
@@ -624,18 +758,22 @@ class ExperiencePlayer(xbmc.Player):
 
     def openWindow(self):
         self.window = ExperienceWindow.create()
+        self.window.player = self
         self.window.volume = self.volume
         self.window.abortFlag = self.abortFlag
         self.window.join()
 
     def waitLoop(self):
-        while not kodiutil.wait(0.1):
-            if self.processor.atEnd() or not self.window.isOpen:
+        while not kodiutil.wait(0.1) and self.window.isOpen:
+            if self.processor.atEnd():
                 break
 
             if self.isPlayingMinimized():
                 DEBUG_LOG('Fullscreen video closed - stopping')
                 self.stop()
+        else:
+            if not self.processor.atEnd():
+                self.onAbort()
 
         DEBUG_LOG('[ -- Finished -------------------------------------------------------------- ]')
         self.window.doClose()
@@ -699,8 +837,8 @@ class ExperiencePlayer(xbmc.Player):
             stop = time.time() + image.duration
             fadeStop = image.fade and stop - (image.fade/1000) or 0
 
-            while not kodiutil.wait(0.1) and time.time() < stop:
-                if fadeStop and time.time() >= fadeStop:
+            while not kodiutil.wait(0.1) and (time.time() < stop or self.window.paused()):
+                if fadeStop and time.time() >= fadeStop and not self.window.paused():
                     self.window.fadeOut()
 
                 if not self.window.isOpen:
@@ -714,6 +852,9 @@ class ExperiencePlayer(xbmc.Player):
                         return 'SKIP'
                     elif self.window.back():
                         return 'BACK'
+                    elif self.window.resume():
+                        stop += self.window.pauseDuration()
+                        self.window.finishPause()
 
             return True
         finally:
@@ -724,11 +865,10 @@ class ExperiencePlayer(xbmc.Player):
 
         stop = time.time() + image.duration
 
-        while not kodiutil.wait(0.1) and time.time() < stop:
+        while not kodiutil.wait(0.1) and (time.time() < stop or self.window.paused()):
             if not self.window.isOpen:
                 return False
-
-            if music_end and time.time() >= music_end:
+            if music_end and time.time() >= music_end and not self.window.paused():
                 music_end = None
                 self.stopMusic(image_queue)
 
@@ -741,6 +881,9 @@ class ExperiencePlayer(xbmc.Player):
                     return 'SKIP'
                 elif self.window.back():
                     return 'BACK'
+                elif self.window.resume():
+                    stop += self.window.pauseDuration()
+                    self.window.finishPause()
 
         return True
 
@@ -795,6 +938,7 @@ class ExperiencePlayer(xbmc.Player):
         finally:
             self.screensaver.restore()
             self.visualization.restore()
+            kodiutil.setGlobalProperty('paused', '')
             xbmc.enableNavSounds(True)
             self.stopMusic(action != 'BACK' and image_queue or None)
             if self. window.hasAction():

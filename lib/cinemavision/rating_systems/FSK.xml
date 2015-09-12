@@ -1,4 +1,5 @@
 <system name="FSK">
+    <region>DE</region>
     <rating value="180">18</rating>
     <rating value="160">16</rating>
     <rating value="120">12</rating>

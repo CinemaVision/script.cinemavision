@@ -92,7 +92,17 @@ class HTTPCommand(ActionCommand):
     def execute(self):
         import requests
         if self.args:
-            resp = requests.post(self.commandData, data=self.args[0])
+            data = self.args[0]
+            if data.startswith('PUT:'):
+                data = data[4:].lstrip()
+                resp = requests.put(self.commandData, data=data)
+            elif data.startswith('DELETE:'):
+                data = data[7:].lstrip()
+                resp = requests.delete(self.commandData)
+            else:
+                if data.startswith('POST:'):
+                    data = data[5:].lstrip()
+                resp = requests.post(self.commandData, data=data)
         else:
             resp = requests.get(self.commandData)
 

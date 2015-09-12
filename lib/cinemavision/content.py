@@ -88,7 +88,7 @@ class UserContent:
     def __init__(self, content_dir=None, callback=None, db_path=None):
         self._callback = callback
         self.setupDB(db_path)
-        self.musicHandler = MusicHandler(self.log)
+        self.musicHandler = MusicHandler(self)
         self.triviaDirectoryHandler = TriviaDirectoryHandler(self.log)
         self.setContentDirectoryPath(content_dir)
         if not db_path:
@@ -157,7 +157,7 @@ class UserContent:
                 if not util.vfs.exists(path):
                     cleaned = True
                     b.delete_instance()
-                    self.log('{0} Missing: {1} - REMOVED'.format(name, path))
+                    self.log('{0} Missing: {1} - REMOVED'.format(repr(name), repr(path)))
 
         if not cleaned:
             self.log('Database clean - unchanged')
@@ -172,15 +172,7 @@ class UserContent:
     def loadMusic(self):
         self.logHeading('LOADING MUSIC')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Music')
-        paths = util.vfs.listdir(basePath)
-
-        total = float(len(paths))
-        for ct, path in enumerate(paths):
-            pct = int((ct/total)*20)
-            if not self._callback(pct=pct):
-                break
-            self.musicHandler(basePath, path)
+        self.musicHandler(util.pathJoin(self._contentDirectory, 'Music'))
 
     def loadTrivia(self):
         self.logHeading('LOADING TRIVIA')
@@ -209,7 +201,7 @@ class UserContent:
             if fmt == 'FILE':
                 self.triviaDirectoryHandler.getSlide(basePath, sub)
             elif fmt == 'DIR' or fmt == 'ZIP':
-                self.triviaDirectoryHandler(path)
+                self.triviaDirectoryHandler(path, prefix=sub)
 
     def loadAudioFormatBumpers(self):
         self.logHeading('LOADING AUDIO FORMAT BUMPERS')
@@ -255,13 +247,17 @@ class UserContent:
             type_ = sub.replace(' Bumpers', '')
             self.addBumper(model, sub, path, type_name, sub_name, type_, sub_default)
 
-    def addBumper(self, model, sub, path, type_name, sub_name, type_, sub_default, sub_val=None):
+    def addBumper(self, model, sub, path, type_name, sub_name, type_, sub_default, sub_val=None, prefix=None):
         for v in util.vfs.listdir(path):
             vpath = os.path.join(path, v)
 
             if util.isDir(vpath):
-                if not sub_val:
-                    self.addBumper(model, sub, vpath, type_name, sub_name, type_, sub_default, v)
+                if sub_name:
+                    if not sub_val:
+                        self.addBumper(model, sub, vpath, type_name, sub_name, type_, sub_default, v)
+                else:
+                    self.addBumper(model, sub, vpath, type_name, sub_name, type_, sub_default, prefix=v)
+
                 continue
 
             name, ext = os.path.splitext(v)
@@ -272,6 +268,8 @@ class UserContent:
                 isImage = True
             else:
                 continue
+
+            name = prefix and (prefix + ':' + name) or name
 
             defaults = {
                 type_name: TYPE_IDS.get(type_, type_),
@@ -301,7 +299,8 @@ class UserContent:
             DB.RatingSystem.get_or_create(
                 name=system.name,
                 context=context,
-                regEx=regEx
+                regEx=regEx,
+                regions=system.regions and ','.join(system.regions) or None
             )
 
         for rating in system.ratings:
@@ -314,18 +313,37 @@ class UserContent:
 
 
 class MusicHandler:
-    def __init__(self, callback=None):
-        self._callback = callback
+    def __init__(self, owner=None):
+        self.owner = owner
 
-    def __call__(self, base, path):
-        p, ext = os.path.splitext(path)
+    def __call__(self, basePath):
+        names = util.vfs.listdir(basePath)
+
+        total = float(len(names))
+        for ct, file in enumerate(names):
+            pct = int((ct/total)*20)
+            if not self.owner._callback(pct=pct):
+                break
+            self.addSongs(basePath, file)
+
+    def addSongs(self, base, file, sub=None):
+        path = util.pathJoin(base, file)
+
+        if util.isDir(path):
+            paths = util.vfs.listdir(path)
+            sub = sub and (sub + ':' + file) or file
+            for p in paths:
+                self.addSongs(path, p, sub)
+            return
+
+        name, ext = os.path.splitext(file)
         if ext.lower() in util.musicExtensions:
-            path = util.pathJoin(base, path)
-            name = os.path.basename(p)
+            if sub:
+                name = sub + ':' + name
 
             try:
                 DB.Song.get(DB.Song.path == path)
-                self._callback('Loading Song (exists): [ {0} ]'.format(name))
+                self.owner.log('Loading Song (exists): [ {0} ]'.format(name))
             except DB.peewee.DoesNotExist:
                 data = None
                 try:
@@ -335,7 +353,7 @@ class MusicHandler:
 
                 if data:
                     duration = data.info.length
-                    self._callback('Loading Song (new): [ {0} ({1}) ]'.format(name, data.info.pprint()))
+                    self.owner.log('Loading Song (new): [ {0} ({1}) ]'.format(name, data.info.pprint()))
                 else:
                     duration = 0
                 DB.Song.create(
@@ -351,7 +369,7 @@ class MusicHandler:
             if not util.vfs.exists(path):
                 cleaned = True
                 s.delete_instance()
-                self._callback('Song Missing: {0} - REMOVED'.format(path))
+                self.owner.log('Song Missing: {0} - REMOVED'.format(path))
 
         return cleaned
 
@@ -370,13 +388,13 @@ class TriviaDirectoryHandler:
     def __init__(self, callback=None):
         self._callback = callback
 
-    def __call__(self, basePath):
+    def __call__(self, basePath, prefix=None):
         hasSlidesXML = False
         slideXML = util.pathJoin(basePath, self._formatXML)
         if util.vfs.exists(slideXML):
             hasSlidesXML = True
 
-        pack = os.path.basename(basePath.rstrip('\\/'))
+        # pack = os.path.basename(basePath.rstrip('\\/'))
 
         xml = None
         slide = None
@@ -414,11 +432,16 @@ class TriviaDirectoryHandler:
 
         for c in contents:
             path = util.pathJoin(basePath, c)
+
+            if util.isDir(path):
+                self(path, prefix=prefix and (prefix + ':' + c) or c)
+                continue
+
             base, ext = os.path.splitext(c)
 
             if not ext.lower() in util.imageExtensions:
                 if ext.lower() in util.videoExtensions:
-                    self.getSlide(basePath, c, pack)
+                    self.getSlide(basePath, c, prefix)
                 continue
 
             ttype = ''
@@ -440,7 +463,8 @@ class TriviaDirectoryHandler:
 
                 ttype = 'c'
             else:  # A still
-                name = re.split(clueRE, c)[0]
+                name, ext = os.path.splitext(c)
+                # name = re.split(clueRE, c)[0]
                 ttype = 'a'
 
             if name not in trivia:
@@ -459,13 +483,15 @@ class TriviaDirectoryHandler:
                 continue
 
             if questionPath:
+                ttype = 'QA'
                 self._callback('Loading Trivia(QA): [ {0} ]'.format(name))
             else:
-                self._callback('Loading Trivia(Single): [ {0} ]'.format(name))
+                ttype = 'fact'
+                self._callback('Loading Trivia(single): [ {0} ]'.format(name))
 
             defaults = {
-                    'type': 'QA',
-                    'TID': '{0}.{1}'.format(pack, name),
+                    'type': ttype,
+                    'TID': '{0}:{1}'.format(prefix, name),
                     'name': name,
                     'rating': rating,
                     'questionPath': questionPath
@@ -510,7 +536,7 @@ class TriviaDirectoryHandler:
 
             elif ext.lower() in util.imageExtensions:
                 ttype = 'fact'
-                self._callback('Loading Trivia (fact): [ {0} ]'.format(name))
+                self._callback('Loading Trivia (single): [ {0} ]'.format(name))
             else:
                 return
 
@@ -518,7 +544,7 @@ class TriviaDirectoryHandler:
                     answerPath=path,
                     defaults={
                         'type': ttype,
-                        'TID': '{0}.{1}'.format(pack, name),
+                        'TID': '{0}:{1}'.format(pack, name),
                         'name': name,
                         'duration': duration
                     }

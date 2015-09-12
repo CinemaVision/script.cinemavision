@@ -1,4 +1,5 @@
 <system name="BBFC">
+    <region>GB</region>
     <rating value="185">R18</rating>
     <rating value="180">18</rating>
     <rating value="150">15</rating>

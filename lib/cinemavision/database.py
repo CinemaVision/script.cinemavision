@@ -15,7 +15,7 @@ except TypeError:
 from peewee import peewee
 import util
 
-DATABASE_VERSION = 1
+DATABASE_VERSION = 2
 
 fn = peewee.fn
 
@@ -39,14 +39,27 @@ def migrateDB(DB, version):
     util.LOG('Migrating database from version {0} to {1}'.format(version, DATABASE_VERSION))
     from peewee.playhouse import migrate
     migrator = migrate.SqliteMigrator(DB)
-    try:
-        migrate.migrate(
-            migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='Classic'))
-        )
-    except peewee.OperationalError:
-        util.MINOR_ERROR('Migration (Add style column)')
-    except:
-        util.ERROR()
+
+    if version < 1:
+        try:
+            migrate.migrate(
+                migrator.add_column('RatingsBumpers', 'style', peewee.CharField(default='Classic'))
+            )
+        except peewee.OperationalError:
+            util.MINOR_ERROR('Migration (RatingsBumpers: Add style column)')
+        except:
+            util.ERROR()
+
+    if version < 2:
+        try:
+            migrate.migrate(
+                migrator.add_column('RatingSystem', 'regions', peewee.CharField(null=True)),
+                migrator.drop_not_null('RatingSystem', 'context'),
+            )
+        except peewee.OperationalError:
+            util.MINOR_ERROR('Migration (RatingSystem: Add region column)')
+        except:
+            util.ERROR()
 
 
 def checkDBVersion(DB):
@@ -73,9 +86,12 @@ def initialize(path=None, callback=None):
     global WatchedTrivia
 
     ###########################################################################################
-    # Watched Database
+    # Version
     ###########################################################################################
-    DB = peewee.SqliteDatabase(util.pathJoin(path or util.STORAGE_PATH, 'content.db'))
+    dbPath = util.pathJoin(path or util.STORAGE_PATH, 'content.db')
+    dbExists = util.vfs.exists(dbPath)
+
+    DB = peewee.SqliteDatabase(dbPath)
 
     class DBVersion(peewee.Model):
         version = peewee.IntegerField(default=0)
@@ -85,8 +101,12 @@ def initialize(path=None, callback=None):
 
     DBVersion.create_table(fail_silently=True)
 
-    checkDBVersion(DB)
+    if dbExists:  # Only check version if we had a DB, otherwise we're creating it fresh
+        checkDBVersion(DB)
 
+    ###########################################################################################
+    # Content
+    ###########################################################################################
     class ContentBase(peewee.Model):
         name = peewee.CharField()
         accessed = peewee.DateTimeField(null=True)
@@ -170,8 +190,9 @@ def initialize(path=None, callback=None):
     ###########################################################################################
     class RatingSystem(peewee.Model):
         name = peewee.CharField()
-        context = peewee.CharField()
+        context = peewee.CharField(null=True)
         regEx = peewee.CharField()
+        regions = peewee.CharField(null=True)
 
         class Meta:
             database = DB

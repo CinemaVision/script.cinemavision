@@ -34,6 +34,16 @@
             <texture>$INFO[Window(10000).Property(script.cinemavision.image1)]</texture>
             <aspectratio>keep</aspectratio>
         </control>
+        <control type="image" id="101">
+            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.paused))</visible>
+            <posx>832</posx>
+            <posy>412</posy>
+            <width>256</width>
+            <height>256</height>
+            <texture>script.cinemavision-paused.png</texture>
+            <colordiffuse>80FFFFFF</colordiffuse>
+            <aspectratio>keep</aspectratio>
+        </control>
 
     </controls>
 </window>

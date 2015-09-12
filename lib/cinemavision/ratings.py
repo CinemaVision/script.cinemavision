@@ -2,6 +2,20 @@ import util
 import database as DB
 from xml.etree import ElementTree as ET
 
+COUNTRY_SYSTEMS = {
+    'DE': 'FSK',
+    'GB': 'BFS',
+    'BR': 'DEJUS',
+    'ES': 'ICAA',
+    'US': 'MPAA'
+}
+
+DEFAULT_RATING_SYSTEM = None
+
+
+def getSystemByCountry(country_code):
+    return COUNTRY_SYSTEMS.get(country_code)
+
 
 def genValidIdentifier(seq):
     ret = ''
@@ -21,6 +35,7 @@ class RatingSystem:
     name = ''
     ratings = None
     regEx = None
+    regions = None
 
     def __repr__(self):
         return '{0}: {1}'.format(self.name, self.ratings)
@@ -51,6 +66,12 @@ class RatingSystem:
             return None
 
         return self.regEx[context]
+
+    def addRegion(self, region):
+        COUNTRY_SYSTEMS[region] = self.name
+        if not self.regions:
+            self.regions = []
+        self.regions.append(region)
 
 
 class Rating:
@@ -106,6 +127,7 @@ class MPAA(RatingSystem):
 
     name = 'MPAA'
     ratings = [NR, G, PG, PG_13, R, NC_17]
+    regions = ['US']
 
 
 class XMLRatingSystem(RatingSystem):
@@ -127,6 +149,9 @@ class XMLRatingSystem(RatingSystem):
             setattr(system, name, rating)
             system.addRating(rating)
 
+        for node in e.findall('region'):
+            system.addRegion(node.text)
+
         return system
 
 
@@ -143,14 +168,21 @@ def getRatingsSystem(name):
     return RATINGS_SYSTEMS.get(name)
 
 
-def getRating(system, name=None):
+def getRating(system_or_name, name=None):
+    system = system_or_name
+
     if not name:
-        if ':' in system:
-            system, name = system.split(':', 1)
-        else:
-            return NO_RATING
+        if ':' in system_or_name:
+            system, name = system_or_name.split(':', 1)
+        elif DEFAULT_RATING_SYSTEM:
+            name = system_or_name
+            system = DEFAULT_RATING_SYSTEM
+
+    if not name:
+        return NO_RATING
 
     system = getRatingsSystem(system)
+
     if not system:
         return NO_RATING
 
@@ -165,13 +197,25 @@ def addRatingSystemFromXML(xml):
     return system
 
 
-def getRegExs(context):
+def getRegExs(context=None):
     ret = {}
     for system in RATINGS_SYSTEMS.values():
         regEx = system.getRegEx(context)
         if regEx:
             ret[system.name] = regEx
     return ret
+
+
+def setCountry(country_code):
+    global DEFAULT_RATING_SYSTEM
+    DEFAULT_RATING_SYSTEM = getSystemByCountry(country_code)
+    util.DEBUG_LOG('Default rating system: {0}'.format(DEFAULT_RATING_SYSTEM))
+
+
+def setDefaultRatingSystem(system):
+    global DEFAULT_RATING_SYSTEM
+    DEFAULT_RATING_SYSTEM = system
+    util.DEBUG_LOG('Default rating system: {0}'.format(DEFAULT_RATING_SYSTEM))
 
 
 def loadFromXML():
@@ -195,6 +239,9 @@ def loadFromDB():
             rs.name = system.name
             rs.addRegEx(system.context, system.regEx)
             RATINGS_SYSTEMS[system.name] = rs
+            if system.regions:
+                for r in system.regions.split(','):
+                    rs.addRegion(r)
 
     for rating in DB.Rating.select():
         if rating.system not in RATINGS_SYSTEMS:

@@ -349,7 +349,7 @@ class FeatureHandler:
                     (DB.RatingsBumpers.name == feature.rating.name) &
                     (DB.RatingsBumpers.is3D == feature.is3D) &
                     (DB.RatingsBumpers.isImage == image) &
-                    (DB.RatingsBumpers.style == sItem.ratingStyle)
+                    (DB.RatingsBumpers.style == sItem.getLive('ratingStyle'))
                 )[0]
 
             else:

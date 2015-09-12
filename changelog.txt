@@ -1,5 +1,16 @@
 Changelog for CinemaVision
 
+[- 0.0.36 -]
+
+- fix:    Rating bumper not showing when 'Style' set to 'Default' in the module
+- fix:    Improved feature rating detection
+- add:    New setting in 'Feature' - 'Default rating system'
+- add:    Recursive directory scanning for Video Bumpers, Audio Format Bumpers, Trivia and Music
+- add:    In action files, allow http data to be prepended with POST:, PUT: and DELETE: to specify method - defaults to POST
+- add:    New settings tab 'Actions'
+- add:    Settings on 'Actions' tab to specify action files for pause, resume and abort events
+- add:    Added the ability to pause trivia
+
 [- 0.0.35 -]
 
 - fix:    Error in iTunes scraper causing sequence playback to fail

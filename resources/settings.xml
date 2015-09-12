@@ -17,6 +17,8 @@
     </category>
 
     <category label="Feature">
+        <setting id="rating.system.default"        label="Default rating system"  type="enum"   values="None|MPAA|FSK|BBFC|DEJUS|Custom"  default="1" />
+        <setting id="rating.system.default.custom" label="Default rating system"  type="text"   default=""  visible="eq(-1,5)" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
         <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
@@ -63,6 +65,15 @@
         <setting id="audioformat.fallback" label="Fallback" type="enum" values="Choose format|Choose file" default="0" subsetting="true" />
         <setting id="audioformat.format"   label="Format"   type="enum" values="Auro-3D|Dolby Digital|Dolby Digital Plus|Dolby TrueHD|Dolby Atmos|DTS|DTS-HD Master Audio|DTS:X|Datasat|THX|Other" default="10" subsetting="true" />
         <setting id="audioformat.file"     label="File"     type="file" sources="auto" value="" subsetting="true" />
+    </category>
+
+    <category label="Actions">
+        <setting id="action.onPause"       label="Enable 'pause' action"   type="bool" default="false" />
+        <setting id="action.onPause.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onResume"      label="Enable 'resume' action"  type="bool" default="false" />
+        <setting id="action.onResume.file" label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onAbort"       label="Enable 'abort' action"   type="bool" default="false" />
+        <setting id="action.onAbort.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
     </category>
 
     <category label="Advanced">

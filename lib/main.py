@@ -6,6 +6,8 @@ import xbmcvfs
 import kodiutil
 import kodigui
 
+kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
+
 from lib import cinemavision
 
 cinemavision.init(kodiutil.DEBUG())
