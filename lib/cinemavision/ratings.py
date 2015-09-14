@@ -230,6 +230,7 @@ def loadFromXML():
             addRatingSystemFromXML(f.read())
 
 
+@DB.session
 def loadFromDB():
     for system in DB.RatingSystem.select():
         if system.name in RATINGS_SYSTEMS:

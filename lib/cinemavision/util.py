@@ -34,7 +34,6 @@ def _getSettingDefault(key):
         'trivia.musicDir': '',
         'trailer.source': 'itunes',
         'trailer.count': 1,
-        'trailer.limitRating': True,
         'trailer.limitGenre': True,
         'trailer.quality': '720p',
         'trailer.dir': '',
@@ -49,7 +48,9 @@ def _getSettingDefault(key):
         'trivia.musicVolume': 75,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,
-        'trailer.playUnwatched': True
+        'trailer.playUnwatched': True,
+        'trailer.ratingMax': 'MPAA.G',
+        'rating.system.default': 'MPAA'
     }
 
     return defaults.get(key)
@@ -150,7 +151,9 @@ try:
             return _getSettingDefault(key)
 
         if key == 'trailer.source':
-            return ['itunes', 'kodidb', 'dir', 'file'][int(default)]
+            return ['itunes', 'kodidb', 'content', 'dir', 'file'][int(default)]
+        elif key == 'trailer.ratingLimit':
+            return ['none', 'max', 'match'][int(default)]
         elif key == 'trivia.format':
             return ['slide', 'video'][int(default)]
         elif key == 'trivia.music':
@@ -166,9 +169,6 @@ try:
                 'Auro-3D', 'Dolby Digital', 'Dolby Digital Plus', 'Dolby TrueHD',
                 'Dolby Atmos', 'DTS', 'DTS-HD Master Audio', 'DTS-X', 'Datasat', 'THX', 'Other'
             ][int(default)]
-        elif key == 'trailer.globalRatingLimit':
-            import ratings
-            return [None, ratings.MPAA.G, ratings.MPAA.PG, ratings.MPAA.PG_13, ratings.MPAA.R, ratings.MPAA.NC_17][int(default)]
         elif key == 'feature.ratingBumper':
             return ['none', 'video', 'image'][int(default)]
         elif key == 'feature.ratingStyleSelection':

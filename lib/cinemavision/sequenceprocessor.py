@@ -256,6 +256,22 @@ class Feature(Video):
         )
 
     @property
+    def ID(self):
+        return self.get('ID', '')
+
+    @ID.setter
+    def ID(self, val):
+        self['ID'] = val
+
+    @property
+    def type(self):
+        return self.get('type', '')
+
+    @type.setter
+    def type(self, val):
+        self['type'] = val
+
+    @property
     def title(self):
         return self.get('title', '')
 
@@ -318,6 +334,14 @@ class Feature(Video):
         self['runtime'] = val
 
     @property
+    def year(self):
+        return self.get('year', '')
+
+    @year.setter
+    def year(self, val):
+        self['year'] = val
+
+    @property
     def durationMinutesDisplay(self):
         if not self.runtime:
             return
@@ -341,6 +365,7 @@ class Action(dict):
 
 
 class FeatureHandler:
+    @DB.session
     def getRatingBumper(self, sItem, feature, image=False):
         try:
             if sItem.getLive('ratingStyleSelection') == 'style':
@@ -431,6 +456,7 @@ class TriviaHandler:
 
         return ret
 
+    @DB.session
     def addMusic(self, sItem, queue):
         mode = sItem.getLive('music')
         if mode == 'off':
@@ -489,6 +515,7 @@ class TriviaHandler:
         queue.musicFadeIn = util.getSettingDefault('trivia.musicFadeIn')
         queue.musicFadeOut = util.getSettingDefault('trivia.musicFadeOut')
 
+    @DB.session
     def getTriviaImages(self, sItem):  # TODO: Probably re-do this separate for slides and video?
         useVideo = sItem.getLive('format') == 'video'
         # Do this each set in reverse so the setNumber counts down
@@ -565,6 +592,7 @@ class TriviaHandler:
                 return slides
         return None
 
+    @DB.session
     def mark(self, image):
         trivia = DB.WatchedTrivia.get_or_create(WID=image.setID)[0]
         trivia.update(
@@ -587,7 +615,7 @@ class TrailerHandler:
             playables = self.scraperHandler(sItem, 'iTunes')
         elif source == 'kodidb':
             playables = self.scraperHandler(sItem, 'kodiDB')
-        elif source == 'dir':
+        elif source == 'dir' or source == 'content':
             playables = self.dirHandler(sItem)
         elif source == 'file':
             playables = self.fileHandler(sItem)
@@ -599,16 +627,19 @@ class TrailerHandler:
 
     def filter(self, sItem, trailers):
         filtered = trailers
-        globalRatingLimit = util.getSettingDefault('trailer.globalRatingLimit')
 
-        if globalRatingLimit:
-            util.DEBUG_LOG('    - Limited by rating: {0}'.format(globalRatingLimit.name))
-            filtered = [f for f in filtered if ratings.getRating(f.fullRating).value <= globalRatingLimit.value]
-        else:
-            if sItem.getLive('limitRating'):
-                if self.caller.ratings:
-                    util.DEBUG_LOG('    - Filtering by rating')
-                    filtered = [f for f in filtered if f.fullRating in self.caller.ratings]
+        ratingLimitMethod = sItem.getLive('ratingLimit')
+
+        if ratingLimitMethod and ratingLimitMethod != 'none':
+            if ratingLimitMethod == 'max':
+                minr = ratings.MPAA.G
+                maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
+                util.DEBUG_LOG('    - Limiting to ratings less than: {0}'.format(str(maxr)))
+            else:
+                minr = min(self.caller.ratings.values(), key=lambda x: x.value)
+                maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
+                util.DEBUG_LOG('    - Matching ratings between {0} and {1}'.format(str(minr), str(maxr)))
+            filtered = [f for f in filtered if minr.value <= f.rating.value <= maxr.value]
 
         if sItem.getLive('limitGenre'):
             if self.caller.genres:
@@ -617,6 +648,7 @@ class TrailerHandler:
 
         return filtered
 
+    @DB.session
     def unwatched(self, trailers):
         ret = []
         for t in trailers:
@@ -638,14 +670,26 @@ class TrailerHandler:
 
         return url.replace(repl, 'h{0}'.format(res))
 
+    @DB.session
     def oldest(self, sItem, source):
         util.DEBUG_LOG('    - All scraper trailers watched - using oldest trailers')
 
-        if sItem.getLive('limitRating') and self.caller.ratings:
+        ratingLimitMethod = sItem.getLive('ratingLimit')
+
+        if ratingLimitMethod and ratingLimitMethod != 'none':
+            if ratingLimitMethod == 'max':
+                minr = ratings.MPAA.G
+                maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
+            else:
+                minr = min(self.caller.ratings.values(), key=lambda x: x.value)
+                maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
+
             trailers = [
                 t for t in DB.WatchedTrailers.select().where(
-                    DB.WatchedTrailers.rating << self.caller.ratings.keys() & DB.WatchedTrailers.url != 'BROKEN'
-                ).order_by(DB.WatchedTrailers.date)
+                    DB.WatchedTrailers.url != 'BROKEN'
+                ).order_by(
+                    DB.WatchedTrailers.date
+                ) if minr.value <= ratings.getRating(t.rating).value <= maxr.value
             ]
         else:
             trailers = [
@@ -672,13 +716,9 @@ class TrailerHandler:
                 date=now
             ).where(DB.WatchedTrailers.WID == t.WID).execute()
 
-        globalRatingLimit = util.getSettingDefault('trailer.globalRatingLimit')
-
-        if globalRatingLimit:
-            trailers = [t for t in trailers if ratings.getRating(t.rating).value <= globalRatingLimit.value]
-
         return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
 
+    @DB.session
     def scraperHandler(self, sItem, source):
         count = sItem.getLive('count')
 
@@ -717,7 +757,7 @@ class TrailerHandler:
                     title=t.title,
                     url=url or 'BROKEN',
                     userAgent=t.userAgent,
-                    rating=t.fullRating,
+                    rating=str(t.rating),
                     genres=','.join(t.genres)
                 ).execute()
             except DB.peewee.DoesNotExist:
@@ -729,7 +769,7 @@ class TrailerHandler:
                     title=t.title,
                     url=url or 'BROKEN',
                     userAgent=t.userAgent,
-                    rating=t.fullRating,
+                    rating=str(t.rating),
                     genres=','.join(t.genres)
                 )
 
@@ -739,14 +779,18 @@ class TrailerHandler:
         return [Video(url, trailer.userAgent) for url, trailer in valid]
 
     def dirHandler(self, sItem):
-        path = sItem.getLive('dir')
-
-        if not path:
-            return []
-
         count = sItem.getLive('count')
 
-        util.DEBUG_LOG('[{0}] Directory x {1}'.format(sItem.typeChar, count))
+        if sItem.getLive('source') == 'content':
+            path = util.pathJoin(self.caller.contentPath, 'Trailers')
+            util.DEBUG_LOG('[{0}] Content x {1}'.format(sItem.typeChar, count))
+        else:
+            path = sItem.getLive('dir')
+            util.DEBUG_LOG('[{0}] Directory x {1}'.format(sItem.typeChar, count))
+
+        if not path:
+            util.DEBUG_LOG('    - Empty path!')
+            return []
 
         try:
             files = util.vfs.listdir(path)
@@ -798,6 +842,7 @@ class VideoBumperHandler:
         )
         return playables
 
+    @DB.session
     def defaultHandler(self, sItem):
         is3D = self.caller.currentFeature.is3D and sItem.play3D
 
@@ -890,6 +935,7 @@ class VideoBumperHandler:
 
 
 class AudioFormatHandler:
+    @DB.session
     def __call__(self, caller, sItem):
         bumper = None
         method = sItem.getLive('method')
@@ -968,7 +1014,7 @@ class ActionHandler:
 
 
 class SequenceProcessor:
-    def __init__(self, sequence_path, db_path=None):
+    def __init__(self, sequence_path, db_path=None, content_path=None):
         DB.initialize(db_path)
         self.pos = -1
         self.size = 0
@@ -977,6 +1023,7 @@ class SequenceProcessor:
         self.playables = []
         self.ratings = {}
         self.genres = []
+        self.contentPath = content_path
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 

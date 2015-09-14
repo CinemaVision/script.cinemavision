@@ -276,7 +276,15 @@ class Feature(Item):
         import database as DB
         DB.initialize()
 
-        return [(x.style, x.style) for x in DB.RatingsBumpers.select(DB.fn.Distinct(DB.RatingsBumpers.style))]
+        ratingSystem = util.getSettingDefault('rating.system.default')
+
+        DB.connect()
+        try:
+            return [
+                (x.style, x.style) for x in DB.RatingsBumpers.select(DB.fn.Distinct(DB.RatingsBumpers.style)).where(DB.RatingsBumpers.system == ratingSystem)
+            ]
+        finally:
+            DB.close()
 
 
 ################################################################################
@@ -390,7 +398,7 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': [None, 'itunes', 'kodidb', 'dir', 'file'],
+            'limits': [None, 'itunes', 'kodidb', 'content', 'dir', 'file'],
             'name': 'Source',
             'default': None
         },
@@ -402,11 +410,17 @@ class Trailer(Item):
             'default': 0
         },
         {
-            'attr': 'limitRating',
-            'type': strToBoolWithDefault,
-            'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Limit By Rating',
+            'attr': 'ratingLimit',
+            'type': None,
+            'limits': [None, 'none', 'max', 'match'],
+            'name': 'Rating Limit',
             'default': None
+        },
+        {
+            'attr': 'ratingMax',
+            'type': None,
+            'limits': LIMIT_DB_CHOICE,
+            'name': '- Max'
         },
         {
             'attr': 'limitGenre',
@@ -446,7 +460,8 @@ class Trailer(Item):
         self.source = None
         self.file = None
         self.dir = None
-        self.limitRating = None
+        self.ratingLimit = None
+        self.ratingMax = None
         self.limitGenre = None
         self.quality = None
 
@@ -465,7 +480,7 @@ class Trailer(Item):
             if self.getLive('source') != 'dir':
                 return False
         elif attr == 'count':
-            if self.getLive('source') not in ('dir', 'itunes', 'kodidb'):
+            if self.getLive('source') not in ('dir', 'itunes', 'kodidb', 'content'):
                 return False
         elif attr in ('limitRating', 'limitGenre'):
             if self.getLive('source') not in ('itunes', 'kodidb'):
@@ -473,7 +488,19 @@ class Trailer(Item):
         elif attr == 'quality':
             if self.getLive('source') != 'itunes':
                 return False
+        elif attr == 'ratingMax':
+            if self.getLive('ratingLimit') != 'max':
+                return False
         return True
+
+    @staticmethod
+    def DBChoices(attr):
+        default = util.getSettingDefault('rating.system.default')
+        import ratings
+        system = ratings.getRatingsSystem(default)
+        if not system:
+            return None
+        return [('{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
 
 
 ################################################################################
@@ -586,7 +613,11 @@ class Video(Item):
         import database as DB
         DB.initialize()
 
-        return [(x.path, os.path.basename(x.path)) for x in DB.VideoBumpers.select().where(DB.VideoBumpers.type == self.vtype)]
+        DB.connect()
+        try:
+            return [(x.path, os.path.basename(x.path)) for x in DB.VideoBumpers.select().where(DB.VideoBumpers.type == self.vtype)]
+        finally:
+            DB.close()
 
 
 ################################################################################

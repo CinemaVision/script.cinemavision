@@ -1,5 +1,6 @@
 import scraper
 import re
+from ... import ratings
 
 
 class Trailer:
@@ -8,6 +9,7 @@ class Trailer:
         self.is3D = False
         if self.data.get('rating', '').lower().startswith('not'):
             self.data['rating'] = 'NR'
+        self.rating = ratings.getRating('MPAA', self.data['rating'])
 
     @property
     def ID(self):
@@ -24,18 +26,6 @@ class Trailer:
     @property
     def genres(self):
         return re.split(' and |, ', self.data.get('genre', ''))
-
-    @property
-    def rating(self):
-        return self.data['rating']
-
-    @property
-    def ratingFormat(self):
-        return 'MPAA'
-
-    @property
-    def fullRating(self):
-        return '{0}:{1}'.format(self.ratingFormat, self.rating)
 
     @property
     def userAgent(self):

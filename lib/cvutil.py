@@ -1,4 +1,6 @@
 import os
+import re
+import xbmc
 import kodiutil
 import cinemavision
 
@@ -59,7 +61,35 @@ def loadContent(from_settings=False):
     kodiutil.DEBUG_LOG('Loading content...')
 
     with kodiutil.Progress('Loading Content') as p:
-        return cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath)
+        cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath)
+
+    createSettingsRSDirs()
+
+
+def createSettingsRSDirs():
+    base = os.path.join(kodiutil.PROFILE_PATH, 'settings', 'ratings')
+    if not os.path.exists(base):
+        os.makedirs(base)
+    defaultPath = os.path.join(kodiutil.PROFILE_PATH, 'settings', 'ratings_default')
+
+    if os.path.exists(defaultPath):
+        import shutil
+        shutil.rmtree(defaultPath)
+
+    defaultSystem = kodiutil.getSetting('rating.system.default', 'MPAA')
+
+    for system in cinemavision.ratings.RATINGS_SYSTEMS.values():
+        systemPaths = [os.path.join(base, system.name)]
+        if system.name == defaultSystem:
+            systemPaths.append(defaultPath)
+
+        for path in systemPaths:
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+            for rating in system.ratings:
+                with open(os.path.join(path, str(rating).replace(':', '.', 1)), 'w'):
+                    pass
 
 
 def downloadDemoContent():
@@ -109,9 +139,94 @@ def setRatingBumperStyle():
     import xbmcgui
 
     styles = cinemavision.sequence.Feature.DBChoices('ratingStyle')
+
+    if not styles:
+        xbmcgui.Dialog().ok('No Content', '', 'No content found for current rating system.')
+        return
+
     idx = xbmcgui.Dialog().select('Select Style', [x[1] for x in styles])
 
     if idx < 0:
         return
 
     kodiutil.setSetting('feature.ratingStyle', styles[idx][0])
+
+_RATING_PARSER = None
+
+
+def ratingParser():
+    global _RATING_PARSER
+    if not _RATING_PARSER:
+        _RATING_PARSER = RatingParser()
+    return _RATING_PARSER
+
+
+class RatingParser:
+    SYSTEM_RATING_REs = {
+        # 'MPAA': r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
+        'BBFC': r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
+        'FSK': r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)',
+        'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
+    }
+
+    RATING_REs = {
+        'MPAA': r'(?i)(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
+        'BBFC': r'(?i)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
+        'FSK': r'(?i)(?P<rating>0|6|12|16|18|Unrated)',
+        'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
+    }
+
+    SYSTEM_RATING_REs.update(cinemavision.ratings.getRegExs('kodi'))
+    RATING_REs.update(cinemavision.ratings.getRegExs())
+
+    LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1, region=True)
+
+    def __init__(self):
+        kodiutil.DEBUG_LOG('Language: {0}'.format(self.LANGUAGE))
+        self.setRatingDefaults()
+
+    def setRatingDefaults(self):
+        ratingSystem = kodiutil.getSetting('rating.system.default', 'MPAA')
+
+        if not ratingSystem:
+            try:
+                countryCode = self.LANGUAGE.split('-')[1].strip()
+                if countryCode:
+                    cinemavision.ratings.setCountry(countryCode)
+            except IndexError:
+                pass
+            except:
+                kodiutil.ERROR()
+        else:
+            cinemavision.ratings.setDefaultRatingSystem(ratingSystem)
+
+    def getActualRatingFromMPAA(self, rating, debug=False):
+        if debug:
+            kodiutil.DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
+
+        if not rating:
+            return 'UNKNOWN:NR'
+
+        # Try a definite match
+        for system, ratingRE in self.SYSTEM_RATING_REs.items():
+            m = re.search(ratingRE, rating)
+            if m:
+                return '{0}:{1}'.format(system, m.group('rating'))
+
+        rating = rating.upper().replace('RATED', '').strip(': ')
+
+        # Try to match against default system if set
+        defaultSystem = cinemavision.ratings.DEFAULT_RATING_SYSTEM
+        if defaultSystem and defaultSystem in self.RATING_REs:
+            m = re.search(self.RATING_REs[defaultSystem], rating)
+            if m:
+                return '{0}:{1}'.format(defaultSystem, m.group('rating'))
+
+        # Try to extract rating from know ratings systems
+        for system, ratingRE in self.RATING_REs.items():
+            m = re.search(ratingRE, rating)
+            if m:
+                return m.group('rating')
+
+        # Just return what we have
+        return rating

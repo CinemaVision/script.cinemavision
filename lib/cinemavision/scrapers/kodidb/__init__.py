@@ -1,4 +1,6 @@
 import scraper
+from lib import cvutil
+from ... import ratings
 
 
 class Trailer:
@@ -6,11 +8,11 @@ class Trailer:
         self.data = data
         self.is3D = False
         if not self.data.get('rating'):
-            self.data['rating'] = 'NR'
+            self.data['rating'] = u'NR'
 
     @property
     def ID(self):
-        return 'kodiDB:{0}'.format(self.data['ID'])
+        return u'kodiDB:{0}'.format(self.data['ID'])
 
     @property
     def title(self):
@@ -26,15 +28,17 @@ class Trailer:
 
     @property
     def rating(self):
-        return self.data['rating'] or 'NR'
+        if not getattr(self, '_rating', None):
+            ratingString = self.data.get('rating')
+            if ratingString:
+                self._rating = ratings.getRating(cvutil.ratingParser().getActualRatingFromMPAA(ratingString))
+            else:
+                self._rating = None
+        return self._rating
 
-    @property
-    def ratingFormat(self):
-        return 'MPAA'
-
-    @property
-    def fullRating(self):
-        return '{0}:{1}'.format(self.ratingFormat, self.rating)
+    @rating.setter
+    def rating(self, val):
+        self['rating'] = val
 
     @property
     def userAgent(self):

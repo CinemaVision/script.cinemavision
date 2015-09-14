@@ -74,6 +74,13 @@ def _processSettingForWrite(value):
     return str(value)
 
 
+def intOrZero(val):
+    try:
+        return int(val)
+    except:
+        return 0
+
+
 def setGlobalProperty(key, val):
     xbmcgui.Window(10000).setProperty('script.cinemavision.{0}'.format(key), val)
 

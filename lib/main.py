@@ -197,8 +197,9 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_DB_CHOICE:
             options = sItem.DBChoices(attr)
+            print repr(options)
             if not options:
-                xbmcgui.Dialog().ok('No Content', '', 'No content found for this bumper type')
+                xbmcgui.Dialog().ok('No Content', '', u'No matching content found.')
                 return False
             options.insert(0, (None, 'Default'))
             idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])

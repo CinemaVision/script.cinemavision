@@ -47,6 +47,7 @@ class PlaylistDialog(kodigui.BaseDialog):
 
     VIDEOS_LIST_ID = 300
     PLAY_BUTTON_ID = 201
+    APPLY_BUTTON_ID = 203
     CANCEL_BUTTON_ID = 202
 
     def __init__(self, *args, **kwargs):
@@ -65,6 +66,8 @@ class PlaylistDialog(kodigui.BaseDialog):
             self.doClose()
         elif controlID == self.CANCEL_BUTTON_ID:
             self.doClose()
+        elif controlID == self.APPLY_BUTTON_ID:
+            self.apply()
         elif controlID == self.VIDEOS_LIST_ID:
             self.moveItem()
 
@@ -97,6 +100,7 @@ class PlaylistDialog(kodigui.BaseDialog):
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
             mli.setProperty('rating', str(f.rating or ''))
+            mli.setProperty('year', str(f.year or ''))
             items.append(mli)
 
         self.videoListControl.addItems(items)
@@ -133,3 +137,19 @@ class PlaylistDialog(kodigui.BaseDialog):
                 item = self.videoListControl.getSelectedItem()
                 self.moving = item
                 item.setProperty('moving', '1')
+
+    def apply(self):
+        from kodijsonrpc import rpc
+
+        rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
+
+        for i in self.videoListControl:
+            f = i.dataSource
+            if f.type == 'movie':
+                item = {'movieid': f.ID}
+            elif f.type == 'tvshow':
+                item = {'episodeid': f.ID}
+            else:
+                item = {'file': f.path}
+
+            rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)

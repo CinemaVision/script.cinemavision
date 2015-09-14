@@ -199,7 +199,11 @@ class UserContent:
             self.log('Processing trivia ({0}): {1}'.format(fmt, os.path.basename(path)))
 
             if fmt == 'FILE':
-                self.triviaDirectoryHandler.getSlide(basePath, sub)
+                DB.connect()
+                try:
+                    self.triviaDirectoryHandler.getSlide(basePath, sub)
+                finally:
+                    DB.close()
             elif fmt == 'DIR' or fmt == 'ZIP':
                 self.triviaDirectoryHandler(path, prefix=sub)
 
@@ -290,6 +294,7 @@ class UserContent:
                 defaults=defaults
             )
 
+    @DB.session
     def loadRatingSystem(self, path):
         import ratings
         with util.vfs.File(path, 'r') as f:
@@ -326,6 +331,7 @@ class MusicHandler:
                 break
             self.addSongs(basePath, file)
 
+    @DB.session
     def addSongs(self, base, file, sub=None):
         path = util.pathJoin(base, file)
 
@@ -362,6 +368,7 @@ class MusicHandler:
                     duration=duration
                 )
 
+    @DB.session
     def clean(self):
         cleaned = False
         for s in DB.Song.select():
@@ -388,6 +395,7 @@ class TriviaDirectoryHandler:
     def __init__(self, callback=None):
         self._callback = callback
 
+    @DB.session
     def __call__(self, basePath, prefix=None):
         hasSlidesXML = False
         slideXML = util.pathJoin(basePath, self._formatXML)
@@ -509,6 +517,7 @@ class TriviaDirectoryHandler:
                 util.ERROR()
                 raise
 
+    @DB.session
     def processSimpleDir(self, path):
         pack = os.path.basename(path.rstrip('\\/'))
         contents = util.vfs.listdir(path)
@@ -556,6 +565,7 @@ class TriviaDirectoryHandler:
             return subNode.attrib.get(attr_name)
         return None
 
+    @DB.session
     def clean(self):
         cleaned = False
         for t in DB.Trivia.select():

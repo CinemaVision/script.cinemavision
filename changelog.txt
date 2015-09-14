@@ -1,5 +1,17 @@
 Changelog for CinemaVision
 
+[- 0.0.37 -]
+
+- change:  Trailer setting 'Limit rating' moved to module as 'Rating Limit' with options for None, Max and Match features
+- add:     Trailer module subsetting 'Limit rating: Max' which allows choice of ratings from the default rating system
+- fix:     Possible fix for encoding issues when using trailers from the Kodi Database
+- fix:     Changes to database handling to hopefully prevent 'OperationalError: unable to open database file' errors
+- add:     Add 'APPLY TO QUEUE' option to playlist dialog
+- change:  Rearrange some settings sections and make wording on some settings clearer
+- add:     Added 'Content' as a source for Trailers which will play trailers in the CinemaVision 'Trailers' directory
+- fix:     Rating style setting was always showing MPAA styles
+- add:     Playlist dialog now also shows the year if available
+
 [- 0.0.36 -]
 
 - fix:    Rating bumper not showing when 'Style' set to 'Default' in the module

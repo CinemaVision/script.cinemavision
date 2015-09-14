@@ -19,6 +19,7 @@ DATABASE_VERSION = 2
 
 fn = peewee.fn
 
+DB = None
 DBVersion = None
 Song = None
 Trivia = None
@@ -29,6 +30,24 @@ RatingSystem = None
 Rating = None
 WatchedTrailers = None
 WatchedTrivia = None
+
+
+def session(func):
+    def inner(*args, **kwargs):
+        try:
+            DB.connect()
+            return func(*args, **kwargs)
+        finally:
+            DB.close()
+    return inner
+
+
+def connect():
+    DB.connect()
+
+
+def close():
+    DB.close()
 
 
 def dummyCallback(*args, **kwargs):
@@ -74,6 +93,7 @@ def initialize(path=None, callback=None):
 
     callback(None, 'Creating/updating database...')
 
+    global DB
     global DBVersion
     global Song
     global Trivia
@@ -92,6 +112,8 @@ def initialize(path=None, callback=None):
     dbExists = util.vfs.exists(dbPath)
 
     DB = peewee.SqliteDatabase(dbPath)
+
+    DB.connect()
 
     class DBVersion(peewee.Model):
         version = peewee.IntegerField(default=0)
@@ -243,3 +265,5 @@ def initialize(path=None, callback=None):
     callback(' - Trivia (watched status)')
 
     callback(None, 'Database created')
+
+    DB.close()

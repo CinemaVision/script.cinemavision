@@ -16,16 +16,6 @@
         <setting id="allow.video.skip"         label="Allow video skipping"    type="bool" default="true" />
     </category>
 
-    <category label="Feature">
-        <setting id="rating.system.default"        label="Default rating system"  type="enum"   values="None|MPAA|FSK|BBFC|DEJUS|Custom"  default="1" />
-        <setting id="rating.system.default.custom" label="Default rating system"  type="text"   default=""  visible="eq(-1,5)" />
-        <setting label="Module Defaults" type="lsep"/>
-        <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
-        <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
-        <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
-        <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="Classic" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" />
-    </category>
-
     <category label="Trivia">
         <setting label="Music" type="lsep"/>
         <setting id="trivia.musicVolume"  label="Volume (% of current)" type="slider" default="75"  range="1,100"    option="percent" />
@@ -33,30 +23,30 @@
         <setting id="trivia.musicFadeOut" label="Fade out (seconds)"    type="slider" default="3.0" range="0,0.2,10" option="float" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="trivia.format"      label="Format"                      type="enum"   values="Slide|Video"  default="0" />
-        <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
-        <setting id="trivia.transitionDuration" label="Duration (ms)"        type="slider" default="400" range="100,100,2000" option="int" subsetting="true" />
         <setting id="trivia.duration"    label="Duration (minutes)"          type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.qDuration"   label="Question duration (seconds)" type="slider" default="8"  range="1,60" option="int" />
         <setting id="trivia.cDuration"   label="Clue duration (seconds)"     type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
+        <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
+        <setting id="trivia.transitionDuration" label="Transition: Duration (ms)"        type="slider" default="400" range="100,100,2000" option="int" />
         <setting id="trivia.music"       label="Music"                       type="enum"   values="None|Content|Directory|File" default="1" />
-        <setting id="trivia.musicDir"    label="Path"                        type="folder" subsetting="true" sources="auto" value="" />
-        <setting id="trivia.musicFile"   label="File"                        type="file"   subsetting="true" sources="auto" value="" />
+        <setting id="trivia.musicDir"    label="Music: path"                 type="folder" sources="auto" value="" />
+        <setting id="trivia.musicFile"   label="Music: file"                 type="file"   sources="auto" value="" />
     </category>
 
     <category label="Trailer">
         <setting id="trailer.playUnwatched"     label="Play unwatched trailers first" type="bool"   default="true" />
         <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
-        <setting id="trailer.globalRatingLimit" label="Rating limit"                  type="enum"   values="None|G|PG|PG-13|R|NC-17" default="0" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"      label="Trailer source"       type="enum"       values="Apple iTunes|Kodi Database|Directory|Single File" default="0" />
-        <setting id="trailer.dir"         label="Path"                 type="folder"     subsetting="true" sources="auto" value="" />
-        <setting id="trailer.file"        label="File"                 type="file"       subsetting="true" sources="auto" value="" />
-        <setting id="trailer.count"       label="Count"                type="slider"     subsetting="true" default="1" range="1,10" option="int" />
-        <setting id="trailer.limitRating" label="Match feature rating" type="bool"       subsetting="true" default="true" />
-        <setting id="trailer.LimitGenre"  label="Match feature genre"  type="bool"       subsetting="true" default="true" />
-        <setting id="trailer.quality"     label="Trailer quality"      type="labelenum"  subsetting="true" values="480p|720p|1080p" default="720p" />
+        <setting id="trailer.source"       label="Source"               type="enum"       values="Apple iTunes|Kodi Database|Content|Directory|Single File" default="0" />
+        <setting id="trailer.dir"          label="Source: Directory"    type="folder"  sources="auto" value="" />
+        <setting id="trailer.file"         label="Source: File"         type="file"       sources="auto" value="" />
+        <setting id="trailer.count"        label="Count"                type="slider"     default="1" range="1,10" option="int" />
+        <setting id="trailer.ratingLimit"  label="Rating limit"         type="enum"       values="None|Max|Match Features" default="0" />
+        <setting id="trailer.ratingMax"    label="Rating limit: Max"    type="fileenum"   values="$PROFILE/settings/ratings_default" />
+        <setting id="trailer.LimitGenre"   label="Match feature genres" type="bool"       default="true" />
+        <setting id="trailer.quality"      label="Quality"              type="labelenum"  values="480p|720p|1080p" default="720p" />
     </category>
 
     <category label="Audio Format">
@@ -67,18 +57,27 @@
         <setting id="audioformat.file"     label="File"     type="file" sources="auto" value="" subsetting="true" />
     </category>
 
+    <category label="Feature">
+        <setting id="rating.system.default"        label="Default rating system"  type="fileenum"   values="$PROFILE/settings/ratings"  default="MPAA" mask="/"/>
+        <setting label="Module Defaults" type="lsep"/>
+        <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
+        <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
+        <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
+        <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="Classic" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" />
+    </category>
+
     <category label="Actions">
-        <setting id="action.onPause"       label="Enable 'pause' action"   type="bool" default="false" />
+        <setting id="action.onPause"       label="Execute action on sequence pause"   type="bool" default="false" />
         <setting id="action.onPause.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onResume"      label="Enable 'resume' action"  type="bool" default="false" />
+        <setting id="action.onResume"      label="Execute action on sequence rsume"  type="bool" default="false" />
         <setting id="action.onResume.file" label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onAbort"       label="Enable 'abort' action"   type="bool" default="false" />
+        <setting id="action.onAbort"       label="Execute action on sequence abort"   type="bool" default="false" />
         <setting id="action.onAbort.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
     </category>
 
     <category label="Advanced">
         <setting id="debug.log"              label="Debug logging"                                    type="bool"   default="true" />
-        <setting id="script.xbmc.debug.log"  label="Send log to xbmclogs.com (via Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="System.HasAddon(script.xbmc.debug.log)" />
-        <setting id="missing.xbmc.debug.log" label="Send log to xbmclogs.com (Needs installation of Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="!System.HasAddon(script.xbmc.debug.log)" enable="false" />
+        <setting id="script.xbmc.debug.log"  label="Upload my log to xbmclogs.com (via Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="System.HasAddon(script.xbmc.debug.log)" />
+        <setting id="missing.xbmc.debug.log" label="Upload my log to xbmclogs.com (Needs installation of Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="!System.HasAddon(script.xbmc.debug.log)" enable="false" />
     </category>
 </settings>

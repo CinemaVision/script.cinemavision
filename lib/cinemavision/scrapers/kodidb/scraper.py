@@ -11,7 +11,7 @@ def getTrailers():
         yield {
             'ID': m['movieid'],
             'url': trailer,
-            'rating': m['mpaa'].split(' ', 1)[-1],
+            'rating': m['mpaa'],
             'genres': m['genre'],
             'title': m['label']
         }

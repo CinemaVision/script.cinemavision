@@ -13,8 +13,9 @@ import kodiutil
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
-import cinemavision
+import cvutil
 
+import cinemavision
 cinemavision.init(kodiutil.DEBUG())
 
 
@@ -34,79 +35,6 @@ AUDIO_FORMATS = {
 
 def DEBUG_LOG(msg):
     kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
-
-
-SYSTEM_RATING_REs = {
-    # 'MPAA': r'(?i)^Rated\s(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
-    'BBFC': r'(?i)^UK(?:\s+|:)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
-    'FSK': r'(?i)^(?:FSK|Germany)(?:\s+|:)(?P<rating>0|6|12|16|18|Unrated)',
-    'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
-}
-
-RATING_REs = {
-    'MPAA': r'(?i)(?P<rating>Unrated|NR|PG-13|PG|G|R|NC-17)',
-    'BBFC': r'(?i)(?P<rating>Uc|U|12A|12|PG|15|R18|18)',
-    'FSK': r'(?i)(?P<rating>0|6|12|16|18|Unrated)',
-    'DEJUS': r'(?i)(?P<rating>Livre|10 Anos|12 Anos|14 Anos|16 Anos|18 Anos)'
-}
-
-SYSTEM_RATING_REs.update(cinemavision.ratings.getRegExs('kodi'))
-RATING_REs.update(cinemavision.ratings.getRegExs())
-
-LANGUAGE = xbmc.getLanguage(xbmc.ISO_639_1, region=True)
-
-DEBUG_LOG('Language: {0}'.format(LANGUAGE))
-
-
-def setRatingDefaults():
-    ratingSystem = (None, 'MPAA', 'FSK', 'BBFC', 'DEJUS', False)[kodiutil.getSetting('rating.system.default', 0)]
-    if ratingSystem is False:
-        ratingSystem == kodiutil.getSetting('rating.system.default.custom').strip() or None
-
-    if not ratingSystem:
-        try:
-            countryCode = LANGUAGE.split('-')[1].strip()
-            if countryCode:
-                cinemavision.ratings.setCountry(countryCode)
-        except IndexError:
-            pass
-        except:
-            kodiutil.ERROR()
-    else:
-        cinemavision.ratings.setDefaultRatingSystem(ratingSystem)
-
-setRatingDefaults()
-
-
-def getActualRatingFromMPAA(rating):
-    DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
-
-    if not rating:
-        return 'UNKNOWN:NR'
-
-    # Try a definite match
-    for system, ratingRE in SYSTEM_RATING_REs.items():
-        m = re.search(ratingRE, rating)
-        if m:
-            return '{0}:{1}'.format(system, m.group('rating'))
-
-    rating = rating.upper().replace('RATED', '').strip(': ')
-
-    # Try to match against default system if set
-    defaultSystem = cinemavision.ratings.DEFAULT_RATING_SYSTEM
-    if defaultSystem and defaultSystem in RATING_REs:
-        m = re.search(RATING_REs[defaultSystem], rating)
-        if m:
-            return '{0}:{1}'.format(defaultSystem, m.group('rating'))
-
-    # Try to extract rating from know ratings systems
-    for system, ratingRE in RATING_REs.items():
-        m = re.search(ratingRE, rating)
-        if m:
-            return m.group('rating')
-
-    # Just return what we have
-    return rating
 
 
 def isURLFile(path):
@@ -472,15 +400,15 @@ class ExperiencePlayer(xbmc.Player):
     PLAYING_DUMMY_PREV = -2
     PLAYING_MUSIC = -10
 
-    DUMMY_FILE_PREV = 'script.cinemavision.dummy_PREV.mp4'
-    DUMMY_FILE_NEXT = 'script.cinemavision.dummy_NEXT.mp4'
+    DUMMY_FILE_PREV = 'script.cinemavision.dummy_PREV.mpeg'
+    DUMMY_FILE_NEXT = 'script.cinemavision.dummy_NEXT.mpeg'
 
     def create(self, from_editor=False):
         # xbmc.Player.__init__(self)
         self.fromEditor = from_editor
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-        self.fakeFilePrev = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.dummy_PREV.mp4')
-        self.fakeFileNext = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.dummy_NEXT.mp4')
+        self.fakeFilePrev = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', self.DUMMY_FILE_PREV)
+        self.fakeFileNext = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', self.DUMMY_FILE_NEXT)
         self.featureStub = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.feature_stub.mp4')
         self.playStatus = 0
         self.hasFullscreened = False
@@ -591,16 +519,22 @@ class ExperiencePlayer(xbmc.Player):
 
         tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
 
-        result = rpc.Playlist.GetItems(playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime'])
+        result = rpc.Playlist.GetItems(
+            playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+        )
         for r in result.get('items', []):
             feature = cinemavision.sequenceprocessor.Feature(r['file'])
             feature.title = r.get('title') or r.get('label', '')
-            ratingString = getActualRatingFromMPAA(r.get('mpaa', ''))
+            ratingString = cvutil.ratingParser().getActualRatingFromMPAA(r.get('mpaa', ''), debug=True)
             if ratingString:
                 feature.rating = ratingString
+
+            feature.ID = kodiutil.intOrZero(r.get('id', 0))
+            feature.type = r.get('type', '')
             feature.genres = r.get('genre', [])
             feature.thumb = r.get('thumbnail', '')
             feature.runtime = r.get('runtime', '')
+            feature.year = r.get('year', 0)
 
             try:
                 stereomode = r['streamdetails']['video'][0]['stereomode']
@@ -655,12 +589,15 @@ class ExperiencePlayer(xbmc.Player):
         feature = cinemavision.sequenceprocessor.Feature(xbmc.getInfoLabel('ListItem.FileNameAndPath'))
         feature.title = title
 
-        ratingString = getActualRatingFromMPAA(xbmc.getInfoLabel('ListItem.Mpaa'))
+        ratingString = cvutil.ratingParser().getActualRatingFromMPAA(xbmc.getInfoLabel('ListItem.Mpaa'), debug=True)
         if ratingString:
             feature.rating = ratingString
 
+        feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
+        feature.type = xbmc.getInfoLabel('ListItem.DBTYPE')
         feature.genres = xbmc.getInfoLabel('ListItem.Genre').split(' / ')
         feature.thumb = xbmc.getInfoLabel('ListItem.Thumb')
+        feature.year = xbmc.getInfoLabel('ListItem.Year')
 
         try:
             feature.runtime = int(xbmc.getInfoLabel('ListItem.Duration')) * 60
@@ -743,7 +680,7 @@ class ExperiencePlayer(xbmc.Player):
         import cvutil
         dbPath = cvutil.getDBPath()
 
-        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath)
+        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath, content_path=kodiutil.getSetting('content.path'))
         [self.processor.addFeature(f) for f in self.features]
 
         DEBUG_LOG('[ -- Started --------------------------------------------------------------- ]')
@@ -976,7 +913,7 @@ class ExperiencePlayer(xbmc.Player):
         action.run()
 
     def next(self, prev=False):
-        if self.processor.atEnd():
+        if not self.processor or self.processor.atEnd():
             return
 
         if not self.window.isOpen:
