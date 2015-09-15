@@ -11,6 +11,9 @@ Changelog for CinemaVision
 - add:     Added 'Content' as a source for Trailers which will play trailers in the CinemaVision 'Trailers' directory
 - fix:     Rating style setting was always showing MPAA styles
 - add:     Playlist dialog now also shows the year if available
+- add:     Ability to use context menu on a collection
+- change:  Removed xbmclogs.com option from settings (site down - for good?)
+- fix:     Possible fix for crashes with mediacodec? Needs testing
 
 [- 0.0.36 -]
 

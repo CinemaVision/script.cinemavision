@@ -13,7 +13,9 @@ if __name__ == '__main__':
         player.begin()
     elif arg == 'update.database':
         from lib import cvutil
+        from lib import kodiutil
         cvutil.loadContent(from_settings=True)
+        kodiutil.ADDON.openSettings()
     elif arg == 'feature.setRatingBumperStyle':
         from lib import cvutil
         cvutil.setRatingBumperStyle()

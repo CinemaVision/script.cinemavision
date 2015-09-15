@@ -91,6 +91,8 @@ def createSettingsRSDirs():
                 with open(os.path.join(path, str(rating).replace(':', '.', 1)), 'w'):
                     pass
 
+    kodiutil.setSetting('settings.ratings.initialized', 'true')
+
 
 def downloadDemoContent():
     import xbmc

@@ -108,7 +108,11 @@ def initialize(path=None, callback=None):
     ###########################################################################################
     # Version
     ###########################################################################################
-    dbPath = util.pathJoin(path or util.STORAGE_PATH, 'content.db')
+    dbDir = path or util.STORAGE_PATH
+    if not util.vfs.exists(dbDir):
+        util.vfs.mkdirs(dbDir)
+
+    dbPath = util.pathJoin(dbDir, 'content.db')
     dbExists = util.vfs.exists(dbPath)
 
     DB = peewee.SqliteDatabase(dbPath)

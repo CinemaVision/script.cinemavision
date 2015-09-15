@@ -2,7 +2,7 @@
 <settings>
     <category label="General">
         <setting id="content.path"        label="Content path"           type="folder" sources="auto" option="writeable" value="" />
-        <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" />
+        <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
         <setting id="sequence.2D"         label="2D sequence"            type="file"   sources="auto" value="" mask="*.cvseq" />
         <setting id="sequence.3D"         label="3D sequence"            type="file"   sources="auto" value="" mask="*.cvseq" />
@@ -29,7 +29,7 @@
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
-        <setting id="trivia.transitionDuration" label="Transition: Duration (ms)"        type="slider" default="400" range="100,100,2000" option="int" />
+        <setting id="trivia.transitionDuration" label="Transition: Duration (ms)" type="slider" default="400" range="100,100,2000" option="int" />
         <setting id="trivia.music"       label="Music"                       type="enum"   values="None|Content|Directory|File" default="1" />
         <setting id="trivia.musicDir"    label="Music: path"                 type="folder" sources="auto" value="" />
         <setting id="trivia.musicFile"   label="Music: file"                 type="file"   sources="auto" value="" />
@@ -39,14 +39,14 @@
         <setting id="trailer.playUnwatched"     label="Play unwatched trailers first" type="bool"   default="true" />
         <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"       label="Source"               type="enum"       values="Apple iTunes|Kodi Database|Content|Directory|Single File" default="0" />
-        <setting id="trailer.dir"          label="Source: Directory"    type="folder"  sources="auto" value="" />
-        <setting id="trailer.file"         label="Source: File"         type="file"       sources="auto" value="" />
-        <setting id="trailer.count"        label="Count"                type="slider"     default="1" range="1,10" option="int" />
-        <setting id="trailer.ratingLimit"  label="Rating limit"         type="enum"       values="None|Max|Match Features" default="0" />
-        <setting id="trailer.ratingMax"    label="Rating limit: Max"    type="fileenum"   values="$PROFILE/settings/ratings_default" />
-        <setting id="trailer.LimitGenre"   label="Match feature genres" type="bool"       default="true" />
-        <setting id="trailer.quality"      label="Quality"              type="labelenum"  values="480p|720p|1080p" default="720p" />
+        <setting id="trailer.source"       label="Source"               type="enum"      values="Apple iTunes|Kodi Database|Content|Directory|Single File" default="0" />
+        <setting id="trailer.dir"          label="Source: Directory"    type="folder"    sources="auto" value="" />
+        <setting id="trailer.file"         label="Source: File"         type="file"      sources="auto" value="" />
+        <setting id="trailer.count"        label="Count"                type="slider"    default="1" range="1,10" option="int" />
+        <setting id="trailer.ratingLimit"  label="Rating limit"         type="enum"      values="None|Max|Match Features" default="0" />
+        <setting id="trailer.ratingMax"    label="Rating limit: Max"    type="fileenum"  values="$PROFILE/settings/ratings_default" />
+        <setting id="trailer.LimitGenre"   label="Match feature genres" type="bool"      default="true" />
+        <setting id="trailer.quality"      label="Quality"              type="labelenum" values="480p|720p|1080p" default="720p" />
     </category>
 
     <category label="Audio Format">
@@ -58,26 +58,28 @@
     </category>
 
     <category label="Feature">
-        <setting id="rating.system.default"        label="Default rating system"  type="fileenum"   values="$PROFILE/settings/ratings"  default="MPAA" mask="/"/>
+        <setting id="settings.ratings.initialized" label="" type="bool"   default="false" visible="false"/>
+        <setting id="rating.system.default"        label="Default rating system"  type="fileenum"   values="$PROFILE/settings/ratings"  default="MPAA" mask="/" visible="eq(-1,true)"/>
+        <setting id="rating.system.default.dummy"  label="Default rating system (needs Content path set and updated)"  type="enum"   values="None"  default="0" visible="!eq(-2,true)" enable="false" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
         <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
         <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
-        <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="Classic" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" />
+        <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" visible="eq(-7,true)"/>
+        <setting id="feature.ratingStyle.dummy"    label="Rating style (needs Content path set and updated)"  type="enum"   values="None"  default="0" subsetting="true" visible="!eq(-8,true)" enable="false" />
+
     </category>
 
     <category label="Actions">
-        <setting id="action.onPause"       label="Execute action on sequence pause"   type="bool" default="false" />
-        <setting id="action.onPause.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onResume"      label="Execute action on sequence rsume"  type="bool" default="false" />
-        <setting id="action.onResume.file" label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onAbort"       label="Execute action on sequence abort"   type="bool" default="false" />
-        <setting id="action.onAbort.file"  label="Action file"             type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onPause"       label="Execute action on sequence pause"  type="bool" default="false" />
+        <setting id="action.onPause.file"  label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onResume"      label="Execute action on sequence resume" type="bool" default="false" />
+        <setting id="action.onResume.file" label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onAbort"       label="Execute action on sequence abort"  type="bool" default="false" />
+        <setting id="action.onAbort.file"  label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
     </category>
 
     <category label="Advanced">
         <setting id="debug.log"              label="Debug logging"                                    type="bool"   default="true" />
-        <setting id="script.xbmc.debug.log"  label="Upload my log to xbmclogs.com (via Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="System.HasAddon(script.xbmc.debug.log)" />
-        <setting id="missing.xbmc.debug.log" label="Upload my log to xbmclogs.com (Needs installation of Kodi Log Uploader)" type="action" action="RunScript(script.xbmc.debug.log)" visible="!System.HasAddon(script.xbmc.debug.log)" enable="false" />
     </category>
 </settings>

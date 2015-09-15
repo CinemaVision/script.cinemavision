@@ -32,6 +32,8 @@ AUDIO_FORMATS = {
     "truehd":    "Dolby TrueHD"
 }
 
+# aac, ac3, cook, dca, dtshd_hra, dtshd_ma, eac3, mp1, mp2, mp3, pcm_s16be, pcm_s16le, pcm_u8, truehd, vorbis, wmapro, wmav2
+
 
 def DEBUG_LOG(msg):
     kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
@@ -517,44 +519,11 @@ class ExperiencePlayer(xbmc.Player):
         self.visualization = SettingControl('musicplayer.visualisation', 'Visualization')
         self.features = []
 
-        tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
-
         result = rpc.Playlist.GetItems(
             playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
         )
         for r in result.get('items', []):
-            feature = cinemavision.sequenceprocessor.Feature(r['file'])
-            feature.title = r.get('title') or r.get('label', '')
-            ratingString = cvutil.ratingParser().getActualRatingFromMPAA(r.get('mpaa', ''), debug=True)
-            if ratingString:
-                feature.rating = ratingString
-
-            feature.ID = kodiutil.intOrZero(r.get('id', 0))
-            feature.type = r.get('type', '')
-            feature.genres = r.get('genre', [])
-            feature.thumb = r.get('thumbnail', '')
-            feature.runtime = r.get('runtime', '')
-            feature.year = r.get('year', 0)
-
-            try:
-                stereomode = r['streamdetails']['video'][0]['stereomode']
-            except:
-                stereomode = ''
-
-            if stereomode not in ('mono', ''):
-                feature.is3D = True
-            else:
-                feature.is3D = bool(re.findall(tags3DRegEx, r['file']))
-
-            self.has3D = self.has3D or feature.is3D
-
-            try:
-                codec = r['streamdetails']['audio'][0]['codec']
-                feature.audioFormat = AUDIO_FORMATS.get(codec)
-                DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
-            except:
-                DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
-
+            feature = self.featureFromJSON(r)
             self.features.append(feature)
 
         if self.fromEditor and not self.features:
@@ -564,6 +533,65 @@ class ExperiencePlayer(xbmc.Player):
             feature.audioFormat = 'Dolby Digital'
 
             self.features.append(feature)
+
+    def featureFromJSON(self, r):
+        tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
+
+        feature = cinemavision.sequenceprocessor.Feature(r['file'])
+        feature.title = r.get('title') or r.get('label', '')
+        ratingString = cvutil.ratingParser().getActualRatingFromMPAA(r.get('mpaa', ''), debug=True)
+        if ratingString:
+            feature.rating = ratingString
+
+        feature.ID = kodiutil.intOrZero(r.get('id', 0))
+        feature.dbType = r.get('type', '')
+        feature.genres = r.get('genre', [])
+        feature.thumb = r.get('thumbnail', '')
+        feature.runtime = r.get('runtime', '')
+        feature.year = r.get('year', 0)
+
+        try:
+            stereomode = r['streamdetails']['video'][0]['stereomode']
+        except:
+            stereomode = ''
+
+        if stereomode not in ('mono', ''):
+            feature.is3D = True
+        else:
+            feature.is3D = bool(re.findall(tags3DRegEx, r['file']))
+
+        self.has3D = self.has3D or feature.is3D
+
+        try:
+            codec = r['streamdetails']['audio'][0]['codec']
+            DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+            DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
+            feature.audioFormat = AUDIO_FORMATS.get(codec)
+        except:
+            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+            DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
+
+        return feature
+
+    def getCollectionMovies(self):
+        DBID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
+
+        try:
+            details = rpc.VideoLibrary.GetMovieSetDetails(setid=DBID)
+            for m in details['setdetails']['movies']:
+                try:
+                    r = rpc.VideoLibrary.GetMovieDetails(
+                        movieid=m['movieid'], properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+                    )['moviedetails']
+                    feature = self.featureFromJSON(r)
+                    self.features.append(feature)
+                except:
+                    kodiutil.ERROR()
+        except:
+            kodiutil.ERROR()
+            return False
+
+        return True
 
     def loadActions(self):
         self.pauseAction = None
@@ -583,6 +611,10 @@ class ExperiencePlayer(xbmc.Player):
             self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
 
     def addSelectedFeature(self):
+        if xbmc.getCondVisibility('ListItem.IsCollection'):
+            kodiutil.DEBUG_LOG('Selection is a collection')
+            return self.getCollectionMovies()
+
         title = xbmc.getInfoLabel('ListItem.Title')
         if not title:
             return False
@@ -594,13 +626,13 @@ class ExperiencePlayer(xbmc.Player):
             feature.rating = ratingString
 
         feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
-        feature.type = xbmc.getInfoLabel('ListItem.DBTYPE')
+        feature.dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
         feature.genres = xbmc.getInfoLabel('ListItem.Genre').split(' / ')
         feature.thumb = xbmc.getInfoLabel('ListItem.Thumb')
         feature.year = xbmc.getInfoLabel('ListItem.Year')
 
         try:
-            feature.runtime = int(xbmc.getInfoLabel('ListItem.Duration')) * 60
+            feature.runtime = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.Duration')) * 60
         except TypeError:
             pass
 
@@ -624,13 +656,17 @@ class ExperiencePlayer(xbmc.Player):
     def hasFeatures(self):
         return bool(self.features)
 
-    def playVideos(self, paths):
+    def playVideos(self, paths, features=None):
         self.playlist.clear()
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
 
         self.playlist.add(self.fakeFilePrev)
-        for path in paths:
-            self.playlist.add(path)
+        if features:
+            for feature in features:
+                self.addFeatureToPlaylist(feature)
+        else:
+            for path in paths:
+                self.playlist.add(path)
         self.playlist.add(self.fakeFileNext)
         rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1})
         xbmc.sleep(100)
@@ -639,6 +675,16 @@ class ExperiencePlayer(xbmc.Player):
             xbmc.sleep(100)
         self.hasFullscreened = True
         DEBUG_LOG('VIDEO HAS GONE FULLSCREEN')
+
+    def addFeatureToPlaylist(self, feature):
+        if feature.dbType == 'movie':
+            item = {'movieid': feature.ID}
+        elif feature.dbType == 'tvshow':
+            item = {'episodeid': feature.ID}
+        else:
+            item = {'file': feature.path}
+
+        rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)
 
     def isPlayingMinimized(self):
         # print '{0} {1}'.format(self.isPlayingVideo(), xbmc.getCondVisibility('Player.Playing'))
@@ -904,8 +950,10 @@ class ExperiencePlayer(xbmc.Player):
                 path += '|User-Agent=' + video.userAgent
 
         if kodiutil.getSetting('allow.video.skip', True):
-            self.playVideos([path])
-            # self.play(self.playlist)
+            if video.type == 'FEATURE':
+                self.playVideos(None, features=[video])
+            else:
+                self.playVideos([path])
         else:
             self.play(path)
 

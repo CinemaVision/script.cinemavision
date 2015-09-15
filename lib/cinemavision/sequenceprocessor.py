@@ -264,12 +264,12 @@ class Feature(Video):
         self['ID'] = val
 
     @property
-    def type(self):
-        return self.get('type', '')
+    def dbType(self):
+        return self.get('dbType', '')
 
-    @type.setter
-    def type(self, val):
-        self['type'] = val
+    @dbType.setter
+    def dbType(self, val):
+        self['dbType'] = val
 
     @property
     def title(self):

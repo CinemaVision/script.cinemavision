@@ -145,9 +145,9 @@ class PlaylistDialog(kodigui.BaseDialog):
 
         for i in self.videoListControl:
             f = i.dataSource
-            if f.type == 'movie':
+            if f.dbType == 'movie':
                 item = {'movieid': f.ID}
-            elif f.type == 'tvshow':
+            elif f.dbType == 'tvshow':
                 item = {'episodeid': f.ID}
             else:
                 item = {'file': f.path}
