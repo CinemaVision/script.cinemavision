@@ -460,10 +460,12 @@ class ExperiencePlayer(xbmc.Player):
         self.playStatus = time.time()
         if self.DUMMY_FILE_PREV in self.getPlayingFile():
             self.playStatus = self.PLAYING_DUMMY_PREV
+            kodiutil.DEBUG_LOG('Stopping for PREV dummy')
             self.stop()
             return
         elif self.DUMMY_FILE_NEXT in self.getPlayingFile():
             self.playStatus = self.PLAYING_DUMMY_NEXT
+            kodiutil.DEBUG_LOG('Stopping for NEXT dummy')
             self.stop()
             return
         else:
@@ -547,7 +549,7 @@ class ExperiencePlayer(xbmc.Player):
         feature.dbType = r.get('type', '')
         feature.genres = r.get('genre', [])
         feature.thumb = r.get('thumbnail', '')
-        feature.runtime = r.get('runtime', '')
+        feature.runtime = r.get('runtime', 0)
         feature.year = r.get('year', 0)
 
         try:
@@ -573,7 +575,7 @@ class ExperiencePlayer(xbmc.Player):
 
         return feature
 
-    def getCollectionMovies(self):
+    def addCollectionMovies(self):
         DBID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
 
         try:
@@ -590,6 +592,44 @@ class ExperiencePlayer(xbmc.Player):
         except:
             kodiutil.ERROR()
             return False
+
+        return True
+
+    def addFromID(self, movieid=None, episodeid=None, selection=False):
+        if selection:
+            stype = xbmc.getInfoLabel('ListItem.DBTYPE')
+            ID = xbmc.getInfoLabel('ListItem.DBID')
+            if stype == 'movie':
+                movieid = ID
+            elif stype == 'tvshow':
+                episodeid = ID
+            else:
+                return False
+
+        if movieid:
+            movieid = kodiutil.intOrZero(movieid)
+            if not movieid:
+                return False
+
+            r = rpc.VideoLibrary.GetMovieDetails(
+                movieid=movieid, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+            )['moviedetails']
+            r['type'] = 'movie'
+        elif episodeid:
+            episodeid = kodiutil.intOrZero(episodeid)
+            if not episodeid:
+                return False
+
+            r = rpc.VideoLibrary.GetEpisodeDetails(
+                episodeid=episodeid, properties=['file', 'streamdetails', 'title', 'thumbnail', 'runtime']
+            )['episodedetails']
+            r['type'] = 'tvshow'
+        else:
+            return False
+
+        feature = self.featureFromJSON(r)
+        self.features = []
+        self.features.append(feature)
 
         return True
 
@@ -610,10 +650,13 @@ class ExperiencePlayer(xbmc.Player):
             actionFile = kodiutil.getSetting('action.onAbort.file')
             self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
 
-    def addSelectedFeature(self):
+    def addSelectedFeature(self, movieid=None, episodeid=None, selection=False):
+        if selection or movieid or episodeid:
+            self.addFromID(movieid, episodeid, selection)
+
         if xbmc.getCondVisibility('ListItem.IsCollection'):
             kodiutil.DEBUG_LOG('Selection is a collection')
-            return self.getCollectionMovies()
+            return self.addCollectionMovies()
 
         title = xbmc.getInfoLabel('ListItem.Title')
         if not title:
@@ -795,6 +838,7 @@ class ExperiencePlayer(xbmc.Player):
                     if self.window.hasAction():
                         break
 
+            kodiutil.DEBUG_LOG('Stopping music')
             self.stop()
             self.waitForPlayStop()
             self.playStatus = self.NOT_PLAYING

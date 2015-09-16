@@ -91,18 +91,23 @@ class HTTPCommand(ActionCommand):
 
     def execute(self):
         import requests
+        import json
+
+        headers = None
         if self.args:
             data = self.args[0]
             if data.startswith('PUT:'):
                 data = data[4:].lstrip()
-                resp = requests.put(self.commandData, data=data)
+                resp = requests.put(self.commandData, headers=headers, data=data)
             elif data.startswith('DELETE:'):
                 data = data[7:].lstrip()
                 resp = requests.delete(self.commandData)
+            elif data.startswith('HEADERS:'):
+                headers = json.loads(data[8:].lstrip())
             else:
                 if data.startswith('POST:'):
                     data = data[5:].lstrip()
-                resp = requests.post(self.commandData, data=data)
+                resp = requests.post(self.commandData, headers=headers, data=data)
         else:
             resp = requests.get(self.commandData)
 

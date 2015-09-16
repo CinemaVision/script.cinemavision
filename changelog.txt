@@ -14,6 +14,10 @@ Changelog for CinemaVision
 - add:     Ability to use context menu on a collection
 - change:  Removed xbmclogs.com option from settings (site down - for good?)
 - fix:     Possible fix for crashes with mediacodec? Needs testing
+- add:     Added the ability for skinners to pass 'movied=<id>' as an argument
+- add:     Added the ability for skinners to pass 'selction' as an argument (will play current listitem)
+- add:     Added the ability to add a line to action files for http headers -> HEADER:{"header_key":"header_value"} <-JSON string
+
 
 [- 0.0.36 -]
 

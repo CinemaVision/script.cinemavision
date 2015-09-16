@@ -632,14 +632,14 @@ class TrailerHandler:
 
         if ratingLimitMethod and ratingLimitMethod != 'none':
             if ratingLimitMethod == 'max':
-                minr = ratings.MPAA.G
                 maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
                 util.DEBUG_LOG('    - Limiting to ratings less than: {0}'.format(str(maxr)))
-            else:
+                filtered = [f for f in filtered if f.rating.value <= maxr.value]
+            elif self.caller.ratings:
                 minr = min(self.caller.ratings.values(), key=lambda x: x.value)
                 maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
                 util.DEBUG_LOG('    - Matching ratings between {0} and {1}'.format(str(minr), str(maxr)))
-            filtered = [f for f in filtered if minr.value <= f.rating.value <= maxr.value]
+                filtered = [f for f in filtered if minr.value <= f.rating.value <= maxr.value]
 
         if sItem.getLive('limitGenre'):
             if self.caller.genres:
@@ -680,7 +680,7 @@ class TrailerHandler:
             if ratingLimitMethod == 'max':
                 minr = ratings.MPAA.G
                 maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
-            else:
+            elif self.caller.ratings:
                 minr = min(self.caller.ratings.values(), key=lambda x: x.value)
                 maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
 

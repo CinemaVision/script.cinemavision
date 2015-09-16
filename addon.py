@@ -11,6 +11,12 @@ if __name__ == '__main__':
     elif arg == 'experience':
         from lib import player
         player.begin()
+    elif str(arg).startswith('movieid='):
+        player.begin(movieid=arg[8:])
+    elif str(arg).startswith('episodeid='):
+        player.begin(episodeid=arg[10:])
+    elif arg == 'selection':
+        player.begin(selection=True)
     elif arg == 'update.database':
         from lib import cvutil
         from lib import kodiutil

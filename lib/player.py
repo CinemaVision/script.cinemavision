@@ -19,11 +19,11 @@ def featureComfirmationDialog(features):
     return pd.features
 
 
-def begin():
+def begin(movieid=None, episodeid=None, selection=False):
     e = experience.ExperiencePlayer().create()
 
-    if not e.hasFeatures():
-        if not e.addSelectedFeature():
+    if not e.hasFeatures() or selection or movieid or episodeid:
+        if not e.addSelectedFeature(selection=selection, movieid=movieid, episodeid=episodeid):
             return showNoFeaturesDialog()
 
     if not kodiutil.getSetting('hide.queue.dialog', False) or (kodiutil.getSetting('hide.queue.dialog.single', False) and len(e.features) > 1):
