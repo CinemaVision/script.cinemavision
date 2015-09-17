@@ -834,12 +834,14 @@ class VideoBumperHandler:
 
     def __call__(self, caller, sItem):
         self.caller = caller
+        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, sItem.display()))
         playables = self.handlers[sItem.vtype](sItem)
-        util.DEBUG_LOG('[{0}] {1}{2}'.format(
-            sItem.typeChar,
-            sItem.display(),
-            not playables and ': NOT SHOWING' or '{0}'.format(sItem.vtype == 'dir' and ' x {0}'.format(sItem.count) or ''))
-        )
+        if playables:
+            if sItem.vtype == 'dir':
+                util.DEBUG_LOG('    - {0}'.format(' x {0}'.format(sItem.count) or ''))
+        else:
+            util.DEBUG_LOG('    - {0}'.format('NOT SHOWING'))
+
         return playables
 
     @DB.session
@@ -847,21 +849,28 @@ class VideoBumperHandler:
         is3D = self.caller.currentFeature.is3D and sItem.play3D
 
         if sItem.random:
+            util.DEBUG_LOG('    - Random')
             try:
                 bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
                 return [Video(bumper.path)]
             except IndexError:
+                util.DEBUG_LOG('    - No matches!')
                 pass
 
             if is3D and util.getSettingDefault('bumper.fallback2D'):
+                util.DEBUG_LOG('    - Falling back to 2D bumper')
                 try:
                     bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))])
                     return [Video(bumper.path)]
                 except IndexError:
+                    util.DEBUG_LOG('    - No matches!')
                     pass
         else:
+            util.DEBUG_LOG('    - Via source')
             if sItem.source:
                 return [Video(sItem.source)]
+            else:
+                util.DEBUG_LOG('    - Empty path!')
 
         return []
 
@@ -947,6 +956,7 @@ class AudioFormatHandler:
         is3D = caller.currentFeature.is3D and sItem.play3D
 
         if method == 'af.detect':
+            util.DEBUG_LOG('    - Detect')
             if caller.currentFeature.audioFormat:
                 try:
                     bumper = random.choice(
@@ -954,8 +964,9 @@ class AudioFormatHandler:
                             (DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat) & (DB.AudioFormatBumpers.is3D == is3D)
                         )]
                     )
-                    util.DEBUG_LOG('    - Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
+                    util.DEBUG_LOG('    - Detect: Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
                 except IndexError:
+                    util.DEBUG_LOG('    - Detect: No codec matches!')
                     if is3D and util.getSettingDefault('bumper.fallback2D'):
                         try:
                             bumper = random.choice(
@@ -964,6 +975,8 @@ class AudioFormatHandler:
                             util.DEBUG_LOG('    - Using bumper based on feature codec info and falling back to 2D ({0})'.format(caller.currentFeature.title))
                         except IndexError:
                             pass
+            else:
+                util.DEBUG_LOG('    - No feature audio format!')
 
         if (
             format_ and not bumper and (
@@ -972,14 +985,16 @@ class AudioFormatHandler:
                 )
             )
         ):
+            util.DEBUG_LOG('    - Format')
             try:
                 bumper = random.choice(
                     [x for x in DB.AudioFormatBumpers.select().where(
                         (DB.AudioFormatBumpers.format == format_) & (DB.AudioFormatBumpers.is3D == is3D)
                     )]
                 )
-                util.DEBUG_LOG('    - Using bumper based on format setting ({0})'.format(repr(caller.currentFeature.title)))
+                util.DEBUG_LOG('    - Format: Using bumper based on setting ({0})'.format(repr(caller.currentFeature.title)))
             except IndexError:
+                util.DEBUG_LOG('    - Format: No matches!')
                 if is3D and util.getSettingDefault('bumper.fallback2D'):
                     try:
                         bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == format_)])
@@ -993,12 +1008,13 @@ class AudioFormatHandler:
                 )
             )
         ):
-            util.DEBUG_LOG('    - Using bumper based on file setting ({0})'.format(caller.currentFeature.title))
+            util.DEBUG_LOG('    - File: Using bumper based on setting ({0})'.format(caller.currentFeature.title))
             return [Video(sItem.getLive('file'))]
 
         if bumper:
             return [Video(bumper.path)]
 
+        util.DEBUG_LOG('    - NOT SHOWING')
         return []
 
 
@@ -1077,7 +1093,7 @@ class SequenceProcessor:
         util.DEBUG_LOG('Genres: {0}'.format(', '.join(self.genres)))
 
         if self.featureQueue:
-            util.DEBUG_LOG('\n\n' + '\n\n'.join([str(f) for f in self.featureQueue]))
+            util.DEBUG_LOG('\n\n' + '\n\n'.join([str(f) for f in self.featureQueue]) + '\n.')
         else:
             util.DEBUG_LOG('NO FEATURES QUEUED')
 
@@ -1109,6 +1125,13 @@ class SequenceProcessor:
 
     def loadSequence(self, sequence_path):
         self.sequence = sequence.loadSequence(sequence_path)
+        util.DEBUG_LOG('')
+        for si in self.sequence:
+            util.DEBUG_LOG('[- {0} -]'.format(si._type))
+            for e in si._elements:
+                util.DEBUG_LOG('{0}: {1}'.format(e['attr'], si.getLive(e['attr'])))
+
+            util.DEBUG_LOG('')
 
     def next(self):
         if self.atEnd():

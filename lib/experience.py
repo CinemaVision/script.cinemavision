@@ -772,6 +772,7 @@ class ExperiencePlayer(xbmc.Player):
         self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath, content_path=kodiutil.getSetting('content.path'))
         [self.processor.addFeature(f) for f in self.features]
 
+        kodiutil.DEBUG_LOG('\n.')
         DEBUG_LOG('[ -- Started --------------------------------------------------------------- ]')
 
         self.openWindow()
@@ -801,7 +802,7 @@ class ExperiencePlayer(xbmc.Player):
             if not self.processor.atEnd():
                 self.onAbort()
 
-        DEBUG_LOG('[ -- Finished -------------------------------------------------------------- ]')
+        DEBUG_LOG('[ -- Finished -------------------------------------------------------------- ]\n.')
         self.window.doClose()
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
         self.stop()
