@@ -1,5 +1,9 @@
 Changelog for CinemaVision
 
+[- 0.0.39 -]
+
+- add:     Ability to post logs via Pastebin
+
 [- 0.0.38 -]
 
 - add:     Added more comprehensive debug logging

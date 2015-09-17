@@ -80,6 +80,8 @@
     </category>
 
     <category label="Advanced">
-        <setting id="debug.log"              label="Debug logging"                                    type="bool"   default="true" />
+        <setting id="debug.log"          label="Debug logging"                 type="bool"   default="true" />
+        <setting id="pastebin.paste.log" label="Paste my kodi.log to pastebin" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
+        <setting id="pastebin.user"      label="Pastebin user (necessary to paste as user)" type="text" default="" />
     </category>
 </settings>

@@ -102,6 +102,11 @@ except:
         return xbmc.abortRequested
 
 
+def getPeanutButter():
+    import binascii
+    return binascii.a2b_base64('WlRObE1tVTVaV1V5TTJKaVpXSm1aR1U1TkRVMk1EZ3dNemRrWVRSbFlUVT0=')
+
+
 class Progress(object):
     def __init__(self, heading, line1='', line2='', line3=''):
         self.dialog = xbmcgui.DialogProgress()

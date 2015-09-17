@@ -12,10 +12,13 @@ if __name__ == '__main__':
         from lib import player
         player.begin()
     elif str(arg).startswith('movieid='):
+        from lib import player
         player.begin(movieid=arg[8:])
     elif str(arg).startswith('episodeid='):
+        from lib import player
         player.begin(episodeid=arg[10:])
     elif arg == 'selection':
+        from lib import player
         player.begin(selection=True)
     elif arg == 'update.database':
         from lib import cvutil
@@ -25,6 +28,9 @@ if __name__ == '__main__':
     elif arg == 'feature.setRatingBumperStyle':
         from lib import cvutil
         cvutil.setRatingBumperStyle()
+    elif arg == 'pastebin.paste.log':
+        from lib import settings
+        settings.pasteLog()
     else:
         from lib import main
         main.main()
