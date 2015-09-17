@@ -1129,7 +1129,7 @@ class SequenceProcessor:
         for si in self.sequence:
             util.DEBUG_LOG('[- {0} -]'.format(si._type))
             for e in si._elements:
-                util.DEBUG_LOG('{0}: {1}'.format(e['attr'], si.getLive(e['attr'])))
+                util.DEBUG_LOG('{0}: {1}'.format(e['attr'], repr(si.getLive(e['attr']))))
 
             util.DEBUG_LOG('')
 
