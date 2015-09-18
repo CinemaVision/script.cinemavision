@@ -92,6 +92,7 @@ def createSettingsRSDirs():
                     pass
 
     kodiutil.setSetting('settings.ratings.initialized', 'true')
+    kodiutil.setSetting('settings.ratings.initialized2', 'true')
 
 
 def downloadDemoContent():

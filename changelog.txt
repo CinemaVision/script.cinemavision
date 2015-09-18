@@ -3,6 +3,7 @@ Changelog for CinemaVision
 [- 0.0.39 -]
 
 - add:     Ability to post logs via Pastebin
+- fix:     3D ratings bumpers were not able to be randomly selected
 
 [- 0.0.38 -]
 

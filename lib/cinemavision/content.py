@@ -31,6 +31,8 @@ TYPE_IDS = {
     'Trivia Outro':   'trivia.outro'
 }
 
+CONTENT_3D_RE = '\([^\)]*3D[^\)]*\)'
+
 
 def getBumperDir(ID):
     for dirname, tid in TYPE_IDS.items():
@@ -265,6 +267,10 @@ class UserContent:
                 continue
 
             name, ext = os.path.splitext(v)
+            is3D = '3D' in name
+            if is3D and type_name == 'system':  # Remove tags from rating bumpers
+                name = re.sub(CONTENT_3D_RE, '', name).strip()
+
             isImage = False
             if ext in util.videoExtensions:
                 isImage = False
@@ -278,7 +284,7 @@ class UserContent:
             defaults = {
                 type_name: TYPE_IDS.get(type_, type_),
                 'name': name,
-                'is3D': '3D' in v,
+                'is3D': is3D,
                 'isImage': isImage
             }
 

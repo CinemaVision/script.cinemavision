@@ -31,6 +31,12 @@ if __name__ == '__main__':
     elif arg == 'pastebin.paste.log':
         from lib import settings
         settings.pasteLog()
+    elif arg == 'pastebin.delete.key':
+        from lib import settings
+        settings.deleteUserKey()
+    elif arg == 'reset.database':
+        from lib import settings
+        settings.removeContentDatabase()
     else:
         from lib import main
         main.main()

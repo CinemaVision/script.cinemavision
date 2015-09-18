@@ -43,8 +43,10 @@
         <setting id="trailer.dir"          label="Source: Directory"    type="folder"    sources="auto" value="" />
         <setting id="trailer.file"         label="Source: File"         type="file"      sources="auto" value="" />
         <setting id="trailer.count"        label="Count"                type="slider"    default="1" range="1,10" option="int" />
+        <setting id="settings.ratings.initialized2" label="" type="bool"   default="false" visible="false"/>
         <setting id="trailer.ratingLimit"  label="Rating limit"         type="enum"      values="None|Max|Match Features" default="0" />
-        <setting id="trailer.ratingMax"    label="Rating limit: Max"    type="fileenum"  values="$PROFILE/settings/ratings_default" />
+        <setting id="trailer.ratingMax"    label="Rating limit: Max "    type="fileenum"  values="$PROFILE/settings/ratings_default" visible="eq(-2,true)"/>
+        <setting id="trailer.ratingMax.dummy" label="Rating limit: Max (needs Content path set and updated)" type="text" values=" " enable="false" visible="!eq(-3,true)" />
         <setting id="trailer.LimitGenre"   label="Match feature genres" type="bool"      default="true" />
         <setting id="trailer.quality"      label="Quality"              type="labelenum" values="480p|720p|1080p" default="720p" />
     </category>
@@ -80,8 +82,10 @@
     </category>
 
     <category label="Advanced">
-        <setting id="debug.log"          label="Debug logging"                 type="bool"   default="true" />
-        <setting id="pastebin.paste.log" label="Paste my kodi.log to pastebin" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
-        <setting id="pastebin.user"      label="Pastebin user (necessary to paste as user)" type="text" default="" />
+        <setting id="debug.log"           label="Debug logging"                 type="bool"   default="true" />
+        <setting id="pastebin.paste.log"  label="Paste my kodi.log to pastebin" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
+        <setting id="pastebin.user"       label="Pastebin user (necessary to paste as user)"  type="text" default="" />
+        <setting id="pastebin.delete.key" label="Delete Pastebin user key"      type="action" action="RunScript(script.cinemavision,pastebin.delete.key)" />
+        <setting id="reset.database"      label="Reset content database"        type="action" action="RunScript(script.cinemavision,reset.database)" />
     </category>
 </settings>

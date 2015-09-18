@@ -26,14 +26,20 @@ def pasteLog():
         ('<pass>.+?</pass>', '<pass>PASSWORD</pass>'),
     )
 
-    apiUserKey = kodiutil.getSetting('pastebin.user.key')
+    apiUserKeyFile = os.path.join(kodiutil.PROFILE_PATH, 'settings.pb.key')
+    apiUserKey = ''
+    if os.path.exists(apiUserKeyFile):
+        with open(apiUserKeyFile, 'r') as f:
+            apiUserKey = f.read() or ''
 
     pb = PastebinPython(api_dev_key=kodiutil.getPeanutButter(), api_user_key=apiUserKey)
 
     apiUser = kodiutil.getSetting('pastebin.user')
     if apiUser and not apiUserKey:
         debug_log('Username set, asking user for password')
-        password = xbmcgui.Dialog().input('Enter Pastebin password (only needed 1st time - NOT stored)')
+        password = xbmcgui.Dialog().input(
+            'Enter Pastebin password (only needed 1st time - NOT stored)', '', xbmcgui.INPUT_ALPHANUM, xbmcgui.ALPHANUM_HIDE_INPUT
+        )
         if password:
             debug_log('Getting API user key')
             apiUserKey = pb.createAPIUserKey(apiUser, password)
@@ -41,7 +47,8 @@ def pasteLog():
                 xbmcgui.Dialog().ok('Failed', u'Failed to create paste as user: {0}'.format(apiUser), '', apiUserKey)
                 debug_log('Failed get user API key ({0}): {1}'.format(apiUser, apiUserKey))
             else:
-                kodiutil.setSetting('pastebin.user.key', apiUserKey)
+                with open(apiUserKeyFile, 'w') as f:
+                    f.write(apiUserKey)
         else:
             debug_log('User aborted')
             xbmcgui.Dialog().ok('Aborted', ' ', 'Paste aborted!')
@@ -74,7 +81,21 @@ def showQRCode(url):
     import os
     import pyqrcode
     import kodiutil
-    from kodijsonrpc import rpc
+    import kodigui
+    # from kodijsonrpc import rpc
+
+    class ImageWindow(kodigui.BaseDialog):
+        xmlFile = 'script.cinemavision-image.xml'
+        path = kodiutil.ADDON_PATH
+        theme = 'Main'
+        res = '1080i'
+
+        def __init__(self, *args, **kwargs):
+            kodigui.BaseDialog.__init__(self)
+            self.image = kwargs.get('image')
+
+        def onFirstInit(self):
+            self.setProperty('image', self.image)
 
     with kodiutil.Progress('QR Code', 'Creating QR code...'):
         code = pyqrcode.create(url)
@@ -83,4 +104,28 @@ def showQRCode(url):
             os.makedirs(QRDir)
         QR = os.path.join(QRDir, 'QR.png')
         code.png(QR, scale=6)
-    rpc.Player.Open(item={'path': QRDir})
+    # rpc.Player.Open(item={'path': QRDir})
+    ImageWindow.open(image=QR)
+
+
+def deleteUserKey():
+    import os
+    import xbmcgui
+    import kodiutil
+
+    apiUserKeyFile = os.path.join(kodiutil.PROFILE_PATH, 'settings.pb.key')
+    if os.path.exists(apiUserKeyFile):
+        os.remove(apiUserKeyFile)
+    xbmcgui.Dialog().ok('Done', ' ', 'User key deleted.')
+
+
+def removeContentDatabase():
+    import os
+    import xbmcgui
+    import kodiutil
+
+    dbFile = os.path.join(kodiutil.PROFILE_PATH, 'content.db')
+    if os.path.exists(dbFile):
+        os.remove(dbFile)
+
+    xbmcgui.Dialog().ok('Done', ' ', 'Database reset.')
