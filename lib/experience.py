@@ -596,6 +596,7 @@ class ExperiencePlayer(xbmc.Player):
         return True
 
     def addFromID(self, movieid=None, episodeid=None, selection=False):
+        DEBUG_LOG('Adding from id: movieid={0} episodeid={1} selection={2}'.format(movieid, episodeid, selection))
         if selection:
             stype = xbmc.getInfoLabel('ListItem.DBTYPE')
             ID = xbmc.getInfoLabel('ListItem.DBID')
@@ -652,7 +653,7 @@ class ExperiencePlayer(xbmc.Player):
 
     def addSelectedFeature(self, movieid=None, episodeid=None, selection=False):
         if selection or movieid or episodeid:
-            self.addFromID(movieid, episodeid, selection)
+            return self.addFromID(movieid, episodeid, selection)
 
         if xbmc.getCondVisibility('ListItem.IsCollection'):
             kodiutil.DEBUG_LOG('Selection is a collection')
