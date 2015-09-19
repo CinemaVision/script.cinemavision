@@ -244,6 +244,13 @@ class Feature(Item):
             'limits': LIMIT_DB_CHOICE,
             'name': 'Style',
             'default': None
+        },
+        {
+            'attr': 'volume',
+            'type': int,
+            'limits': (0, 100, 1),
+            'name': 'Volume %',
+            'default': 0
         }
     )
     displayName = 'Feature'
@@ -255,6 +262,7 @@ class Feature(Item):
         self.ratingBumper = None
         self.ratingStyleSelection = None
         self.ratingStyle = None
+        self.volume = 0
 
     def display(self):
         name = self.name or self.displayName
@@ -449,6 +457,13 @@ class Trailer(Item):
             'limits': LIMIT_DIR,
             'name': 'Path',
             'default': ''
+        },
+        {
+            'attr': 'volume',
+            'type': int,
+            'limits': (0, 100, 1),
+            'name': 'Volume %',
+            'default': 0
         }
     )
     displayName = 'Trailer'
@@ -464,6 +479,7 @@ class Trailer(Item):
         self.ratingMax = None
         self.limitGenre = None
         self.quality = None
+        self.volume = 0
 
     def display(self):
         name = self.name or self.displayName
@@ -568,6 +584,13 @@ class Video(Item):
             'type': strToBool,
             'limits': LIMIT_BOOL,
             'name': 'Play 3D If 3D Feature'
+        },
+        {
+            'attr': 'volume',
+            'type': int,
+            'limits': (0, 100, 1),
+            'name': 'Volume %',
+            'default': 0
         }
     )
     displayName = 'Video Bumper'
@@ -582,6 +605,7 @@ class Video(Item):
         self.count = 1
         self.file = ''
         self.play3D = True
+        self.volume = 0
 
     def elementVisible(self, e):
         attr = e['attr']
@@ -662,6 +686,13 @@ class AudioFormat(Item):
             'type': strToBool,
             'limits': LIMIT_BOOL,
             'name': 'Play 3D If 3D Feature'
+        },
+        {
+            'attr': 'volume',
+            'type': int,
+            'limits': (0, 100, 1),
+            'name': 'Volume %',
+            'default': 0
         }
     )
     displayName = 'Audio Format Bumper'
@@ -674,6 +705,7 @@ class AudioFormat(Item):
         self.format = None
         self.file = None
         self.play3D = True
+        self.volume = 0
 
     def elementVisible(self, e):
         attr = e['attr']

@@ -455,6 +455,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.sequenceControl.addItems(final)
 
+        # Helix has navigation issue if this is not done
+        dummy = kodigui.ManagedListItem()
+        self.sequenceControl.addItem(dummy)
+        self.sequenceControl.removeItem(dummy.pos())
+
         self.updateFirstLast()
 
         self.modified = True

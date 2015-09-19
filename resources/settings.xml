@@ -49,14 +49,16 @@
         <setting id="trailer.ratingMax.dummy" label="Rating limit: Max (needs Content path set and updated)" type="text" values=" " enable="false" visible="!eq(-3,true)" />
         <setting id="trailer.LimitGenre"   label="Match feature genres" type="bool"      default="true" />
         <setting id="trailer.quality"      label="Quality"              type="labelenum" values="480p|720p|1080p" default="720p" />
+        <setting id="trailer.volume"       label="Volume (% of current)" type="slider"   default="100" range="1,100" option="percent" />
     </category>
 
     <category label="Audio Format">
         <setting label="Module Defaults" type="lsep"/>
         <setting id="audioformat.method"   label="Method"   type="enum" values="Auto-detect from source|Choose format|Choose file" default="0" />
         <setting id="audioformat.fallback" label="Fallback" type="enum" values="Choose format|Choose file" default="0" subsetting="true" />
-        <setting id="audioformat.format"   label="Format"   type="enum" values="Auro-3D|Dolby Digital|Dolby Digital Plus|Dolby TrueHD|Dolby Atmos|DTS|DTS-HD Master Audio|DTS:X|Datasat|THX|Other" default="10" subsetting="true" />
+        <setting id="audioformat.format"   label="Format"   type="enum" values="(?i)Auro-3D|Dolby Digital|Dolby Digital Plus|Dolby TrueHD|Dolby Atmos|DTS|DTS-HD Master Audio|DTS:X|Datasat|THX|Other" default="10" subsetting="true" />
         <setting id="audioformat.file"     label="File"     type="file" sources="auto" value="" subsetting="true" />
+        <setting id="audioformat.volume"   label="Volume (% of current)" type="slider" default="100" range="1,100" option="percent" />
     </category>
 
     <category label="Feature">
@@ -69,7 +71,12 @@
         <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
         <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" visible="eq(-7,true)"/>
         <setting id="feature.ratingStyle.dummy"    label="Rating style (needs Content path set and updated)"  type="enum"   values="None"  default="0" subsetting="true" visible="!eq(-8,true)" enable="false" />
+        <setting id="feature.volume"               label="Volume (% of current)"  type="slider" default="100"  range="1,100"    option="percent" />
+    </category>
 
+    <category label="Video Bumpers">
+        <setting label="Module Defaults" type="lsep"/>
+        <setting id="video.volume" label="Volume (% of current)" type="slider" default="100" range="1,100" option="percent" />
     </category>
 
     <category label="Actions">

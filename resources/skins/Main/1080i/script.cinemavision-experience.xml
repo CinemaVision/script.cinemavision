@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <window>
-    <defaultcontrol>200</defaultcontrol>
     <coordinates>
         <system>1</system>
         <posx>0</posx>
@@ -34,7 +33,7 @@
             <texture>$INFO[Window(10000).Property(script.cinemavision.image1)]</texture>
             <aspectratio>keep</aspectratio>
         </control>
-        <control type="image" id="101">
+        <control type="image">
             <visible>!IsEmpty(Window(10000).Property(script.cinemavision.paused))</visible>
             <posx>832</posx>
             <posy>412</posy>
@@ -44,6 +43,39 @@
             <colordiffuse>80FFFFFF</colordiffuse>
             <aspectratio>keep</aspectratio>
         </control>
-
+        <control type="group" id="200">
+            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.number))</visible>
+            <posx>1820</posx>
+            <posy>20</posy>
+            <control type="image">
+                <posx>-5</posx>
+                <posy>-5</posy>
+                <width>90</width>
+                <height>90</height>
+                <texture>script.cinemavision-white_square.png</texture>
+                <colordiffuse>A0FFFFFF</colordiffuse>
+                <aspectratio>scale</aspectratio>
+            </control>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>80</width>
+                <height>80</height>
+                <texture>script.cinemavision-white_square.png</texture>
+                <colordiffuse>A0000000</colordiffuse>
+                <aspectratio>scale</aspectratio>
+            </control>
+            <control type="label">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>80</width>
+                <height>80</height>
+                <font>font30</font>
+                <textcolor>FFFFFFFF</textcolor>
+                <align>center</align>
+                <aligny>center</aligny>
+                <label>[B]$INFO[Window(10000).Property(script.cinemavision.number)][/B]</label>
+            </control>
+        </control>
     </controls>
 </window>

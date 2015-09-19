@@ -1,3 +1,4 @@
+import os
 import random
 import time
 import datetime
@@ -138,38 +139,49 @@ class ImageQueue(dict):
     def add(self, image):
         self.queue.append(image)
 
-    def next(self, start=0, extend=False):
+    def next(self, start=0, count=1, extend=False):
         overtime = start and time.time() - start >= self.maxDuration
         if overtime and not self.current().setNumber:
             return None
 
-        if self.pos >= self.size() - 1:
+        if self.pos + count >= self.size():
             if extend or not overtime:
-                return self._next()
+                return self._next(count=count)
             else:
                 return None
 
-        self.pos += 1
+        self.pos += count
 
         return self.queue[self.pos]
 
-    def _next(self):
+    def _next(self, count=1):
         util.DEBUG_LOG('ImageQueue: Requesting next...')
-        images = self._handler.next(self)
+
+        images = []
+        for actual in range(1, count+1):
+            i = self._handler.next(self)
+            if not i:
+                break
+            images += i
+
         if not images:
             util.DEBUG_LOG('ImageQueue: No next images')
             return None
 
         util.DEBUG_LOG('ImageQueue: {0} returned'.format(len(images)))
         self.queue += images
-        self.pos += 1
+        self.pos += actual
 
         return self.current()
 
-    def prev(self):
+    def prev(self, count=1):
         if self.pos < 1:
             return None
-        self.pos -= 1
+
+        self.pos -= count
+
+        if self.pos < 0:
+            self.pos = 0
 
         return self.current()
 
@@ -188,11 +200,30 @@ class ImageQueue(dict):
 class Video(Playable):
     type = 'VIDEO'
 
-    def __init__(self, path, user_agent='', duration=0, set_id=None):
+    def __init__(self, path, user_agent='', duration=0, set_id=None, title='', thumb='', volume=100):
         self['path'] = path
         self['userAgent'] = user_agent
         self['duration'] = duration
         self['setID'] = set_id
+        self['title'] = title or os.path.splitext(os.path.basename(path))[0]
+        self['thumb'] = thumb
+        self['volume'] = volume
+
+    @property
+    def title(self):
+        return self.get('title', '')
+
+    @title.setter
+    def title(self, val):
+        self['title'] = val
+
+    @property
+    def thumb(self):
+        return self.get('thumb', '')
+
+    @thumb.setter
+    def thumb(self, val):
+        self['thumb'] = val
 
     @property
     def setID(self):
@@ -205,6 +236,14 @@ class Video(Playable):
     @property
     def duration(self):
         return self.get('duration', 0)
+
+    @property
+    def volume(self):
+        return self.get('volume', 100)
+
+    @volume.setter
+    def volume(self, val):
+        self['volume'] = val
 
 
 class VideoQueue(dict):
@@ -270,14 +309,6 @@ class Feature(Video):
     @dbType.setter
     def dbType(self, val):
         self['dbType'] = val
-
-    @property
-    def title(self):
-        return self.get('title', '')
-
-    @title.setter
-    def title(self, val):
-        self['title'] = val
 
     @property
     def rating(self):
@@ -402,6 +433,7 @@ class FeatureHandler:
         mediaType = sItem.getLive('ratingBumper')
 
         for f in features:
+            f.volume = sItem.getLive('volume')
             bumper = None
             if mediaType == 'video':
                 bumper = self.getRatingBumper(sItem, f)
@@ -716,7 +748,15 @@ class TrailerHandler:
                 date=now
             ).where(DB.WatchedTrailers.WID == t.WID).execute()
 
-        return [Video(self.convertItunesURL(t.url, sItem.getLive('quality')), t.userAgent) for t in trailers]
+        return [
+            Video(
+                self.convertItunesURL(t.url, sItem.getLive('quality')),
+                t.userAgent,
+                title=t.title,
+                thumb=t.thumb,
+                volume=sItem.getLive('volume')
+            ) for t in trailers
+        ]
 
     @DB.session
     def scraperHandler(self, sItem, source):
@@ -758,7 +798,8 @@ class TrailerHandler:
                     url=url or 'BROKEN',
                     userAgent=t.userAgent,
                     rating=str(t.rating),
-                    genres=','.join(t.genres)
+                    genres=','.join(t.genres),
+                    thumb=t.thumb
                 ).execute()
             except DB.peewee.DoesNotExist:
                 DB.WatchedTrailers.create(
@@ -770,13 +811,14 @@ class TrailerHandler:
                     url=url or 'BROKEN',
                     userAgent=t.userAgent,
                     rating=str(t.rating),
-                    genres=','.join(t.genres)
+                    genres=','.join(t.genres),
+                    thumb=t.thumb
                 )
 
         if not valid:
             return self.oldest(sItem, source)
 
-        return [Video(url, trailer.userAgent) for url, trailer in valid]
+        return [Video(url, trailer.userAgent, title=trailer.title, thumb=trailer.thumb, volume=sItem.getLive('volume')) for url, trailer in valid]
 
     def dirHandler(self, sItem):
         count = sItem.getLive('count')
@@ -795,7 +837,7 @@ class TrailerHandler:
         try:
             files = util.vfs.listdir(path)
             files = random.sample(files, count)
-            return [Video(util.pathJoin(path, p)) for p in files]
+            return [Video(util.pathJoin(path, p), volume=sItem.getLive('volume')) for p in files]
         except:
             util.ERROR()
             return []
@@ -807,7 +849,7 @@ class TrailerHandler:
 
         util.DEBUG_LOG('[{0}] File: {1}'.format(sItem.typeChar, repr(path)))
 
-        return [Video(path)]
+        return [Video(path, volume=sItem.getLive('volume'))]
 
 
 class VideoBumperHandler:
@@ -852,7 +894,7 @@ class VideoBumperHandler:
             util.DEBUG_LOG('    - Random')
             try:
                 bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
-                return [Video(bumper.path)]
+                return [Video(bumper.path, volume=sItem.getLive('volume'))]
             except IndexError:
                 util.DEBUG_LOG('    - No matches!')
                 pass
@@ -922,7 +964,7 @@ class VideoBumperHandler:
 
     def file(self, sItem):
         if sItem.file:
-            return [Video(sItem.file)]
+            return [Video(sItem.file, volume=sItem.getLive('volume'))]
         else:
             return []
 
@@ -937,7 +979,7 @@ class VideoBumperHandler:
             else:
                 files = files[:sItem.count]
 
-            return [Video(util.pathJoin(sItem.dir, p)) for p in files]
+            return [Video(util.pathJoin(sItem.dir, p), volume=sItem.getLive('volume')) for p in files]
         except:
             util.ERROR()
             return []
@@ -1009,10 +1051,10 @@ class AudioFormatHandler:
             )
         ):
             util.DEBUG_LOG('    - File: Using bumper based on setting ({0})'.format(caller.currentFeature.title))
-            return [Video(sItem.getLive('file'))]
+            return [Video(sItem.getLive('file'), volume=sItem.getLive('volume'))]
 
         if bumper:
-            return [Video(bumper.path)]
+            return [Video(bumper.path, volume=sItem.getLive('volume'))]
 
         util.DEBUG_LOG('    - NOT SHOWING')
         return []
@@ -1125,13 +1167,25 @@ class SequenceProcessor:
 
     def loadSequence(self, sequence_path):
         self.sequence = sequence.loadSequence(sequence_path)
-        util.DEBUG_LOG('')
-        for si in self.sequence:
-            util.DEBUG_LOG('[- {0} -]'.format(si._type))
-            for e in si._elements:
-                util.DEBUG_LOG('{0}: {1}'.format(e['attr'], repr(si.getLive(e['attr']))))
+
+        if util.DEBUG:  # Dump some info
+            util.DEBUG_LOG('')
+            util.DEBUG_LOG('[- Non-Module Defaults -]')
+
+            for sett in (
+                'bumper.fallback2D', 'trivia.music', 'trivia.musicVolume', 'trivia.musicFadeIn', 'trivia.musicFadeOut',
+                'trailer.playUnwatched', 'trailer.ratingMax', 'rating.system.default'
+            ):
+                util.DEBUG_LOG('{0}: {1}'.format(sett, repr(util.getSettingDefault(sett))))
 
             util.DEBUG_LOG('')
+
+            for si in self.sequence:
+                util.DEBUG_LOG('[- {0} -]'.format(si._type))
+                for e in si._elements:
+                    util.DEBUG_LOG('{0}: {1}'.format(e['attr'], repr(si.getLive(e['attr']))))
+
+                util.DEBUG_LOG('')
 
     def next(self):
         if self.atEnd():

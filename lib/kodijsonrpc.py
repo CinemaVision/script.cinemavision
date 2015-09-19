@@ -25,10 +25,13 @@ class JSONRPCMethod:
 
             ret = json.loads(xbmc.executeJSONRPC(json.dumps(command)))
 
-            if 'error' in ret:
-                raise self.Exception(ret['error'])
+            if ret:
+                if 'error' in ret:
+                    raise self.Exception(ret['error'])
+                else:
+                    return ret['result']
             else:
-                return ret['result']
+                return None
 
         return handler
 

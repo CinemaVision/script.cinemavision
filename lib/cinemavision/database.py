@@ -15,11 +15,12 @@ except TypeError:
 from peewee import peewee
 import util
 
-DATABASE_VERSION = 2
+DATABASE_VERSION = 3
 
 fn = peewee.fn
 
 DB = None
+W_DB = None
 DBVersion = None
 Song = None
 Trivia = None
@@ -68,6 +69,7 @@ def migrateDB(DB, version):
             util.MINOR_ERROR('Migration (RatingsBumpers: Add style column)')
         except:
             util.ERROR()
+            return False
 
     if version < 2:
         try:
@@ -79,13 +81,28 @@ def migrateDB(DB, version):
             util.MINOR_ERROR('Migration (RatingSystem: Add region column)')
         except:
             util.ERROR()
+            return False
+
+    if version < 3:
+        migratorWD = migrate.SqliteMigrator(W_DB)
+        try:
+            migrate.migrate(
+                migratorWD.add_column('WatchedTrailers', 'thumb', peewee.CharField(null=True)),
+            )
+        except peewee.OperationalError:
+            util.MINOR_ERROR('Migration (WatchedTrailers: Add thumb column)')
+        except:
+            util.ERROR()
+            return False
+
+    return True
 
 
 def checkDBVersion(DB):
     vm = DBVersion.get_or_create(id=1, defaults={'version': 0})[0]
     if vm.version < DATABASE_VERSION:
-        migrateDB(DB, vm.version)
-        vm.update(version=DATABASE_VERSION).execute()
+        if migrateDB(DB, vm.version):
+            vm.update(version=DATABASE_VERSION).execute()
 
 
 def initialize(path=None, callback=None):
@@ -94,6 +111,7 @@ def initialize(path=None, callback=None):
     callback(None, 'Creating/updating database...')
 
     global DB
+    global W_DB
     global DBVersion
     global Song
     global Trivia
@@ -116,6 +134,7 @@ def initialize(path=None, callback=None):
     dbExists = util.vfs.exists(dbPath)
 
     DB = peewee.SqliteDatabase(dbPath)
+    W_DB = peewee.SqliteDatabase(util.pathJoin(path or util.STORAGE_PATH, 'watched.db'))
 
     DB.connect()
 
@@ -239,8 +258,6 @@ def initialize(path=None, callback=None):
     ###########################################################################################
     # Watched Database
     ###########################################################################################
-    W_DB = peewee.SqliteDatabase(util.pathJoin(path or util.STORAGE_PATH, 'watched.db'))
-
     class WatchedBase(peewee.Model):
         WID = peewee.CharField(unique=True)
         watched = peewee.BooleanField(default=False)
@@ -256,6 +273,7 @@ def initialize(path=None, callback=None):
         title = peewee.CharField()
         url = peewee.CharField()
         userAgent = peewee.CharField(null=True)
+        thumb = peewee.CharField(null=True)
 
     WatchedTrailers.create_table(fail_silently=True)
 

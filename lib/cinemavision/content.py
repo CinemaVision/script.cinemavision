@@ -291,9 +291,9 @@ class UserContent:
             if sub_name:
                 sub_val = sub_val or sub_default
                 defaults[sub_name] = sub_val
-                self.log('Loading {0} ({1} - {2}): [ {3} ]'.format(model.__name__, sub, sub_val, name))
+                self.log('Loading {0} ({1} - {2}): [ {3}{4} ]'.format(model.__name__, sub, sub_val, name, is3D and ': 3D' or ''))
             else:
-                self.log('Loading {0} ({1}): [ {2} ]'.format(model.__name__, sub, name))
+                self.log('Loading {0} ({1}): [ {2}{3} ]'.format(model.__name__, sub, name, is3D and ': 3D' or ''))
 
             model.get_or_create(
                 path=vpath,

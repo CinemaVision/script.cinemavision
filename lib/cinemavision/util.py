@@ -22,6 +22,7 @@ def _getSettingDefault(key):
         'feature.ratingBumper': 'video',
         'feature.ratingStyleSelection': 'style',
         'feature.ratingStyle': 'Classic',
+        'feature.volume': 100,
         'trivia.format': 'slide',
         'trivia.duration': 10,
         'trivia.qDuration': 8,
@@ -38,10 +39,13 @@ def _getSettingDefault(key):
         'trailer.quality': '720p',
         'trailer.dir': '',
         'trailer.file': '',
+        'trailer.volume': 100,
         'audioformat.method': 'af.detect',
         'audioformat.fallback': 'af.format',
         'audioformat.file': '',
         'audioformat.format': 'Other',
+        'audioformat.volume': 100,
+        'video.volume': 100,
         # Non-sequence defualts
         'bumper.fallback2D': False,
         'trivia.music': 'content',
@@ -130,7 +134,7 @@ try:
         return stat.S_ISDIR(vstat.st_mode())
 
     def LOG(msg):
-        xbmc.log('[- CinemaVison -] (API): {0}'.format(msg))
+        xbmc.log('[- CinemaVision -] (API): {0}'.format(msg))
 
     try:
         xbmc.Monitor().waitForAbort

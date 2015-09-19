@@ -22,7 +22,7 @@ def DEBUG():
 
 
 def LOG(msg):
-    xbmc.log('[- CinemaVison -]: {0}'.format(msg))
+    xbmc.log('[- CinemaVision -]: {0}'.format(msg))
 
 
 def DEBUG_LOG(msg):

@@ -4,6 +4,7 @@ if __name__ == '__main__':
     arg = None
     if len(sys.argv) > 1:
         arg = sys.argv[1] or False
+        print '[- CinemaVision -]: Passed args: {0}'.format(repr(sys.argv))
 
     if arg == 'trailer.clearWatched':
         from lib import settings
