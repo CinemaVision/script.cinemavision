@@ -144,33 +144,40 @@ class ImageQueue(dict):
         if overtime and not self.current().setNumber:
             return None
 
-        if self.pos + count >= self.size():
+        if count > 1:  # Handle big skips. Here we skip by slide sets
+            self.pos += self.current().setNumber  # Move to the end of the current set
+
+            for c in range(count - 1):
+                while True:
+                    if self.pos >= self.size() - 1:  # We need more slides
+                        if not self._next():
+                            break
+                    else:
+                        self.pos += 1
+
+                    if not self.current().setNumber:  # We're at the end of a set
+                        break
+
+        if self.pos >= self.size() - 1:
             if extend or not overtime:
-                return self._next(count=count)
+                return self._next()
             else:
                 return None
 
-        self.pos += count
+        self.pos += 1
 
-        return self.queue[self.pos]
+        return self.current()
 
-    def _next(self, count=1):
+    def _next(self):
         util.DEBUG_LOG('ImageQueue: Requesting next...')
-
-        images = []
-        for actual in range(1, count+1):
-            i = self._handler.next(self)
-            if not i:
-                break
-            images += i
-
+        images = self._handler.next(self)
         if not images:
             util.DEBUG_LOG('ImageQueue: No next images')
             return None
 
         util.DEBUG_LOG('ImageQueue: {0} returned'.format(len(images)))
         self.queue += images
-        self.pos += actual
+        self.pos += 1
 
         return self.current()
 
@@ -178,7 +185,18 @@ class ImageQueue(dict):
         if self.pos < 1:
             return None
 
-        self.pos -= count
+        if count > 1:
+            for c in range(count + 1):
+                while self.pos > -1:
+                    self.pos -= 1
+                    if not self.current().setNumber:  # We're at the end of a set
+                        break
+
+            self.pos += 1
+
+            return self.current()
+
+        self.pos -= 1
 
         if self.pos < 0:
             self.pos = 0
@@ -708,21 +726,29 @@ class TrailerHandler:
 
         ratingLimitMethod = sItem.getLive('ratingLimit')
 
+        trailers = None
+
         if ratingLimitMethod and ratingLimitMethod != 'none':
             if ratingLimitMethod == 'max':
-                minr = ratings.MPAA.G
                 maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
+                trailers = [
+                    t for t in DB.WatchedTrailers.select().where(
+                        DB.WatchedTrailers.url != 'BROKEN'
+                    ).order_by(
+                        DB.WatchedTrailers.date
+                    ) if ratings.getRating(t.rating).value <= maxr.value
+                ]
             elif self.caller.ratings:
                 minr = min(self.caller.ratings.values(), key=lambda x: x.value)
                 maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
 
-            trailers = [
-                t for t in DB.WatchedTrailers.select().where(
-                    DB.WatchedTrailers.url != 'BROKEN'
-                ).order_by(
-                    DB.WatchedTrailers.date
-                ) if minr.value <= ratings.getRating(t.rating).value <= maxr.value
-            ]
+                trailers = [
+                    t for t in DB.WatchedTrailers.select().where(
+                        DB.WatchedTrailers.url != 'BROKEN'
+                    ).order_by(
+                        DB.WatchedTrailers.date
+                    ) if minr.value <= ratings.getRating(t.rating).value <= maxr.value
+                ]
         else:
             trailers = [
                 t for t in DB.WatchedTrailers.select().where(

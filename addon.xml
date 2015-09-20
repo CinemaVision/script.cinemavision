@@ -9,7 +9,6 @@
     <extension point="xbmc.python.script" library="addon.py">
         <provides>executable</provides>
     </extension>
-    <extension point="xbmc.service" library="service.py" start="login"/>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">Create a movie theater experience in the comfort of your own home!</summary>
         <summary lang="es">Crear una experiencia de cine en la comodidad de su propia casa!</summary>

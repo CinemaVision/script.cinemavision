@@ -10,6 +10,8 @@ Changelog for CinemaVision
 - add:     'Volume' setting added to all applicable modules
 - fix:     Bug which in some instances caused volume to be set to 0
 - add:     Up/Down in trivia now skips forward/back 3 slides
+- fix:     Trivia sometimes stopping when navigating to it within the sequence
+- fix:     Trivia music fadeout issues when music ends while navigating slides
 
 [- 0.0.39 -]
 

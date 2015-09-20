@@ -224,6 +224,10 @@ class ExperienceWindow(kodigui.BaseWindow):
             if self.initialized:
                 return
 
+    def initialize(self):
+        self.clear()
+        self.action = None
+
     def setImage(self, url):
         self._paused = False
         self._pauseStart = 0
@@ -940,6 +944,7 @@ class ExperiencePlayer(xbmc.Player):
 
             while not kodiutil.wait(0.1) and (time.time() < stop or self.window.paused()):
                 if fadeStop and time.time() >= fadeStop and not self.window.paused():
+                    fadeStop = None
                     self.window.fadeOut()
 
                 if not self.window.isOpen:
@@ -961,7 +966,7 @@ class ExperiencePlayer(xbmc.Player):
         finally:
             self.window.clear()
 
-    def showImageFromQueue(self, image, first=None, image_queue=None, music_end=None):
+    def showImageFromQueue(self, image, info, first=None):
         self.window.setImage(image.path)
 
         stop = time.time() + image.duration
@@ -970,9 +975,9 @@ class ExperiencePlayer(xbmc.Player):
             if not self.window.isOpen:
                 return False
 
-            if music_end and time.time() >= music_end and not self.window.paused():
-                music_end = None
-                self.stopMusic(image_queue)
+            if info.musicEnd and time.time() >= info.musicEnd and not self.window.paused():
+                info.musicEnd = None
+                self.stopMusic(info.imageQueue)
             elif self.window.action:
                 if self.window.next():
                     return 'NEXT'
@@ -995,14 +1000,22 @@ class ExperiencePlayer(xbmc.Player):
 
         return True
 
+    class ImageQueueInfo:
+        def __init__(self, image_queue, music_end):
+            self.imageQueue = image_queue
+            self.musicEnd = music_end
+
     def showImageQueue(self, image_queue):
         image_queue.reset()
         image = image_queue.next()
 
         start = time.time()
         end = time.time() + image_queue.duration
-        musicEnd = end - image_queue.musicFadeOut
+        musicEnd = [end - image_queue.musicFadeOut]
 
+        info = self.ImageQueueInfo(image_queue, musicEnd)
+
+        self.window.initialize()
         self.window.setTransition('none')
 
         xbmc.enableNavSounds(False)
@@ -1021,7 +1034,7 @@ class ExperiencePlayer(xbmc.Player):
             while image:
                 DEBUG_LOG(' -IMAGE.QUEUE: {0}'.format(image))
 
-                action = self.showImageFromQueue(image, first=True, image_queue=image_queue, music_end=musicEnd)
+                action = self.showImageFromQueue(image, info, first=True)
 
                 if action:
                     if action == 'NEXT':
