@@ -1,5 +1,12 @@
 Changelog for CinemaVision
 
+[- 0.0.41 -]
+
+-change:   iTunes trailers now gets all trailers and plays and gived priority to most recent and unwatched, falling back to watched if necessary
+-change:   Save/Load now saves and loads to the 'Sequences' folder in the Cinemavision content path
+-add:      Import/Export loads and saves sequences to locations outside the content 'Sequence' folder
+-fix:      When current sequence is modified, loading a seqence now confirms the action
+
 [- 0.0.40 -]
 
 - fix:     Issue on helix where navigation was broken on sequence first load

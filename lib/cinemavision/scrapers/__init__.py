@@ -9,3 +9,12 @@ def getTrailers(source=None):
         import kodidb
         kodiDBRetriever = kodidb.KodiDBTrailerRetriever()
         return kodiDBRetriever.getTrailers()
+
+
+def getPlayableURL(ID, quality=None, source=None, url=None):
+    if source == 'iTunes':
+        import itunes
+        return itunes.ItunesTrailerRetriever.getPlayableURL(ID, quality or '720p')
+    elif source == 'kodiDB':
+        import kodidb
+        return kodidb.KodiDBTrailerRetriever.getPlayableURL(ID, url=url)

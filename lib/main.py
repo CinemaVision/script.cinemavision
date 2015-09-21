@@ -660,13 +660,15 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def doMenu(self):
         options = []
-        options.append(('settings', 'Settings'))
-        options.append(('new', 'New Sequence'))
-        options.append(('save', 'Save Sequence'))
-        options.append(('saveas', 'Save Sequence As...'))
-        options.append(('load', 'Load Sequence...'))
-        options.append(('test', 'Play Sequence'))
-        idx = xbmcgui.Dialog().select('Options', [o[1] for o in options])
+        options.append(('settings', 'Addon Settings'))
+        options.append(('new', 'New'))
+        options.append(('save', 'Save'))
+        options.append(('saveas', 'Save As...'))
+        options.append(('load', 'Load'))
+        options.append(('import', 'Import'))
+        options.append(('export', 'Export'))
+        options.append(('test', 'Play'))
+        idx = xbmcgui.Dialog().select('Sequence Options', [o[1] for o in options])
         if idx < 0:
             return
         option = options[idx][0]
@@ -681,6 +683,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.save(as_new=True)
         elif option == 'load':
             self.load()
+        elif option == 'import':
+            self.load(import_=True)
+        elif option == 'export':
+            self.save(export=True)
         elif option == 'test':
             self.test()
 
@@ -706,18 +712,30 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         e = experience.ExperiencePlayer().create(from_editor=True)
         e.start(savePath)
 
-    def new(self):
+    def abortOnModified(self):
         if self.modified:
             if not xbmcgui.Dialog().yesno('Confirm', 'Sequence is modified.', 'This will delete all changes.', 'Do you really want to do this?'):
-                return
+                return True
+        return False
+
+    def new(self):
+        if self.abortOnModified():
+            return
+
         self.name = ''
         self.sequenceControl.reset()
         self.fillSequence()
         self.setFocusId(self.ADD_ITEM_LIST_ID)
 
     def savePath(self, path=None, name=None):
-        path = path or self.path
         name = name or self.name
+        if not path:
+            contentPath = kodiutil.getSetting('content.path')
+            if not contentPath:
+                return
+
+            path = cinemavision.util.pathJoin(contentPath, 'Sequences')
+
         if not name or not path:
             return None
         if name.endswith('.cvseq'):
@@ -728,23 +746,32 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         path = os.path.join(kodiutil.ADDON_PATH, 'resources')
         return self.savePath(path, 'script.cinemavision.default')
 
-    def save(self, as_new=False):
-        if not self.path or as_new:
-            path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False, self.path)
+    def save(self, as_new=False, export=False):
+        if export:
+            path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False)
             if not path:
                 return
-            self.path = path
+        else:
+            contentPath = kodiutil.getSetting('content.path')
+            if not contentPath:
+                xbmcgui.Dialog().ok('No Content Path', ' ', 'Please set the content path in addon settings.')
+                return
 
-        if not self.name or as_new:
-            as_new = True  # Because we set name, we want to at least check the path
-            name = xbmcgui.Dialog().input('Enter Name For File', self.name)
+            path = cinemavision.util.pathJoin(contentPath, 'Sequences')
+
+        name = self.name
+
+        if not name or as_new or export:
+            name = xbmcgui.Dialog().input('Enter Name For File', name)
             if not name:
                 return
-            self.name = name
 
-        fullPath = self.savePath()
+            if not export:
+                self.name = name
 
-        self._save(fullPath)
+        fullPath = self.savePath(path, name)
+
+        self._save(fullPath, temp=export)
 
     def _save(self, full_path, temp=False):
         items = [li.dataSource for li in self.sequenceControl if li.dataSource]
@@ -771,10 +798,30 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     else:
                         kodiutil.setSetting('sequence.2D', full_path)
 
-    def load(self, path=None):
-        path = path or xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False, self.path)
-        if not path or path == self.path:
+    def load(self, import_=False):
+        if self.abortOnModified():
             return
+
+        if import_:
+            path = xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False)
+            if not path:
+                return
+        else:
+            contentPath = kodiutil.getSetting('content.path')
+            if not contentPath:
+                xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+                return
+
+            sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
+            options = cinemavision.util.vfs.listdir(sequencesPath)
+            if not options:
+                xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+                return
+
+            idx = xbmcgui.Dialog().select('Choose Sequence', [n[:-6] for n in options])
+            if idx < 0:
+                return
+            path = cinemavision.util.pathJoin(sequencesPath, options[idx])
 
         self._load(path)
 
@@ -812,21 +859,17 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def loadDefault(self):
         self.name = kodiutil.getSetting('save.name', '')
-        self.path = kodiutil.getSetting('save.path', '')
 
-        if not self.name and not self.path:
+        if not self.name:
             savePath = self.defaultSavePath()
         else:
             savePath = self.savePath()
             if not xbmcvfs.exists(savePath):
-                self.path = ''
                 self.name = ''
                 self.saveDefault(force=True)
                 new = xbmcgui.Dialog().yesno('Missing', 'Previous save not found.', '', 'Load the default or start a new sequence?', 'Default', 'New')
                 if new:
                     self.name = ''
-                    if not xbmcvfs.exists(self.path):
-                        self.path = ''
                     self.setFocusId(self.ADD_ITEM_LIST_ID)
                     return
                 else:

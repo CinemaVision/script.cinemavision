@@ -6,6 +6,28 @@ DEBUG = True
 STORAGE_PATH = None
 
 
+class Progress:
+    def __init__(self, title=''):
+        self.title = title
+        self.pct = 0
+        self.message = ''
+        self.heading = ''
+
+    def __enter__(self):
+        print '[- {0} -]'.format(self.title)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print 'DONE'
+
+    def msg(self, message=None, heading=None, pct=None):
+        self.pct = pct is not None and pct or self.pct
+        self.heading = heading is not None and heading or self.heading
+        self.message = message is not None and message or self.message
+        print '{0}% {1}: {2}'.format(self.pct, self.heading, self.message)
+        return True
+
+
 def getSep(path):
     if '\\' not in path:
         return '/'

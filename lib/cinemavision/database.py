@@ -15,7 +15,7 @@ except TypeError:
 from peewee import peewee
 import util
 
-DATABASE_VERSION = 3
+DATABASE_VERSION = 4
 
 fn = peewee.fn
 
@@ -29,7 +29,7 @@ RatingsBumpers = None
 VideoBumpers = None
 RatingSystem = None
 Rating = None
-WatchedTrailers = None
+Trailers = None
 WatchedTrivia = None
 
 
@@ -83,18 +83,6 @@ def migrateDB(DB, version):
             util.ERROR()
             return False
 
-    if version < 3:
-        migratorWD = migrate.SqliteMigrator(W_DB)
-        try:
-            migrate.migrate(
-                migratorWD.add_column('WatchedTrailers', 'thumb', peewee.CharField(null=True)),
-            )
-        except peewee.OperationalError:
-            util.MINOR_ERROR('Migration (WatchedTrailers: Add thumb column)')
-        except:
-            util.ERROR()
-            return False
-
     return True
 
 
@@ -120,7 +108,7 @@ def initialize(path=None, callback=None):
     global VideoBumpers
     global RatingSystem
     global Rating
-    global WatchedTrailers
+    global Trailers
     global WatchedTrivia
 
     ###########################################################################################
@@ -266,18 +254,20 @@ def initialize(path=None, callback=None):
         class Meta:
             database = W_DB
 
-    class WatchedTrailers(WatchedBase):
+    class Trailers(WatchedBase):
         source = peewee.CharField()
         rating = peewee.CharField(null=True)
         genres = peewee.CharField(null=True)
         title = peewee.CharField()
-        url = peewee.CharField()
+        release = peewee.DateTimeField(default=datetime.date(1900, 1, 1))
+        url = peewee.CharField(null=True)
         userAgent = peewee.CharField(null=True)
         thumb = peewee.CharField(null=True)
+        broken = peewee.BooleanField(default=False)
 
-    WatchedTrailers.create_table(fail_silently=True)
+    Trailers.create_table(fail_silently=True)
 
-    callback(' - Trailers (watched status)')
+    callback(' - Trailers')
 
     class WatchedTrivia(WatchedBase):
         pass

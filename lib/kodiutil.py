@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import binascii
@@ -15,6 +16,9 @@ def translatePath(path):
 
 PROFILE_PATH = translatePath(ADDON.getAddonInfo('profile'))
 ADDON_PATH = translatePath(ADDON.getAddonInfo('path'))
+
+if not os.path.exists(PROFILE_PATH):
+    os.makedirs(PROFILE_PATH)
 
 
 def DEBUG():

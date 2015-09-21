@@ -61,6 +61,7 @@ class UserContent:
         )),
         'Music',
         'Actions',
+        'Sequences',
         ('Ratings Bumpers', (
             'MPAA',
             'BBFC',

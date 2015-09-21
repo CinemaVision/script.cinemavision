@@ -19,6 +19,8 @@
 
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from email.utils import parsedate_tz
+import time
+import datetime
 import json
 import urllib2
 import re
@@ -66,6 +68,17 @@ class MovieScraper(object):
                 return '%02d.%02d.%04d' % (d[2], d[1], d[0])
             return ''
 
+        def __datetime(date_str):
+            if date_str:
+                try:
+                    d = parsedate_tz(date_str)
+                    return datetime.datetime.fromtimestamp(time.mktime(d[:9]))
+                except:
+                    import traceback
+                    traceback.print_exc()
+
+            return None
+
         def __recent_date(t_list):
             d = max((parsedate_tz(d['postdate']) for d in t_list))
             return '%02d.%02d.%04d' % (d[2], d[1], d[0])
@@ -88,6 +101,7 @@ class MovieScraper(object):
                         continue
             movie['background'] = __background(movie['poster'])
             movie['poster'] = __poster(movie['poster'])
+            movie['releasedatetime'] = __datetime(movie.get('releasedate'))
             movie['releasedate'] = __date(movie.get('releasedate'))
             movie['postdate'] = __recent_date(movie['trailers'])
             movie['year'] = movie['releasedate'].split('.')[-1]

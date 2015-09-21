@@ -654,17 +654,19 @@ class TriviaHandler:
 class TrailerHandler:
     def __init__(self):
         self.caller = None
+        self.sItem = None
 
     def __call__(self, caller, sItem):
         self.caller = caller
+        self.sItem = sItem
 
         source = sItem.getLive('source')
 
         playables = []
         if source == 'itunes':
-            playables = self.scraperHandler(sItem, 'iTunes')
+            playables = self.scraperHandler('iTunes')
         elif source == 'kodidb':
-            playables = self.scraperHandler(sItem, 'kodiDB')
+            playables = self.scraperHandler('kodiDB')
         elif source == 'dir' or source == 'content':
             playables = self.dirHandler(sItem)
         elif source == 'file':
@@ -674,40 +676,6 @@ class TrailerHandler:
             util.DEBUG_LOG('[{0}] {1}: NOT SHOWING'.format(sItem.typeChar, source))
 
         return playables
-
-    def filter(self, sItem, trailers):
-        filtered = trailers
-
-        ratingLimitMethod = sItem.getLive('ratingLimit')
-
-        if ratingLimitMethod and ratingLimitMethod != 'none':
-            if ratingLimitMethod == 'max':
-                maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
-                util.DEBUG_LOG('    - Limiting to ratings less than: {0}'.format(str(maxr)))
-                filtered = [f for f in filtered if f.rating.value <= maxr.value]
-            elif self.caller.ratings:
-                minr = min(self.caller.ratings.values(), key=lambda x: x.value)
-                maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
-                util.DEBUG_LOG('    - Matching ratings between {0} and {1}'.format(str(minr), str(maxr)))
-                filtered = [f for f in filtered if minr.value <= f.rating.value <= maxr.value]
-
-        if sItem.getLive('limitGenre'):
-            if self.caller.genres:
-                util.DEBUG_LOG('    - Filtering by genres')
-                filtered = [f for f in filtered if any(x in self.caller.genres for x in f.genres)]
-
-        return filtered
-
-    @DB.session
-    def unwatched(self, trailers):
-        ret = []
-        for t in trailers:
-            try:
-                DB.WatchedTrailers.get((DB.WatchedTrailers.WID == t.ID) & DB.WatchedTrailers.watched)
-            except DB.peewee.DoesNotExist:
-                ret.append(t)
-
-        return ret
 
     def convertItunesURL(self, url, res):
         repl = None
@@ -720,131 +688,149 @@ class TrailerHandler:
 
         return url.replace(repl, 'h{0}'.format(res))
 
-    @DB.session
-    def oldest(self, sItem, source):
-        util.DEBUG_LOG('    - All scraper trailers watched - using oldest trailers')
-
-        ratingLimitMethod = sItem.getLive('ratingLimit')
-
-        trailers = None
+    def _getTrailersFromDBRating(self, source, watched=False):
+        ratingLimitMethod = self.sItem.getLive('ratingLimit')
+        false = False  # To make my IDE happy about == and false
 
         if ratingLimitMethod and ratingLimitMethod != 'none':
             if ratingLimitMethod == 'max':
-                maxr = ratings.getRating(sItem.getLive('ratingMax').replace('.', ':', 1))
-                trailers = [
-                    t for t in DB.WatchedTrailers.select().where(
-                        DB.WatchedTrailers.url != 'BROKEN'
-                    ).order_by(
-                        DB.WatchedTrailers.date
-                    ) if ratings.getRating(t.rating).value <= maxr.value
-                ]
+                maxr = ratings.getRating(self.sItem.getLive('ratingMax').replace('.', ':', 1))
+                for t in DB.Trailers.select().where(
+                    DB.Trailers.source == source,
+                    DB.Trailers.broken == false,
+                    DB.Trailers.watched == watched
+                ).order_by(
+                    DB.Trailers.release.desc(),
+                    DB.Trailers.date
+                ):
+                    if ratings.getRating(t.rating).value <= maxr.value:
+                        yield t
             elif self.caller.ratings:
                 minr = min(self.caller.ratings.values(), key=lambda x: x.value)
                 maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
 
-                trailers = [
-                    t for t in DB.WatchedTrailers.select().where(
-                        DB.WatchedTrailers.url != 'BROKEN'
-                    ).order_by(
-                        DB.WatchedTrailers.date
-                    ) if minr.value <= ratings.getRating(t.rating).value <= maxr.value
-                ]
+                for t in DB.Trailers.select().where(
+                    DB.Trailers.source == source,
+                    DB.Trailers.broken == false,
+                    DB.Trailers.watched == watched
+                ).order_by(
+                    DB.Trailers.release.desc(),
+                    DB.Trailers.date
+                ):
+                    if minr.value <= ratings.getRating(t.rating).value <= maxr.value:
+                        yield t
         else:
-            trailers = [
-                t for t in DB.WatchedTrailers.select().where(
-                    DB.WatchedTrailers.source == source & DB.WatchedTrailers.url != 'BROKEN'
-                ).order_by(DB.WatchedTrailers.date)
-            ]
+            for t in DB.Trailers.select().where(
+                DB.Trailers.source == source,
+                DB.Trailers.broken == false,
+                DB.Trailers.watched == watched
+            ).order_by(
+                DB.Trailers.release.desc(),
+                DB.Trailers.date
+            ):
+                yield t
 
-        if not trailers:
-            return []
-        # Take the oldest for count + a few to make the random more random
-        if sItem.getLive('limitGenre'):
-            if self.caller.genres:
-                trailers = [t for t in trailers if any(x in self.caller.genres for x in (t.genres or '').split(','))]
-        count = sItem.getLive('count')
-        if len(trailers) > count:
-            trailers = random.sample(trailers[:count + 5], count)
+    def _getTrailersFromDBGenre(self, source, watched=False):
+        if self.sItem.getLive('limitGenre') and self.caller.genres:
+            for t in self._getTrailersFromDBRating(source, watched=watched):
+                if any(x in self.caller.genres for x in (t.genres or '').split(',')):
+                    yield t
+        else:
+            for t in self._getTrailersFromDBRating(source, watched=watched):
+                yield t
 
-        now = datetime.datetime.now()
-
-        for t in trailers:
-            DB.WatchedTrailers.update(
-                watched=True,
-                date=now
-            ).where(DB.WatchedTrailers.WID == t.WID).execute()
-
-        return [
-            Video(
-                self.convertItunesURL(t.url, sItem.getLive('quality')),
-                t.userAgent,
-                title=t.title,
-                thumb=t.thumb,
-                volume=sItem.getLive('volume')
-            ) for t in trailers
-        ]
-
-    @DB.session
-    def scraperHandler(self, sItem, source):
-        count = sItem.getLive('count')
-
-        util.DEBUG_LOG('[{0}] {1} x {2}'.format(sItem.typeChar, source, count))
-
-        trailers = scrapers.getTrailers(source)
-        trailers = self.filter(sItem, trailers)
-
-        if util.getSettingDefault('trailer.playUnwatched'):
-            util.DEBUG_LOG('    - Filtering out watched')
-            trailers = self.unwatched(trailers)
-
-        if not trailers:
-            return self.oldest(sItem, source)
+    def getTrailersFromDB(self, source, watched=False):
+        # Get trailers + a few to make the random more random
+        count = self.sItem.getLive('count')
+        poolSize = count + 5
+        trailers = []
+        ct = 0
+        for t in self._getTrailersFromDBGenre(source, watched=watched):
+            trailers.append(t)
+            ct += 1
+            if ct >= poolSize:
+                break
 
         if len(trailers) > count:
             trailers = random.sample(trailers, count)
 
         now = datetime.datetime.now()
-        quality = sItem.getLive('quality')
-
-        valid = []
+        quality = self.sItem.getLive('quality')
 
         for t in trailers:
-            url = t.getPlayableURL(quality)
+            url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
+            watched = t.watched
 
-            if url:
-                valid.append((url, t))
+            t.watched = True
+            t.date = now
+            t.url = url
+            t.broken = bool(url)
+            t.save()
+            util.DEBUG_LOG(
+                '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')
+            )
 
-            try:
-                trailer = DB.WatchedTrailers.get(DB.WatchedTrailers.WID == t.ID)
-                trailer.update(
-                    source=source,
-                    watched=True,
-                    date=now,
-                    title=t.title,
-                    url=url or 'BROKEN',
-                    userAgent=t.userAgent,
-                    rating=str(t.rating),
-                    genres=','.join(t.genres),
-                    thumb=t.thumb
-                ).execute()
-            except DB.peewee.DoesNotExist:
-                DB.WatchedTrailers.create(
-                    WID=t.ID,
-                    source=source,
-                    watched=True,
-                    date=now,
-                    title=t.title,
-                    url=url or 'BROKEN',
-                    userAgent=t.userAgent,
-                    rating=str(t.rating),
-                    genres=','.join(t.genres),
-                    thumb=t.thumb
-                )
+        return [
+            Video(
+                self.convertItunesURL(t.url, self.sItem.getLive('quality')),
+                t.userAgent,
+                title=t.title,
+                thumb=t.thumb,
+                volume=self.sItem.getLive('volume')
+            ) for t in trailers
+        ]
 
-        if not valid:
-            return self.oldest(sItem, source)
+    def updateTrailers(self, source):
+        trailers = scrapers.getTrailers(source)
+        if trailers:
+            total = len(trailers)
+            util.DEBUG_LOG('    - Received {0} trailers'.format(total))
+            total = float(total)
+            allct = 0
+            ct = 0
+            with util.Progress('Updating Trailers') as p:
+                p.msg(heading='Adding trailers... (First time runs long)')
+                for t in trailers:
+                    allct += 1
+                    try:
+                        DB.Trailers.get(DB.Trailers.WID == t.ID)
+                    except DB.peewee.DoesNotExist:
+                        ct += 1
+                        url = t.getStaticURL()
+                        DB.Trailers.create(
+                            WID=t.ID,
+                            source=source,
+                            watched=False,
+                            title=t.title,
+                            url=url,
+                            userAgent=t.userAgent,
+                            rating=str(t.rating),
+                            genres=','.join(t.genres),
+                            thumb=t.thumb,
+                            release=t.release
+                        )
+                    pct = int((allct/total)*100)
+                    p.msg(t.title, pct=pct)
 
-        return [Video(url, trailer.userAgent, title=trailer.title, thumb=trailer.thumb, volume=sItem.getLive('volume')) for url, trailer in valid]
+            util.DEBUG_LOG('    - {0} trailers added to database'.format(ct))
+        else:
+            util.DEBUG_LOG('    - No trailers added to database')
+
+    @DB.session
+    def scraperHandler(self, source):
+        count = self.sItem.getLive('count')
+
+        util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
+
+        self.updateTrailers(source)
+
+        trailers = self.getTrailersFromDB(source)
+
+        if not trailers:
+            util.DEBUG_LOG('    - No matching unwatched trailers - trying watched')
+            trailers = self.getTrailersFromDB(source, watched=True)
+
+        return trailers
 
     def dirHandler(self, sItem):
         count = sItem.getLive('count')
