@@ -22,6 +22,20 @@ class ActionCommand:
         return False
 
 
+class SleepCommand(ActionCommand):
+    type = 'SLEEP'
+
+    def _threadedExecute(self):
+        import time
+
+        try:
+            ms = int(self.commandData)
+        except:
+            util.ERROR()
+
+        time.sleep(ms/1000.0)
+
+
 class ModuleCommand(ActionCommand):
     type = 'MODULE'
     importPath = os.path.join(util.STORAGE_PATH, 'import')
@@ -94,22 +108,31 @@ class HTTPCommand(ActionCommand):
         import json
 
         headers = None
-        if self.args:
-            data = self.args[0]
-            if data.startswith('PUT:'):
-                data = data[4:].lstrip()
-                resp = requests.put(self.commandData, headers=headers, data=data)
-            elif data.startswith('DELETE:'):
-                data = data[7:].lstrip()
-                resp = requests.delete(self.commandData)
-            elif data.startswith('HEADERS:'):
-                headers = json.loads(data[8:].lstrip())
+        method = None
+        data = None
+        args = list(self.args)
+
+        while args:
+            arg = args.pop()
+            if arg.startswith('PUT:'):
+                data = arg[4:].lstrip()
+                method = requests.put
+            elif arg.startswith('DELETE:'):
+                method = requests.delete
+            elif arg.startswith('HEADERS:'):
+                headers = json.loads(arg[8:].lstrip())
             else:
-                if data.startswith('POST:'):
-                    data = data[5:].lstrip()
-                resp = requests.post(self.commandData, headers=headers, data=data)
+                if arg.startswith('POST:'):
+                    data = arg[5:].lstrip()
+                    method = requests.post
+                else:
+                    data = arg
+                    method = method or requests.post
         else:
-            resp = requests.get(self.commandData)
+            if method:
+                resp = method(self.commandData, headers=headers, data=data)
+            else:
+                resp = requests.get(self.commandData, headers=headers)
 
         util.DEBUG_LOG('Action (HTTP) Response: {0}'.format(repr(resp.text)))
 
@@ -134,13 +157,19 @@ class ActionFileProcessor:
             return f.read()
 
     def run(self):
+        threading.Thread(target=self._run).start()
+
+    def _run(self):
         for c in self.commands:
+            print 'x'
             c._threadedExecute()
 
     def _loadCommands(self):
         data = self.readFile()
         command = None
+        lineno = 0
         for line in data.splitlines():
+            lineno += 1
             if line:
                 if line.startswith('#'):
                     continue
@@ -150,7 +179,14 @@ class ActionFileProcessor:
                 if command:
                     command.addArg(line)
                 else:
-                    name, data = line.split('://', 1)
+                    try:
+                        name, data = line.split('://', 1)
+                    except ValueError:
+                        util.DEBUG_LOG('    -| ACTION ERROR (line {0}): {1}'.format(lineno, repr(self.path)))
+                        util.DEBUG_LOG('    -| {0}'.format(repr(line)))
+                        util.DEBUG_LOG('    -| First action line must have the form: protocol://whatever')
+                        return
+
                     if name in ('http', 'https'):
                         command = HTTPCommand(name + '://' + data)
                     elif name == 'script':
@@ -161,6 +197,8 @@ class ActionFileProcessor:
                         command = ModuleCommand(data)
                     elif name == 'command':
                         command = CommandCommand(data)
+                    elif name == 'sleep':
+                        command = SleepCommand(data)
             else:
                 if command:
                     self.commands.append(command)

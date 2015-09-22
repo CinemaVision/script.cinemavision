@@ -1214,4 +1214,8 @@ class SequenceProcessor:
 
         playable = self.playables[self.pos]
 
+        while playable.type == 'ACTION' and self.pos > 0:
+            self.pos -= 1
+            playable = self.playables[self.pos]
+
         return playable

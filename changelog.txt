@@ -10,6 +10,9 @@ Changelog for CinemaVision
 - fix:     When current sequence is modified, loading a seqence now confirms the action
 - change:  Improve the default 3D detection regex
 - add:     Loaded sequence name now shows in seqence editor
+- fix:     Skipping back to a previous bumper with an action following was just skipping to the action
+- fix:     Action files: HTTP actions with a HEADERS: line were not executing
+- add:     Action files: Added sleep://<milliseconds> command to insert a pause between actions
 
 [- 0.0.40 -]
 
