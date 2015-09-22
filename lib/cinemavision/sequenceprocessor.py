@@ -665,6 +665,9 @@ class TrailerHandler:
         playables = []
         if source == 'itunes':
             playables = self.scraperHandler('iTunes')
+            if not playables and sItem.getLive('fallback'):
+                util.DEBUG_LOG('    - iTunes falling back to KodiDB')
+                playables = self.scraperHandler('kodiDB')
         elif source == 'kodidb':
             playables = self.scraperHandler('kodiDB')
         elif source == 'dir' or source == 'content':
@@ -673,7 +676,7 @@ class TrailerHandler:
             playables = self.fileHandler(sItem)
 
         if not playables:
-            util.DEBUG_LOG('[{0}] {1}: NOT SHOWING'.format(sItem.typeChar, source))
+            util.DEBUG_LOG('    - NOT SHOWING')
 
         return playables
 
@@ -764,7 +767,7 @@ class TrailerHandler:
             t.watched = True
             t.date = now
             t.url = url
-            t.broken = bool(url)
+            t.broken = not url
             t.save()
             util.DEBUG_LOG(
                 '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')

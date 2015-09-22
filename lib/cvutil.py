@@ -4,7 +4,7 @@ import xbmc
 import kodiutil
 import cinemavision
 
-cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress)
+cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T)
 
 
 def defaultSavePath():

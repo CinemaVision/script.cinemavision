@@ -1,5 +1,13 @@
 Changelog for CinemaVision
 
+
+[- 0.0.42 -]
+
+- add:     Added setting in 'Trailers' - 'Fallback to Kodi DB (iTunes only)'
+- fix:     Addon setting for limiting trailers by genre was not being used as a default
+- fix:     Trailers were always being marked as broken when selected for
+- add:     Addon setting in 'Advanced' - 'Clear trailers broken status' :)
+
 [- 0.0.41 -]
 
 - change:  iTunes trailers now gets all trailers and gives priority to most recent and unwatched, falling back to watched if necessary

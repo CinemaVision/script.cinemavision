@@ -9,6 +9,9 @@ if __name__ == '__main__':
     if arg == 'trailer.clearWatched':
         from lib import settings
         settings.clearDBWatchedStatus()
+    elif arg == 'trailer.clearBroken':
+        from lib import settings
+        settings.clearDBBrokenStatus()
     elif arg == 'experience':
         from lib import player
         player.begin()

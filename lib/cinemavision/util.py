@@ -6,6 +6,10 @@ DEBUG = True
 STORAGE_PATH = None
 
 
+def T(ID, eng=''):
+    return eng
+
+
 class Progress:
     def __init__(self, title=''):
         self.title = title
@@ -56,6 +60,7 @@ def _getSettingDefault(key):
         'trivia.musicFile': '',
         'trivia.musicDir': '',
         'trailer.source': 'itunes',
+        'trailer.fallback': True,
         'trailer.count': 1,
         'trailer.limitGenre': True,
         'trailer.quality': '720p',

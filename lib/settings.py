@@ -1,12 +1,23 @@
 def clearDBWatchedStatus():
     from cinemavision import database as DB
 
-    DB.WatchedTrailers.update(watched=False).where(
-        DB.WatchedTrailers.watched == 1
+    DB.Trailers.update(watched=False).where(
+        DB.Trailers.watched == 1
     ).execute()
 
     import xbmcgui
     xbmcgui.Dialog().ok('Done', 'Remove watched status from all trailers.')
+
+
+def clearDBBrokenStatus():
+    from cinemavision import database as DB
+
+    DB.Trailers.update(broken=False).where(
+        DB.Trailers.broken == 1
+    ).execute()
+
+    import xbmcgui
+    xbmcgui.Dialog().ok('Done', 'Remove broken status from all trailers.')
 
 
 def pasteLog():

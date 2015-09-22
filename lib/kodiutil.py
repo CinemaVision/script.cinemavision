@@ -21,6 +21,10 @@ if not os.path.exists(PROFILE_PATH):
     os.makedirs(PROFILE_PATH)
 
 
+def T(ID, eng=''):
+    return ADDON.getLocalizedString(ID)
+
+
 def DEBUG():
     return getSetting('debug.log', True) or xbmc.getCondVisibility('System.GetBool(debug.showloginfo)')
 

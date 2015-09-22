@@ -411,6 +411,13 @@ class Trailer(Item):
             'default': None
         },
         {
+            'attr': 'fallback',
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Fallback to KodiDB (iTunes only)',
+            'default': None
+        },
+        {
             'attr': 'count',
             'type': int,
             'limits': (0, 10, 1),
@@ -472,6 +479,7 @@ class Trailer(Item):
     def __init__(self):
         Item.__init__(self)
         self.count = 0
+        self.fallback = None
         self.source = None
         self.file = None
         self.dir = None
