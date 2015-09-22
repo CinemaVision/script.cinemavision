@@ -143,7 +143,7 @@ class Progress(object):
         self.pct = pct is not None and pct or self.pct
         self.heading = heading is not None and heading or self.heading
         self.message = msg is not None and msg or self.message
-        self.update(self.pct, self.heading, None, self.message)
+        self.update(self.pct, self.heading, self.message)
         return not self.dialog.iscanceled()
 
     def iscanceled(self):

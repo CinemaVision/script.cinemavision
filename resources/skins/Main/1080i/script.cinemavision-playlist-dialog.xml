@@ -208,8 +208,33 @@
                 </control>
 
                 <control type="image">
-                    <posx>145</posx>
+                    <posx>35</posx>
                     <posy>45</posy>
+                    <width>510</width>
+                    <height>80</height>
+                    <texture>script.cinemavision-white_square.png</texture>
+                    <colordiffuse>FF151515</colordiffuse>
+                    <aspectratio>stretch</aspectratio>
+                </control>
+                <control type="button" id="204">
+                    <enable>IntegerGreaterThan(Container(300).NumItems, 0)</enable>
+                    <posx>40</posx>
+                    <posy>50</posy>
+                    <width>500</width>
+                    <height>70</height>
+                    <label> </label>
+                    <font>font13</font>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <align>center</align>
+                    <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
+                    <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
+                    <onleft>300</onleft>
+                    <ondown>201</ondown>
+                </control>
+
+                <control type="image">
+                    <posx>135</posx>
+                    <posy>180</posy>
                     <width>310</width>
                     <height>80</height>
                     <texture>script.cinemavision-white_square.png</texture>
@@ -218,8 +243,8 @@
                 </control>
                 <control type="button" id="201">
                     <enable>IntegerGreaterThan(Container(300).NumItems, 0)</enable>
-                    <posx>150</posx>
-                    <posy>50</posy>
+                    <posx>140</posx>
+                    <posy>185</posy>
                     <width>300</width>
                     <height>70</height>
                     <label>[B]PLAY[/B]</label>
@@ -230,11 +255,12 @@
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                     <onleft>300</onleft>
                     <ondown>202</ondown>
+                    <onup>204</onup>
                 </control>
 
                 <control type="image">
-                    <posx>145</posx>
-                    <posy>150</posy>
+                    <posx>135</posx>
+                    <posy>285</posy>
                     <width>310</width>
                     <height>80</height>
                     <texture>script.cinemavision-white_square.png</texture>
@@ -242,8 +268,8 @@
                     <aspectratio>stretch</aspectratio>
                 </control>
                 <control type="button" id="202">
-                    <posx>150</posx>
-                    <posy>155</posy>
+                    <posx>140</posx>
+                    <posy>290</posy>
                     <width>300</width>
                     <height>70</height>
                     <label>[B]CANCEL[/B]</label>
@@ -258,8 +284,8 @@
                 </control>
 
                 <control type="image">
-                    <posx>145</posx>
-                    <posy>300</posy>
+                    <posx>135</posx>
+                    <posy>425</posy>
                     <width>310</width>
                     <height>80</height>
                     <texture>script.cinemavision-white_square.png</texture>
@@ -267,8 +293,8 @@
                     <aspectratio>stretch</aspectratio>
                 </control>
                 <control type="button" id="203">
-                    <posx>150</posx>
-                    <posy>305</posy>
+                    <posx>140</posx>
+                    <posy>430</posy>
                     <width>300</width>
                     <height>70</height>
                     <label>[B]APPLY TO QUEUE[/B]</label>
@@ -285,13 +311,13 @@
         </control>
 
         <control type="group">
-            <posx>1230</posx>
-            <posy>530</posy>
+            <posx>1220</posx>
+            <posy>655</posy>
             <control type="image">
                 <posx>-20</posx>
                 <posy>-20</posy>
                 <width>530</width>
-                <height>500</height>
+                <height>375</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>60000000</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -300,7 +326,7 @@
                 <posx>-5</posx>
                 <posy>-5</posy>
                 <width>500</width>
-                <height>470</height>
+                <height>345</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FFA0A0A0</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -309,7 +335,7 @@
                 <posx>0</posx>
                 <posy>0</posy>
                 <width>490</width>
-                <height>460</height>
+                <height>335</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FF303030</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -318,7 +344,7 @@
                 <left>20</left>
                 <top>20</top>
                 <width>450</width>
-                <height>420</height>
+                <height>395</height>
                 <font>font16</font>
                 <textcolor>FFFFFFFF</textcolor>
                 <label>Click an item to start a move.[CR][CR]Click the [COLOR FF64A0FF]context menu button[/COLOR] or [COLOR FF64A0FF]delete key[/COLOR] on a keyboard to remove an item.</label>

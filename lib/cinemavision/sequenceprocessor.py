@@ -789,7 +789,7 @@ class TrailerHandler:
             allct = 0
             ct = 0
             with util.Progress('Updating Trailers') as p:
-                p.msg(heading='Adding trailers... (First time runs long)')
+                p.msg(heading='Adding trailers... (Only the first time runs long)')
                 for t in trailers:
                     allct += 1
                     try:

@@ -38,6 +38,9 @@ if __name__ == '__main__':
     elif arg == 'reset.database':
         from lib import settings
         settings.removeContentDatabase()
+    elif str(arg).startswith('sequence.'):
+        from lib import settings
+        settings.setDefaultSequence(arg)
     else:
         from lib import main
         main.main()

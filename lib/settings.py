@@ -128,4 +128,17 @@ def removeContentDatabase():
     if os.path.exists(dbFile):
         os.remove(dbFile)
 
+    kodiutil.setSetting('content.initialized', False)
+
     xbmcgui.Dialog().ok('Done', ' ', 'Database reset.')
+
+
+def setDefaultSequence(setting):
+    import cvutil
+    import kodiutil
+
+    selection = cvutil.selectSequence()
+    if not selection:
+        return
+
+    kodiutil.setSetting(setting, selection['name'])

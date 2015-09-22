@@ -990,6 +990,23 @@
             </control>
 
         </control>
+
+        <control type="group">
+            <posx>1420</posx>
+            <posy>530</posy>
+            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.EDITING))</visible>
+            <control type="label">
+                <posx>470</posx>
+                <posy>0</posy>
+                <width>420</width>
+                <height>80</height>
+                <font>font13</font>
+                <textcolor>FF64A0FF</textcolor>
+                <align>right</align>
+                <label>[B]$INFO[Window(10000).Property(script.cinemavision.EDITING)][/B]</label>
+            </control>
+        </control>
+
         <control type="group">
             <posx>1420</posx>
             <posy>920</posy>

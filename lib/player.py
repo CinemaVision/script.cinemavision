@@ -14,9 +14,9 @@ def showNoFeaturesDialog():
 def featureComfirmationDialog(features):
     pd = PlaylistDialog.open(features=features)
     if not pd.play:
-        return None
+        return None, None
 
-    return pd.features
+    return pd.features, pd.sequencePath
 
 
 def begin(movieid=None, episodeid=None, selection=False):
@@ -27,14 +27,16 @@ def begin(movieid=None, episodeid=None, selection=False):
             return showNoFeaturesDialog()
 
     if not kodiutil.getSetting('hide.queue.dialog', False) or (kodiutil.getSetting('hide.queue.dialog.single', False) and len(e.features) > 1):
-        e.features = featureComfirmationDialog(e.features)
+        e.features, seqPath = featureComfirmationDialog(e.features)
 
     if not e.features:
         return
 
-    seqPath = cvutil.getSequencePath(for_3D=e.has3D)
-
-    kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
+    if seqPath:
+        kodiutil.DEBUG_LOG('Loading selected sequence: {0}'.format(repr(seqPath)))
+    else:
+        seqPath = cvutil.getSequencePath(for_3D=e.has3D)
+        kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
 
     e.start(seqPath)
 
@@ -49,12 +51,14 @@ class PlaylistDialog(kodigui.BaseDialog):
     PLAY_BUTTON_ID = 201
     APPLY_BUTTON_ID = 203
     CANCEL_BUTTON_ID = 202
+    SEQUENCE_SELECT_ID = 204
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
         self.features = kwargs.get('features', [])
         self.play = False
         self.moving = None
+        self.sequencePath = None
 
     def onFirstInit(self):
         self.videoListControl = kodigui.ManagedControlList(self, self.VIDEOS_LIST_ID, 5)
@@ -70,6 +74,8 @@ class PlaylistDialog(kodigui.BaseDialog):
             self.apply()
         elif controlID == self.VIDEOS_LIST_ID:
             self.moveItem()
+        elif controlID == self.SEQUENCE_SELECT_ID:
+            self.selectSequence()
 
     def onAction(self, action):
         try:
@@ -96,6 +102,7 @@ class PlaylistDialog(kodigui.BaseDialog):
         kodigui.BaseDialog.onAction(self, action)
 
     def start(self):
+        self.updateSequenceSelection()
         items = []
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
@@ -107,6 +114,25 @@ class PlaylistDialog(kodigui.BaseDialog):
         xbmc.sleep(100)
         self.setFocusId(self.PLAY_BUTTON_ID)
 
+    def queueHas3D(self):
+        for f in self.features:
+            if f.is3D:
+                return True
+        return False
+
+    def updateSequenceSelection(self):
+        if self.sequencePath:
+            return
+
+        seqPath = cvutil.getSequencePath(for_3D=self.queueHas3D())
+        if not seqPath:
+            return
+
+        import re
+        name = re.split(r'[/\\]', seqPath)[-1][:-6]
+
+        self.getControl(self.SEQUENCE_SELECT_ID).setLabel(name)
+
     def delete(self):
         item = self.videoListControl.getSelectedItem()
         if not item:
@@ -117,6 +143,7 @@ class PlaylistDialog(kodigui.BaseDialog):
         if yes:
             self.videoListControl.removeItem(item.pos())
             self.updateReturn()
+            self.updateSequenceSelection()
 
     def updateReturn(self):
         self.features = [i.dataSource for i in self.videoListControl]
@@ -153,3 +180,11 @@ class PlaylistDialog(kodigui.BaseDialog):
                 item = {'file': f.path}
 
             rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)
+
+    def selectSequence(self):
+        selection = cvutil.selectSequence()
+        if not selection:
+            return
+
+        self.sequencePath = selection['path']
+        self.getControl(self.SEQUENCE_SELECT_ID).setLabel(selection['name'])

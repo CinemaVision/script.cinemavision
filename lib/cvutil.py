@@ -13,24 +13,49 @@ def defaultSavePath():
 
 def lastSavePath():
     name = kodiutil.getSetting('save.name', '')
-    path = kodiutil.getSetting('save.path', '')
+    return getSavePath(name)
 
-    if not name or not path:
-        return None
 
-    return cinemavision.util.pathJoin(path, name + '.cvseq')
+def getSavePath(name):
+    contentPath = kodiutil.getSetting('content.path')
+    if not name or not contentPath:
+        return
+
+    return cinemavision.util.pathJoin(contentPath, 'Sequences', name + '.cvseq')
 
 
 def getSequencePath(for_3D=False):
     if for_3D:
-        path = kodiutil.getSetting('sequence.3D')
+        name = kodiutil.getSetting('sequence.3D')
     else:
-        path = kodiutil.getSetting('sequence.2D')
+        name = kodiutil.getSetting('sequence.2D')
 
-    if path:
-        return path
+    if name:
+        return getSavePath(name)
 
     return defaultSavePath()
+
+
+def selectSequence():
+    import xbmcgui
+
+    contentPath = kodiutil.getSetting('content.path')
+    if not contentPath:
+        xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+        return None
+
+    sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
+    options = cinemavision.util.vfs.listdir(sequencesPath)
+    if not options:
+        xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+        return None
+
+    idx = xbmcgui.Dialog().select('Choose Sequence', [n[:-6] for n in options])
+    if idx < 0:
+        return None
+    path = cinemavision.util.pathJoin(sequencesPath, options[idx])
+
+    return {'path': path, 'name': options[idx][:-6]}
 
 
 def getDBPath(from_load=False):
@@ -55,7 +80,9 @@ def loadContent(from_settings=False):
         return
 
     dbPath = getDBPath(from_load=True)
-    if not contentPath:
+    if contentPath:
+        kodiutil.setSetting('content.initialized', True)
+    else:
         contentPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')
 
     kodiutil.DEBUG_LOG('Loading content...')

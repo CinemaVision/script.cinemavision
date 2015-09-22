@@ -4,9 +4,9 @@
         <setting id="content.path"        label="Content path"           type="folder" sources="auto" option="writeable" value="" />
         <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
-        <setting id="sequence.2D"         label="2D sequence"            type="file"   sources="auto" value="" mask="*.cvseq" />
-        <setting id="sequence.3D"         label="3D sequence"            type="file"   sources="auto" value="" mask="*.cvseq" />
-        <setting id="3D.tag.regex"        label="3D tag detection regex" type="text"   default="3DSBS|3D.SBS|HSBS|H.SBS|H-SBS| SBS |FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU| HOU | OU |HALF-TAB" />
+        <setting id="sequence.2D"         label="2D sequence"            type="action" action="RunScript(script.cinemavision,sequence.2D)" />
+        <setting id="sequence.3D"         label="3D sequence"            type="action" action="RunScript(script.cinemavision,sequence.3D)" />
+        <setting id="3D.tag.regex"        label="3D tag detection regex" type="text"   default="(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper"  type="bool"   default="false" />
     </category>
 

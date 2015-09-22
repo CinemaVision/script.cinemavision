@@ -264,7 +264,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
         self.move = None
         self.modified = False
-        self.name = ''
+        self.setName('')
         self.path = ''
 
     def onFirstInit(self):
@@ -366,7 +366,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def checkForContentDB(self):
         if kodiutil.getSetting('content.path'):
             kodiutil.setGlobalProperty('DEMO_MODE', '')
-            return os.path.exists(os.path.join(kodiutil.PROFILE_PATH, 'content.db'))
+            return kodiutil.getSetting('content.initialized', False)
         else:
             kodiutil.setGlobalProperty('DEMO_MODE', '1')
             return True
@@ -722,7 +722,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if self.abortOnModified():
             return
 
-        self.name = ''
+        self.setName('')
         self.sequenceControl.reset()
         self.fillSequence()
         self.setFocusId(self.ADD_ITEM_LIST_ID)
@@ -741,6 +741,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if name.endswith('.cvseq'):
             name = name[:-6]
         return cinemavision.util.pathJoin(path, name) + '.cvseq'
+
+    def setName(self, name):
+        self.name = name
+        kodiutil.setGlobalProperty('EDITING', name)
 
     def defaultSavePath(self):
         path = os.path.join(kodiutil.ADDON_PATH, 'resources')
@@ -767,7 +771,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 return
 
             if not export:
-                self.name = name
+                self.setName(name)
 
         fullPath = self.savePath(path, name)
 
@@ -789,14 +793,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
             sequence2D = kodiutil.getSetting('sequence.2D')
             sequence3D = kodiutil.getSetting('sequence.3D')
-            if not sequence2D or (full_path != sequence2D and full_path != sequence3D):
+            if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
                 yes = xbmcgui.Dialog().yesno('Set Default', 'Would you like to set this as the default for playback?')
                 if yes:
                     as3D = xbmcgui.Dialog().yesno('2D/3D', 'For 2D or 3D?', nolabel='2D', yeslabel='3D')
                     if as3D:
-                        kodiutil.setSetting('sequence.3D', full_path)
+                        kodiutil.setSetting('sequence.3D', self.name)
                     else:
-                        kodiutil.setSetting('sequence.2D', full_path)
+                        kodiutil.setSetting('sequence.2D', self.name)
 
     def load(self, import_=False):
         if self.abortOnModified():
@@ -807,21 +811,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not path:
                 return
         else:
-            contentPath = kodiutil.getSetting('content.path')
-            if not contentPath:
-                xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+            import cvutil
+            selection = cvutil.selectSequence()
+
+            if not selection:
                 return
 
-            sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
-            options = cinemavision.util.vfs.listdir(sequencesPath)
-            if not options:
-                xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
-                return
-
-            idx = xbmcgui.Dialog().select('Choose Sequence', [n[:-6] for n in options])
-            if idx < 0:
-                return
-            path = cinemavision.util.pathJoin(sequencesPath, options[idx])
+            path = selection['path']
 
         self._load(path)
 
@@ -829,7 +825,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.path, name = path.rsplit(sep, 1)
         self.path += sep
-        self.name = name.rsplit('.', 1)[0]
+        self.setName(name.rsplit('.', 1)[0])
 
         self.saveDefault()
 
@@ -858,18 +854,18 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.setSetting('save.path', self.path)
 
     def loadDefault(self):
-        self.name = kodiutil.getSetting('save.name', '')
+        self.setName(kodiutil.getSetting('save.name', ''))
 
         if not self.name:
             savePath = self.defaultSavePath()
         else:
             savePath = self.savePath()
             if not xbmcvfs.exists(savePath):
-                self.name = ''
+                self.setName('')
                 self.saveDefault(force=True)
                 new = xbmcgui.Dialog().yesno('Missing', 'Previous save not found.', '', 'Load the default or start a new sequence?', 'Default', 'New')
                 if new:
-                    self.name = ''
+                    self.setName('')
                     self.setFocusId(self.ADD_ITEM_LIST_ID)
                     return
                 else:

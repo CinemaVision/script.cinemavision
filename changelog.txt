@@ -2,10 +2,14 @@ Changelog for CinemaVision
 
 [- 0.0.41 -]
 
--change:   iTunes trailers now gets all trailers and plays and gived priority to most recent and unwatched, falling back to watched if necessary
--change:   Save/Load now saves and loads to the 'Sequences' folder in the Cinemavision content path
--add:      Import/Export loads and saves sequences to locations outside the content 'Sequence' folder
--fix:      When current sequence is modified, loading a seqence now confirms the action
+- change:  iTunes trailers now gets all trailers and gives priority to most recent and unwatched, falling back to watched if necessary
+- change:  Save/Load now saves and loads to the 'Sequences' folder in the Cinemavision content path
+- add:     Import/Export loads and saves sequences to locations outside the content 'Sequence' folder
+- add:     The ability to change which sequence to use from the playlist dialog
+- change:  Default 2D/3D sequence is now set by name
+- fix:     When current sequence is modified, loading a seqence now confirms the action
+- change:  Improve the default 3D detection regex
+- add:     Loaded sequence name now shows in seqence editor
 
 [- 0.0.40 -]
 

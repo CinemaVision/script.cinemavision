@@ -35,6 +35,10 @@ AUDIO_FORMATS = {
 # aac, ac3, cook, dca, dtshd_hra, dtshd_ma, eac3, mp1, mp2, mp3, pcm_s16be, pcm_s16le, pcm_u8, truehd, vorbis, wmapro, wmav2
 
 
+DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|' +\
+    '3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB|[\. _]TAB[\. _]'
+
+
 def DEBUG_LOG(msg):
     kodiutil.DEBUG_LOG('Experience: {0}'.format(msg))
 
@@ -581,7 +585,7 @@ class ExperiencePlayer(xbmc.Player):
             self.features.append(feature)
 
     def featureFromJSON(self, r):
-        tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
+        tags3DRegEx = kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE)
 
         feature = cinemavision.sequenceprocessor.Feature(r['file'])
         feature.title = r.get('title') or r.get('label', '')
@@ -727,7 +731,7 @@ class ExperiencePlayer(xbmc.Player):
         feature.is3D = xbmc.getCondVisibility('ListItem.IsStereoscopic')
 
         if not feature.is3D:
-            tags3DRegEx = kodiutil.getSetting('3D.tag.regex')
+            tags3DRegEx = kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE)
 
             feature.is3D = bool(re.findall(tags3DRegEx, feature.path))
 
