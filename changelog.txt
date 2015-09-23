@@ -1,6 +1,11 @@
 Changelog for CinemaVision
 
 
+[- 0.0.43 -]
+
+- fix:     Broken transitions
+- fix:     Error when playlist dialog was disabled
+
 [- 0.0.42 -]
 
 - add:     Added setting in 'Trailers' - 'Fallback to Kodi DB (iTunes only)'

@@ -21,6 +21,7 @@ def featureComfirmationDialog(features):
 
 def begin(movieid=None, episodeid=None, selection=False):
     e = experience.ExperiencePlayer().create()
+    seqPath = None
 
     if not e.hasFeatures() or selection or movieid or episodeid:
         if not e.addSelectedFeature(selection=selection, movieid=movieid, episodeid=episodeid):

@@ -219,6 +219,7 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.clear()
 
     def onInit(self):
+        kodigui.BaseWindow.onInit(self)
         self.image = (self.getControl(100), self.getControl(101))
         self.skipNotice = self.getControl(200)
         self.initialized = True
@@ -1033,6 +1034,8 @@ class ExperiencePlayer(xbmc.Player):
             xbmc.executebuiltin('Action(back)')
 
         self.window.setTransition(image_queue.transition, image_queue.transitionDuration)
+
+        action = None
 
         try:
             while image:
