@@ -5,9 +5,10 @@ import time
 import datetime
 from ... import ratings
 from ... import util
+from .. import _scrapers
 
 
-class Trailer:
+class Trailer(_scrapers.Trailer):
     def __init__(self, data):
         self.data = data
         self.is3D = False
@@ -52,17 +53,19 @@ class Trailer:
         return None
 
     def _getPlayableURL(self, res='720p'):
-        return ItunesTrailerRetriever(self.data['location'], res)
+        return ItunesTrailerScraper(self.data['location'], res)
 
 
-class ItunesTrailerRetriever:
+class ItunesTrailerScraper(_scrapers.Scraper):
     LAST_UPDATE_FILE = os.path.join(util.STORAGE_PATH, 'itunes.last')
 
     def __init__(self):
         self.loadTimes()
 
     @staticmethod
-    def getPlayableURL(ID, res='720p', url=None):
+    def getPlayableURL(ID, res=None, url=None):
+        res = res or '720p'
+
         ts = scraper.TrailerScraper()
         all_ = [t for t in ts.get_trailers(ID) if t]
 
@@ -125,7 +128,12 @@ class ItunesTrailerRetriever:
         if self.allIsDue():
             util.DEBUG_LOG('    - Fetching all trailers')
             return [Trailer(t) for t in ms.get_all_movies(None)]
-        elif self.recentIsDue():
+
+        return []
+
+    def updateTrailers(self):
+        ms = scraper.MovieScraper()
+        if self.recentIsDue():
             util.DEBUG_LOG('    - Fetching recent trailers')
             return [Trailer(t) for t in ms.get_most_recent_movies(None)]
 

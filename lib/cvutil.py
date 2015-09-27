@@ -88,7 +88,7 @@ def loadContent(from_settings=False):
     kodiutil.DEBUG_LOG('Loading content...')
 
     with kodiutil.Progress('Loading Content') as p:
-        cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath)
+        cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath,  trailer_sources=kodiutil.getSetting('trailer.scrapers', '').split(','))
 
     createSettingsRSDirs()
 
@@ -260,3 +260,29 @@ class RatingParser:
 
         # Just return what we have
         return rating
+
+
+def multiSelect(options, default=False):
+    import kodigui
+
+    class ModuleMultiSelectDialog(kodigui.MultiSelectDialog):
+        xmlFile = 'script.cinemavision-multi-select-dialog.xml'
+        path = kodiutil.ADDON_PATH
+        theme = 'Main'
+        res = '1080i'
+
+        OPTIONS_LIST_ID = 300
+        OK_BUTTON_ID = 201
+        CANCEL_BUTTON_ID = 202
+        USE_DEFAULT_BUTTON_ID = 203
+        HELP_TEXTBOX_ID = 250
+
+        TOGGLE_MOVE_DIVIDER_X = 190
+
+    w = ModuleMultiSelectDialog.open(options=options, default=default)
+    result = w.result
+    del w
+    if result:
+        return ','.join(result)
+
+    return result

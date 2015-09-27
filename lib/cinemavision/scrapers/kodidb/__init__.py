@@ -1,10 +1,10 @@
 import scraper
 from lib import cvutil
-import datetime
 from ... import ratings
+from .. import _scrapers
 
 
-class Trailer:
+class Trailer(_scrapers.Trailer):
     def __init__(self, data):
         self.data = data
         self.is3D = False
@@ -26,10 +26,6 @@ class Trailer:
     @property
     def genres(self):
         return self.data.get('genres', [])
-
-    @property
-    def release(self):
-        return self.data.get('releasedatetime', datetime.date(1900, 1, 1))
 
     @property
     def rating(self):
@@ -56,7 +52,7 @@ class Trailer:
         return self.data['url']
 
 
-class KodiDBTrailerRetriever:
+class KodiDBTrailerScraper(_scrapers.Scraper):
     @staticmethod
     def getPlayableURL(ID, res=720, url=None):
         return url

@@ -10,6 +10,7 @@ LIMIT_DIR = 1
 LIMIT_DB_CHOICE = 2
 LIMIT_BOOL = 3
 LIMIT_BOOL_DEFAULT = 4
+LIMIT_MULTI_SELECT = 5
 
 
 SETTINGS_DISPLAY = {
@@ -33,6 +34,7 @@ SETTINGS_DISPLAY = {
     'feature.queue=empty': 'Feature queue is empty',
     'itunes': 'Apple iTunes',
     'kodidb': 'Kodi Database',
+    'scrapers': 'Scrapers',
     'dir': 'Directory',
     'file': 'Single File',
     'content': 'Content',
@@ -253,7 +255,7 @@ class Feature(Item):
             'default': 0
         }
     )
-    displayName = 'Feature'
+    displayName = 'Features'
     typeChar = 'F'
 
     def __init__(self):
@@ -406,15 +408,15 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': [None, 'itunes', 'kodidb', 'content', 'dir', 'file'],
+            'limits': [None, 'scrapers', 'content', 'dir', 'file'],
             'name': 'Source',
             'default': None
         },
         {
-            'attr': 'fallback',
-            'type': strToBoolWithDefault,
-            'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Fallback to KodiDB (iTunes only)',
+            'attr': 'scrapers',
+            'type': None,
+            'limits': LIMIT_MULTI_SELECT,
+            'name': 'Scrapers (by priority)',
             'default': None
         },
         {
@@ -435,7 +437,8 @@ class Trailer(Item):
             'attr': 'ratingMax',
             'type': None,
             'limits': LIMIT_DB_CHOICE,
-            'name': '- Max'
+            'name': '- Max',
+            'default': None
         },
         {
             'attr': 'limitGenre',
@@ -473,13 +476,13 @@ class Trailer(Item):
             'default': 0
         }
     )
-    displayName = 'Trailer'
+    displayName = 'Trailers'
     typeChar = 'T'
 
     def __init__(self):
         Item.__init__(self)
         self.count = 0
-        self.fallback = None
+        self.scrapers = None
         self.source = None
         self.file = None
         self.dir = None
@@ -504,10 +507,13 @@ class Trailer(Item):
             if self.getLive('source') != 'dir':
                 return False
         elif attr == 'count':
-            if self.getLive('source') not in ('dir', 'itunes', 'kodidb', 'content'):
+            if self.getLive('source') not in ('dir', 'itunes', 'scrapers'):
+                return False
+        elif attr == 'scrapers':
+            if self.getLive('source') != 'scrapers':
                 return False
         elif attr in ('limitRating', 'limitGenre'):
-            if self.getLive('source') not in ('itunes', 'kodidb'):
+            if self.getLive('source') == 'scrapers':
                 return False
         elif attr == 'quality':
             if self.getLive('source') != 'itunes':
@@ -525,6 +531,12 @@ class Trailer(Item):
         if not system:
             return None
         return [('{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
+
+    def Select(self, attr):
+        selected = [s.strip().lower() for s in (self.getLive('scrapers') or '').split(',')]
+        ret = [('iTunes', 'iTunes', 'itunes' in selected), ('KodiDB', 'KodiDB', 'kodidb' in selected)]
+        ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
+        return ret
 
 
 ################################################################################
@@ -601,7 +613,7 @@ class Video(Item):
             'default': 0
         }
     )
-    displayName = 'Video Bumper'
+    displayName = 'Videos'
     typeChar = 'V'
 
     def __init__(self):
@@ -703,7 +715,7 @@ class AudioFormat(Item):
             'default': 0
         }
     )
-    displayName = 'Audio Format Bumper'
+    displayName = 'Audio Format Bumpers'
     typeChar = 'A'
 
     def __init__(self):
@@ -855,12 +867,12 @@ CONTENT_CLASSES = {
 
 ITEM_TYPES = [
     ('!', 'Action', '_', Action),
-    ('A', 'Audio Format Bumper', 'A', AudioFormat),
+    ('A', 'Audio Format Bumpers', 'A', AudioFormat),
     ('C', 'Command', 'C', Command),
-    ('F', 'Feature', 'F', Feature),
+    ('F', 'Features', 'F', Feature),
     ('Q', 'Trivia Slides', 'Q', Trivia),
-    ('T', 'Trailer', 'T', Trailer),
-    ('V', 'Video Bumper', 'V', Video),
+    ('V', 'Videos', 'V', Video),
+    ('T', 'Trailers', 'T', Trailer),
 ]
 
 

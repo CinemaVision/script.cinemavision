@@ -36,15 +36,15 @@
     </category>
 
     <category label="Trailer">
-        <setting id="trailer.playUnwatched"     label="Play unwatched trailers first" type="bool"   default="true" />
-        <setting id="trailer.CLEAR"             label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
+        <setting id="trailer.playUnwatched" label="Play unwatched trailers first" type="bool"   default="true" />
+        <setting id="trailer.CLEAR"         label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"       label="Source"               type="enum"      values="Apple iTunes|Kodi Database|Content|Directory|Single File" default="0" />
-        <setting id="trailer.fallback"     label="Fallback to KodiDB (iTunes only)" type="bool" default="true" />
+        <setting id="trailer.source"       label="Source"               type="enum"      values="Scrapers|Content|Directory|Single File" default="0" />
+        <setting id="trailer.scrapers"     label="Scrapers (by priority)"             type="action"    action="RunScript(script.cinemavision,trailer.scrapers)" default="iTunes,KodiDB" />
         <setting id="trailer.dir"          label="Source: Directory"    type="folder"    sources="auto" value="" />
         <setting id="trailer.file"         label="Source: File"         type="file"      sources="auto" value="" />
         <setting id="trailer.count"        label="Count"                type="slider"    default="1" range="1,10" option="int" />
-        <setting id="settings.ratings.initialized2" label="" type="bool"   default="false" visible="false"/>
+        <setting id="settings.ratings.initialized2" label="" type="bool" default="false" visible="false"/>
         <setting id="trailer.ratingLimit"  label="Rating limit"         type="enum"      values="None|Max|Match Features" default="0" />
         <setting id="trailer.ratingMax"    label="Rating limit: Max "    type="fileenum"  values="$PROFILE/settings/ratings_default" visible="eq(-2,true)"/>
         <setting id="trailer.ratingMax.dummy" label="Rating limit: Max (needs Content path set and updated)" type="text" values=" " enable="false" visible="!eq(-3,true)" />
@@ -90,10 +90,12 @@
     </category>
 
     <category label="Advanced">
+        <setting label="Logging" type="lsep"/>
         <setting id="debug.log"           label="Debug logging"                 type="bool"   default="true" />
         <setting id="pastebin.paste.log"  label="Paste my kodi.log to pastebin" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
         <setting id="pastebin.user"       label="Pastebin user (necessary to paste as user)"  type="text" default="" />
         <setting id="pastebin.delete.key" label="Delete Pastebin user key"      type="action" action="RunScript(script.cinemavision,pastebin.delete.key)" />
+        <setting label="Miscellaneous" type="lsep"/>
         <setting id="reset.database"      label="Reset content database"        type="action" action="RunScript(script.cinemavision,reset.database)" />
         <setting id="trailer.CLEARBROKEN" label="Clear trailers broken status"  type="action" action="RunScript(script.cinemavision,trailer.clearBroken)" />
     </category>

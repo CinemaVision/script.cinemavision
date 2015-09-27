@@ -1,20 +1,42 @@
 
 
-def getTrailers(source=None):
+_SOURCES = {
+    'itunes': 'iTunes',
+    'kodidb': 'kodiDB'
+}
+
+
+def getScraper(source=None):
+    source = _SOURCES.get(source.lower().strip())
+
     if source == 'iTunes':
         import itunes
-        itunesRetriever = itunes.ItunesTrailerRetriever()
-        return itunesRetriever.getTrailers()
+        return itunes.ItunesTrailerScraper()
     elif source == 'kodiDB':
         import kodidb
-        kodiDBRetriever = kodidb.KodiDBTrailerRetriever()
-        return kodiDBRetriever.getTrailers()
+        return kodidb.KodiDBTrailerScraper()
+    return None
+
+
+def getTrailers(source=None):
+    scraper = getScraper(source)
+    if not scraper:
+        return None
+
+    return scraper.getTrailers()
+
+
+def updateTrailers(source=None):
+    scraper = getScraper(source)
+    if not scraper:
+        return None
+
+    return scraper.updateTrailers()
 
 
 def getPlayableURL(ID, quality=None, source=None, url=None):
-    if source == 'iTunes':
-        import itunes
-        return itunes.ItunesTrailerRetriever.getPlayableURL(ID, quality or '720p')
-    elif source == 'kodiDB':
-        import kodidb
-        return kodidb.KodiDBTrailerRetriever.getPlayableURL(ID, url=url)
+    scraper = getScraper(source)
+    if not scraper:
+        return None
+
+    return scraper.getPlayableURL(ID, quality, url)

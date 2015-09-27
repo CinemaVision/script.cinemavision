@@ -197,7 +197,6 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_DB_CHOICE:
             options = sItem.DBChoices(attr)
-            print repr(options)
             if not options:
                 xbmcgui.Dialog().ok('No Content', '', u'No matching content found.')
                 return False
@@ -219,6 +218,17 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 if not value:
                     return
                 value = value.decode('utf-8')
+        elif options == cinemavision.sequence.LIMIT_MULTI_SELECT:
+            import cvutil
+
+            options = sItem.Select(attr)
+            if not options:
+                xbmcgui.Dialog().ok('No Options', '', u'No options found.')
+                return False
+            result = cvutil.multiSelect(options)
+            if result is False:
+                return False
+            value = result
         elif options == cinemavision.sequence.LIMIT_BOOL_DEFAULT:
             curr = sItem.getSetting(attr)
             if curr is None:

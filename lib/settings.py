@@ -21,12 +21,33 @@ def clearDBBrokenStatus():
 
 
 def pasteLog():
+    import xbmcgui
+    yes = xbmcgui.Dialog().yesno(
+        'Choose', 'Would you like to paste the current old log?',
+        'Paste the old log if you are in a new session, ie. after a Kodi crash.',
+        '',
+        'Current',
+        'Old'
+    )
+    if yes:
+        _pasteLog('kodi.old.log')
+    else:
+        _pasteLog()
+
+
+def _pasteLog(logName='kodi.log'):
     import os
     import re
     import xbmc
     import xbmcgui
     import kodiutil
     from pastebin_python import PastebinPython
+
+    logPath = os.path.join(xbmc.translatePath('special://logpath').decode('utf-8'), logName)
+
+    if not os.path.exists(logPath):
+        xbmcgui.Dialog().ok('No Log', ' ', 'That log file does not exist!')
+        return False
 
     def debug_log(msg):
         kodiutil.DEBUG_LOG('PASTEBIN: {0}'.format(msg))
@@ -63,18 +84,17 @@ def pasteLog():
         else:
             debug_log('User aborted')
             xbmcgui.Dialog().ok('Aborted', ' ', 'Paste aborted!')
-            return
+            return False
 
     elif apiUserKey:
         debug_log('Creating paste with stored API key')
 
-    logPath = os.path.join(xbmc.translatePath('special://logpath').decode('utf-8'), 'kodi.log')
     with kodiutil.Progress('Pastebin', 'Creating paste...'):
         with open(logPath, 'r') as f:
             content = f.read().decode('utf-8')
             for pattern, repl in replaces:
                 content = re.sub(pattern, repl, content)
-            urlOrError = pb.createPaste(content, 'Kodi CV LOG', api_paste_private=1, api_paste_expire_date='1W')
+            urlOrError = pb.createPaste(content, 'Kodi CV LOG: {0}'.format(logName), api_paste_private=1, api_paste_expire_date='1W')
 
     showQR = False
     if urlOrError.startswith('http'):
@@ -86,6 +106,8 @@ def pasteLog():
 
     if showQR:
         showQRCode(urlOrError)
+
+    return True
 
 
 def showQRCode(url):
@@ -153,3 +175,19 @@ def setDefaultSequence(setting):
         return
 
     kodiutil.setSetting(setting, selection['name'])
+
+
+def setScrapers():
+    import cvutil
+    import kodiutil
+
+    selected = [s.strip().lower() for s in kodiutil.getSetting('trailer.scrapers', '').split(',')]
+    options = [('iTunes', 'iTunes', 'itunes' in selected), ('KodiDB', 'KodiDB', 'kodidb' in selected)]
+    options.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
+
+    result = cvutil.multiSelect(options, default=True)
+
+    if result is False or result is None:
+        return
+
+    kodiutil.setSetting('trailer.scrapers', result)

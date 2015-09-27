@@ -3,7 +3,8 @@ import sys
 if __name__ == '__main__':
     arg = None
     if len(sys.argv) > 1:
-        arg = sys.argv[1] or False
+        args = sys.argv[1:] or False
+        arg = args.pop(0)
         print '[- CinemaVision -]: Passed args: {0}'.format(repr(sys.argv))
 
     if arg == 'trailer.clearWatched':
@@ -34,13 +35,18 @@ if __name__ == '__main__':
         cvutil.setRatingBumperStyle()
     elif arg == 'pastebin.paste.log':
         from lib import settings
+        from lib import kodiutil
         settings.pasteLog()
+        kodiutil.ADDON.openSettings()
     elif arg == 'pastebin.delete.key':
         from lib import settings
         settings.deleteUserKey()
     elif arg == 'reset.database':
         from lib import settings
         settings.removeContentDatabase()
+    elif arg == 'trailer.scrapers':
+        from lib import settings
+        settings.setScrapers()
     elif str(arg).startswith('sequence.'):
         from lib import settings
         settings.setDefaultSequence(arg)

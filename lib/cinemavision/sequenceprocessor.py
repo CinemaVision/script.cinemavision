@@ -566,6 +566,7 @@ class TriviaHandler:
         queue.musicFadeOut = util.getSettingDefault('trivia.musicFadeOut')
 
     @DB.session
+    @DB.sessionW
     def getTriviaImages(self, sItem):  # TODO: Probably re-do this separate for slides and video?
         useVideo = sItem.getLive('format') == 'video'
         # Do this each set in reverse so the setNumber counts down
@@ -642,7 +643,7 @@ class TriviaHandler:
                 return slides
         return None
 
-    @DB.session
+    @DB.sessionW
     def mark(self, image):
         trivia = DB.WatchedTrivia.get_or_create(WID=image.setID)[0]
         trivia.update(
@@ -661,15 +662,17 @@ class TrailerHandler:
         self.sItem = sItem
 
         source = sItem.getLive('source')
+        count = sItem.getLive('count')
 
         playables = []
-        if source == 'itunes':
-            playables = self.scraperHandler('iTunes')
-            if not playables and sItem.getLive('fallback'):
-                util.DEBUG_LOG('    - iTunes falling back to KodiDB')
-                playables = self.scraperHandler('kodiDB')
-        elif source == 'kodidb':
-            playables = self.scraperHandler('kodiDB')
+        if source == 'scrapers':
+            util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
+            scrapers = [s.strip() for s in (sItem.getLive('scrapers') or '').split(',')]
+            for scraper in scrapers:
+                util.DEBUG_LOG('    - [{0}]'.format(scraper))
+                playables = self.scraperHandler(scraper)
+                if len(playables) >= count:
+                    break
         elif source == 'dir' or source == 'content':
             playables = self.dirHandler(sItem)
         elif source == 'file':
@@ -784,47 +787,36 @@ class TrailerHandler:
         ]
 
     def updateTrailers(self, source):
-        trailers = scrapers.getTrailers(source)
+        trailers = scrapers.updateTrailers(source)
         if trailers:
             total = len(trailers)
             util.DEBUG_LOG('    - Received {0} trailers'.format(total))
             total = float(total)
-            allct = 0
             ct = 0
-            with util.Progress('Updating Trailers') as p:
-                p.msg(heading='Adding trailers... (Only the first time runs long)')
-                for t in trailers:
-                    allct += 1
-                    try:
-                        DB.Trailers.get(DB.Trailers.WID == t.ID)
-                    except DB.peewee.DoesNotExist:
-                        ct += 1
-                        url = t.getStaticURL()
-                        DB.Trailers.create(
-                            WID=t.ID,
-                            source=source,
-                            watched=False,
-                            title=t.title,
-                            url=url,
-                            userAgent=t.userAgent,
-                            rating=str(t.rating),
-                            genres=','.join(t.genres),
-                            thumb=t.thumb,
-                            release=t.release
-                        )
-                    pct = int((allct/total)*100)
-                    p.msg(t.title, pct=pct)
+
+            for t in trailers:
+                try:
+                    DB.Trailers.get(DB.Trailers.WID == t.ID)
+                except DB.peewee.DoesNotExist:
+                    ct += 1
+                    url = t.getStaticURL()
+                    DB.Trailers.create(
+                        WID=t.ID,
+                        source=source,
+                        watched=False,
+                        title=t.title,
+                        url=url,
+                        userAgent=t.userAgent,
+                        rating=str(t.rating),
+                        genres=','.join(t.genres),
+                        thumb=t.thumb,
+                        release=t.release
+                    )
 
             util.DEBUG_LOG('    - {0} trailers added to database'.format(ct))
-        else:
-            util.DEBUG_LOG('    - No trailers added to database')
 
-    @DB.session
+    @DB.sessionW
     def scraperHandler(self, source):
-        count = self.sItem.getLive('count')
-
-        util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
-
         self.updateTrailers(source)
 
         trailers = self.getTrailersFromDB(source)
@@ -851,7 +843,7 @@ class TrailerHandler:
 
         try:
             files = util.vfs.listdir(path)
-            files = random.sample(files, count)
+            files = random.sample(files, min((count, len(files))))
             return [Video(util.pathJoin(path, p), volume=sItem.getLive('volume')) for p in files]
         except:
             util.ERROR()
@@ -990,7 +982,7 @@ class VideoBumperHandler:
         try:
             files = util.vfs.listdir(sItem.dir)
             if sItem.random:
-                files = random.sample(files, sItem.count)
+                files = random.sample(files, min((sItem.count, len(files))))
             else:
                 files = files[:sItem.count]
 

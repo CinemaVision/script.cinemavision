@@ -59,8 +59,8 @@ def _getSettingDefault(key):
         'trivia.transitionDuration': 400,
         'trivia.musicFile': '',
         'trivia.musicDir': '',
-        'trailer.source': 'itunes',
-        'trailer.fallback': True,
+        'trailer.source': 'scrapers',
+        'trailer.scrapers': 'iTunes,KodiDB',
         'trailer.count': 1,
         'trailer.limitGenre': True,
         'trailer.quality': '720p',
@@ -182,7 +182,7 @@ try:
             return _getSettingDefault(key)
 
         if key == 'trailer.source':
-            return ['itunes', 'kodidb', 'content', 'dir', 'file'][int(default)]
+            return ['scrapers', 'content', 'dir', 'file'][int(default)]
         elif key == 'trailer.ratingLimit':
             return ['none', 'max', 'match'][int(default)]
         elif key == 'trivia.format':

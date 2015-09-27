@@ -43,6 +43,16 @@ def session(func):
     return inner
 
 
+def sessionW(func):
+    def inner(*args, **kwargs):
+        try:
+            W_DB.connect()
+            return func(*args, **kwargs)
+        finally:
+            W_DB.close()
+    return inner
+
+
 def connect():
     DB.connect()
 

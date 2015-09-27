@@ -1,7 +1,8 @@
 import scraper
+from .. import _scrapers
 
 
-class Trailer:
+class Trailer(_scrapers.Trailer):
     def __init__(self, data):
         self.data = data
         self.is3D = True
@@ -42,6 +43,6 @@ class Trailer:
         return 'plugin://plugin.video.youtube/play/?video_id={0}'.format(self.data['ID'])
 
 
-class StereoscopyNewsTrailerRetriever:
-    def getMovies(self):
+class StereoscopyNewsTrailerScraper(_scrapers.Scraper):
+    def getTrailers(self):
         return [Trailer(t) for t in scraper.getTrailers()]

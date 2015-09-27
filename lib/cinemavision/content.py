@@ -88,8 +88,9 @@ class UserContent:
         ))
     )
 
-    def __init__(self, content_dir=None, callback=None, db_path=None):
+    def __init__(self, content_dir=None, callback=None, db_path=None, trailer_sources=None):
         self._callback = callback
+        self._trailer_sources = trailer_sources or []
         self.setupDB(db_path)
         self.musicHandler = MusicHandler(self)
         self.triviaDirectoryHandler = TriviaDirectoryHandler(self.log)
@@ -171,6 +172,7 @@ class UserContent:
         self.loadAudioFormatBumpers()
         self.loadVideoBumpers()
         self.loadRatingsBumpers()
+        self.getTrailers()
 
     def loadMusic(self):
         self.logHeading('LOADING MUSIC')
@@ -193,22 +195,11 @@ class UserContent:
                 if sub.startswith('_Exclude'):
                     util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(sub))
                     continue
-                fmt = 'DIR'
-            elif path.lower().endswith('.zip'):
-                fmt = 'ZIP'
             else:
-                fmt = 'FILE'
+                continue
 
-            self.log('Processing trivia ({0}): {1}'.format(fmt, os.path.basename(path)))
-
-            if fmt == 'FILE':
-                DB.connect()
-                try:
-                    self.triviaDirectoryHandler.getSlide(basePath, sub)
-                finally:
-                    DB.close()
-            elif fmt == 'DIR' or fmt == 'ZIP':
-                self.triviaDirectoryHandler(path, prefix=sub)
+            self.log('Processing trivia: {0}'.format(os.path.basename(path)))
+            self.triviaDirectoryHandler(path, prefix=sub)
 
     def loadAudioFormatBumpers(self):
         self.logHeading('LOADING AUDIO FORMAT BUMPERS')
@@ -323,6 +314,47 @@ class UserContent:
                 system=system.name
             )
 
+    @DB.sessionW
+    def getTrailers(self):
+        import scrapers
+
+        for source in self._trailer_sources:
+            util.DEBUG_LOG('Getting trailers from {0}'.format(source))
+            trailers = scrapers.getTrailers(source)
+            total = len(trailers)
+            util.DEBUG_LOG(' - Received {0} trailers'.format(total))
+            if trailers:
+                total = float(total)
+                allct = 0
+                ct = 0
+
+                self._callback(heading='Adding {0} trailers...'.format(source))
+                for t in trailers:
+                    allct += 1
+                    try:
+                        DB.Trailers.get(DB.Trailers.WID == t.ID)
+                    except DB.peewee.DoesNotExist:
+                        ct += 1
+                        url = t.getStaticURL()
+                        DB.Trailers.create(
+                            WID=t.ID,
+                            source=source,
+                            watched=False,
+                            title=t.title,
+                            url=url,
+                            userAgent=t.userAgent,
+                            rating=str(t.rating),
+                            genres=','.join(t.genres),
+                            thumb=t.thumb,
+                            release=t.release
+                        )
+                    pct = int((allct/total)*100)
+                    self._callback(t.title, pct=pct)
+
+                util.DEBUG_LOG(' - {0} new {1} trailers added to database'.format(ct, source))
+            else:
+                util.DEBUG_LOG(' - No new {0} trailers added to database'.format(source))
+
 
 class MusicHandler:
     def __init__(self, owner=None):
@@ -425,7 +457,7 @@ class TriviaDirectoryHandler:
                 slides = ET.fromstring(xml)
                 slide = slides.find('slide')
             except ET.ParseError:
-                util.DEBUG_LOG('bad slides.xml')
+                util.DEBUG_LOG('Bad slides.xml')
             except:
                 util.ERROR()
                 slide = None

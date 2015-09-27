@@ -1,5 +1,14 @@
 Changelog for CinemaVision
 
+[- 0.0.44 -]
+
+- fix:     Error for video bumpers with source as directory, random set and count set greater than number of files
+- add:     When sending a log to PasteBin, you are now asked if you would like to send the current or old log
+- change:  Now ignores trivia slides in root of Trivia Slides folder when scanning for content
+- change:  Removed trailer source options: Apple iTunes and Kodi Database - replaced with: Scrapers
+- change:  Removed Trailers setting 'Fallback to KodiDB (iTunes only)'
+- add:     Added Trailers sub-setting 'Scrapers' for setting scrapers to use when source is 'Scrapers'
+- change:  Move Video Bumpers above Trailers in the sequence editor and rename to Videos
 
 [- 0.0.43 -]
 

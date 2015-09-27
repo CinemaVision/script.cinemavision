@@ -457,10 +457,16 @@ class ExperiencePlayer(xbmc.Player):
         self.featureStub = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.feature_stub.mp4')
         self.playStatus = 0
         self.hasFullscreened = False
-        self.has3D = False
         self.loadActions()
         self.init()
         return self
+
+    @property
+    def has3D(self):
+        for f in self.features:
+            if f.is3D:
+                return True
+        return False
 
     def doPlay(self, item, listitem=None, windowed=None, startpos=None):
         self.playStatus = self.NOT_PLAYING
@@ -610,8 +616,6 @@ class ExperiencePlayer(xbmc.Player):
             feature.is3D = True
         else:
             feature.is3D = bool(re.findall(tags3DRegEx, r['file']))
-
-        self.has3D = self.has3D or feature.is3D
 
         try:
             codec = r['streamdetails']['audio'][0]['codec']
