@@ -1,5 +1,23 @@
 Changelog for CinemaVision
 
+[- 0.0.45 -]
+
+- add:     Addon now sets the following home window properties:
+           script.cinemavision.module.current = current module (ie. video, trivia, feature, trailer, audioformat)
+           script.cinemavision.module.next = next module (ie. video, trivia, feature, trailer, audioformat)
+           script.cinemavision.module.current.name
+           script.cinemavision.module.next.name
+           script.cinemavision.feature.next.title
+           script.cinemavision.feature.next.dbid
+           script.cinemavision.feature.next.dbtype
+           script.cinemavision.feature.next.path
+- change:  Changed Trailers setting 'Play unwatched trailers first' to 'Prefer unwatched over priority'
+           Note: When enabled will search unwatched by source priority then watched by source priority
+                 When disabled will search unwatched and then watched for each source by priority
+- add:     Detection of 3D trailers based on tag match for Kodi Database trailers
+- add:     Scraper Stereoscopynews.com
+- add:     Trailers module setting 'Filter 3D based on feature'
+
 [- 0.0.44 -]
 
 - fix:     Error for video bumpers with source as directory, random set and count set greater than number of files

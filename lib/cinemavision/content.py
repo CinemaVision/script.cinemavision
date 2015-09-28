@@ -320,6 +320,8 @@ class UserContent:
 
         for source in self._trailer_sources:
             util.DEBUG_LOG('Getting trailers from {0}'.format(source))
+            self._callback(heading='Adding {0} trailers...'.format(source))
+            self._callback('Getting trailer list...', pct=0)
             trailers = scrapers.getTrailers(source)
             total = len(trailers)
             util.DEBUG_LOG(' - Received {0} trailers'.format(total))
@@ -328,7 +330,6 @@ class UserContent:
                 allct = 0
                 ct = 0
 
-                self._callback(heading='Adding {0} trailers...'.format(source))
                 for t in trailers:
                     allct += 1
                     try:
@@ -346,7 +347,8 @@ class UserContent:
                             rating=str(t.rating),
                             genres=','.join(t.genres),
                             thumb=t.thumb,
-                            release=t.release
+                            release=t.release,
+                            is3D=t.is3D
                         )
                     pct = int((allct/total)*100)
                     self._callback(t.title, pct=pct)

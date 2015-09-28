@@ -2,7 +2,8 @@
 
 _SOURCES = {
     'itunes': 'iTunes',
-    'kodidb': 'kodiDB'
+    'kodidb': 'kodiDB',
+    'stereoscopynews': 'StereoscopyNews'
 }
 
 
@@ -15,6 +16,9 @@ def getScraper(source=None):
     elif source == 'kodiDB':
         import kodidb
         return kodidb.KodiDBTrailerScraper()
+    elif source == 'StereoscopyNews':
+        import stereoscopynews
+        return stereoscopynews.StereoscopyNewsTrailerScraper()
     return None
 
 

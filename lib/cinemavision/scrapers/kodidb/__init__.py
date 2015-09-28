@@ -1,5 +1,7 @@
+import re
 import scraper
 from lib import cvutil
+from ... import util
 from ... import ratings
 from .. import _scrapers
 
@@ -7,7 +9,7 @@ from .. import _scrapers
 class Trailer(_scrapers.Trailer):
     def __init__(self, data):
         self.data = data
-        self.is3D = False
+        self._is3D = bool(re.search(util.TAGS_3D_REGEX, self.data.get('url', '')))
         if not self.data.get('rating'):
             self.data['rating'] = u'NR'
 
@@ -44,6 +46,10 @@ class Trailer(_scrapers.Trailer):
     @property
     def userAgent(self):
         return ''
+
+    @property
+    def is3D(self):
+        return self._is3D
 
     def getStaticURL(self):
         return self.data['url']

@@ -5,6 +5,7 @@ DEBUG = True
 
 STORAGE_PATH = None
 
+TAGS_3D_REGEX = ''
 
 def T(ID, eng=''):
     return eng
@@ -63,6 +64,7 @@ def _getSettingDefault(key):
         'trailer.scrapers': 'iTunes,KodiDB',
         'trailer.count': 1,
         'trailer.limitGenre': True,
+        'trailer.filter3D': True,
         'trailer.quality': '720p',
         'trailer.dir': '',
         'trailer.file': '',
@@ -79,8 +81,8 @@ def _getSettingDefault(key):
         'trivia.musicVolume': 75,
         'trivia.musicFadeIn': 3.0,
         'trivia.musicFadeOut': 3.0,
-        'trailer.playUnwatched': True,
         'trailer.ratingMax': 'MPAA.G',
+        'trailer.preferUnwatched': True,
         'rating.system.default': 'MPAA'
     }
 

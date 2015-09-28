@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
+        <setting label="Content" type="lsep"/>
         <setting id="content.path"        label="Content path"           type="folder" sources="auto" option="writeable" value="" />
         <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
+        <setting label="Sequence" type="lsep"/>
         <setting id="sequence.2D"         label="2D sequence"            type="action" action="RunScript(script.cinemavision,sequence.2D)" />
         <setting id="sequence.3D"         label="3D sequence"            type="action" action="RunScript(script.cinemavision,sequence.3D)" />
         <setting id="3D.tag.regex"        label="3D tag detection regex" type="text"   default="(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB" />
@@ -36,8 +38,8 @@
     </category>
 
     <category label="Trailer">
-        <setting id="trailer.playUnwatched" label="Play unwatched trailers first" type="bool"   default="true" />
-        <setting id="trailer.CLEAR"         label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
+        <setting id="trailer.preferUnwatched" label="Prefer unwatched over priority" type="bool"   default="true" />
+        <setting id="trailer.CLEAR"           label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="trailer.source"       label="Source"               type="enum"      values="Scrapers|Content|Directory|Single File" default="0" />
         <setting id="trailer.scrapers"     label="Scrapers (by priority)"             type="action"    action="RunScript(script.cinemavision,trailer.scrapers)" default="iTunes,KodiDB" />
@@ -49,6 +51,7 @@
         <setting id="trailer.ratingMax"    label="Rating limit: Max "    type="fileenum"  values="$PROFILE/settings/ratings_default" visible="eq(-2,true)"/>
         <setting id="trailer.ratingMax.dummy" label="Rating limit: Max (needs Content path set and updated)" type="text" values=" " enable="false" visible="!eq(-3,true)" />
         <setting id="trailer.limitGenre"   label="Match feature genres" type="bool"      default="true" />
+        <setting id="trailer.filter3D"     label="Filter 3D based on feature" type="bool" default="true" />
         <setting id="trailer.quality"      label="Quality"              type="labelenum" values="480p|720p|1080p" default="720p" />
         <setting id="trailer.volume"       label="Volume (% of current)" type="slider"   default="100" range="1,100" option="percent" />
     </category>

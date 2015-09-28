@@ -193,6 +193,9 @@ class Item:
     def display(self):
         return self.name or self.displayName
 
+    def displayRaw(self):
+        return self.name or self.displayName
+
     def getSettingDisplay(self, setting):
         val = getattr(self, setting)
         limits = self.getLimits(setting)
@@ -441,6 +444,13 @@ class Trailer(Item):
             'default': None
         },
         {
+            'attr': 'filter3D',
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Filter for 3D based on Feature',
+            'default': None
+        },
+        {
             'attr': 'limitGenre',
             'type': strToBoolWithDefault,
             'limits': LIMIT_BOOL_DEFAULT,
@@ -479,6 +489,12 @@ class Trailer(Item):
     displayName = 'Trailers'
     typeChar = 'T'
 
+    _scrapers = [
+        ['iTunes', 'iTunes', 'itunes'],
+        ['KodiDB', 'KodiDB', 'kodidb'],
+        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
+    ]
+
     def __init__(self):
         Item.__init__(self)
         self.count = 0
@@ -489,6 +505,7 @@ class Trailer(Item):
         self.ratingLimit = None
         self.ratingMax = None
         self.limitGenre = None
+        self.filter3D = None
         self.quality = None
         self.volume = 0
 
@@ -497,6 +514,9 @@ class Trailer(Item):
         if self.count > 1:
             return '{0} x {1}'.format(name, self.count)
         return name
+
+    def liveScrapers(self):
+        return (self.getLive('scrapers') or '').split(',')
 
     def elementVisible(self, e):
         attr = e['attr']
@@ -512,11 +532,14 @@ class Trailer(Item):
         elif attr == 'scrapers':
             if self.getLive('source') != 'scrapers':
                 return False
+        elif attr == 'filter3D':
+            if self.getLive('source') != 'scrapers':
+                return False
         elif attr in ('limitRating', 'limitGenre'):
             if self.getLive('source') == 'scrapers':
                 return False
         elif attr == 'quality':
-            if self.getLive('source') != 'itunes':
+            if self.getLive('source') != 'scrapers' or 'iTunes' not in self.liveScrapers():
                 return False
         elif attr == 'ratingMax':
             if self.getLive('ratingLimit') != 'max':
@@ -533,8 +556,10 @@ class Trailer(Item):
         return [('{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
 
     def Select(self, attr):
-        selected = [s.strip().lower() for s in (self.getLive('scrapers') or '').split(',')]
-        ret = [('iTunes', 'iTunes', 'itunes' in selected), ('KodiDB', 'KodiDB', 'kodidb' in selected)]
+        selected = [s.strip().lower() for s in self.liveScrapers()]
+        ret = list(self._scrapers)
+        for s in ret:
+            s[2] = s[2] in selected
         ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
         return ret
 

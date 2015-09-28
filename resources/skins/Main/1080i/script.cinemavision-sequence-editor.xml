@@ -19,6 +19,16 @@
         </control>
 
         <control type="image">
+            <posx>0</posx>
+            <posy>-100</posy>
+            <width>1920</width>
+            <height>535</height>
+            <texture>script.cinemavision-sequence-editor-back.png</texture>
+            <colordiffuse>20FFFFFF</colordiffuse>
+            <aspectratio>stretch</aspectratio>
+        </control>
+
+        <control type="image">
             <posx>30</posx>
             <posy>535</posy>
             <width>900</width>

@@ -26,6 +26,10 @@ class Trailer:
     def release(self):
         return datetime.date(1900, 1, 1)
 
+    @property
+    def is3D(self):
+        return False
+
     def getStaticURL(self):
         return None
 

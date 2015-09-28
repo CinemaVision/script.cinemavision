@@ -15,7 +15,7 @@ except TypeError:
 from peewee import peewee
 import util
 
-DATABASE_VERSION = 4
+DATABASE_VERSION = 5
 
 fn = peewee.fn
 
@@ -69,6 +69,7 @@ def migrateDB(DB, version):
     util.LOG('Migrating database from version {0} to {1}'.format(version, DATABASE_VERSION))
     from peewee.playhouse import migrate
     migrator = migrate.SqliteMigrator(DB)
+    migratorW = migrate.SqliteMigrator(W_DB)
 
     if version < 1:
         try:
@@ -89,6 +90,17 @@ def migrateDB(DB, version):
             )
         except peewee.OperationalError:
             util.MINOR_ERROR('Migration (RatingSystem: Add region column)')
+        except:
+            util.ERROR()
+            return False
+
+    if version < 5:
+        try:
+            migrate.migrate(
+                migratorW.add_column('Trailers', 'is3D', peewee.BooleanField(default=False)),
+            )
+        except peewee.OperationalError:
+            util.MINOR_ERROR('Migration (Trailers: Add is3D column)')
         except:
             util.ERROR()
             return False
@@ -274,6 +286,7 @@ def initialize(path=None, callback=None):
         userAgent = peewee.CharField(null=True)
         thumb = peewee.CharField(null=True)
         broken = peewee.BooleanField(default=False)
+        is3D = peewee.BooleanField(default=False)
 
     Trailers.create_table(fail_silently=True)
 

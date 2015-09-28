@@ -180,9 +180,12 @@ def setDefaultSequence(setting):
 def setScrapers():
     import cvutil
     import kodiutil
+    import cinemavision
 
     selected = [s.strip().lower() for s in kodiutil.getSetting('trailer.scrapers', '').split(',')]
-    options = [('iTunes', 'iTunes', 'itunes' in selected), ('KodiDB', 'KodiDB', 'kodidb' in selected)]
+    options = list(cinemavision.sequence.Trailer._scrapers)
+    for s in options:
+        s[2] = s[2] in selected
     options.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
 
     result = cvutil.multiSelect(options, default=True)

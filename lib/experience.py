@@ -16,7 +16,6 @@ kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 import cvutil
 
 import cinemavision
-cinemavision.init(kodiutil.DEBUG())
 
 
 AUDIO_FORMATS = {
@@ -33,10 +32,6 @@ AUDIO_FORMATS = {
 }
 
 # aac, ac3, cook, dca, dtshd_hra, dtshd_ma, eac3, mp1, mp2, mp3, pcm_s16be, pcm_s16le, pcm_u8, truehd, vorbis, wmapro, wmav2
-
-
-DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|' +\
-    '3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB|[\. _]TAB[\. _]'
 
 
 def DEBUG_LOG(msg):
@@ -592,7 +587,7 @@ class ExperiencePlayer(xbmc.Player):
             self.features.append(feature)
 
     def featureFromJSON(self, r):
-        tags3DRegEx = kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE)
+        tags3DRegEx = kodiutil.getSetting('3D.tag.regex', cvutil.DEFAULT_3D_RE)
 
         feature = cinemavision.sequenceprocessor.Feature(r['file'])
         feature.title = r.get('title') or r.get('label', '')
@@ -615,7 +610,7 @@ class ExperiencePlayer(xbmc.Player):
         if stereomode not in ('mono', ''):
             feature.is3D = True
         else:
-            feature.is3D = bool(re.findall(tags3DRegEx, r['file']))
+            feature.is3D = bool(re.search(tags3DRegEx, r['file']))
 
         try:
             codec = r['streamdetails']['audio'][0]['codec']
@@ -736,9 +731,9 @@ class ExperiencePlayer(xbmc.Player):
         feature.is3D = xbmc.getCondVisibility('ListItem.IsStereoscopic')
 
         if not feature.is3D:
-            tags3DRegEx = kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE)
+            tags3DRegEx = kodiutil.getSetting('3D.tag.regex', cvutil.DEFAULT_3D_RE)
 
-            feature.is3D = bool(re.findall(tags3DRegEx, feature.path))
+            feature.is3D = bool(re.search(tags3DRegEx, feature.path))
 
         codec = xbmc.getInfoLabel('ListItem.AudioCodec')
         if codec:
@@ -845,11 +840,13 @@ class ExperiencePlayer(xbmc.Player):
     def start(self, sequence_path):
         kodiutil.setGlobalProperty('running', '1')
         xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', 'True')
+        self.initSkinVars()
         try:
             return self._start(sequence_path)
         finally:
             kodiutil.setGlobalProperty('running', '')
             xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', '')
+            self.initSkinVars()
 
     def _start(self, sequence_path):
         import cvutil
@@ -863,6 +860,7 @@ class ExperiencePlayer(xbmc.Player):
 
         self.openWindow()
         self.processor.process()
+        self.setSkinFeatureVars()
         self.next()
         self.waitLoop()
 
@@ -892,6 +890,30 @@ class ExperiencePlayer(xbmc.Player):
         self.window.doClose()
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
         self.stop()
+
+    def initSkinVars(self):
+        kodiutil.setGlobalProperty('module.current', '')
+        kodiutil.setGlobalProperty('module.current.name', '')
+        kodiutil.setGlobalProperty('module.next', '')
+        kodiutil.setGlobalProperty('module.next.name', '')
+        self.initSkinFeatureVars()
+
+    def initSkinFeatureVars(self):
+        kodiutil.setGlobalProperty('feature.next.title', '')
+        kodiutil.setGlobalProperty('feature.next.dbid', '')
+        kodiutil.setGlobalProperty('feature.next.dbtype', '')
+        kodiutil.setGlobalProperty('feature.next.path', '')
+
+    def setSkinFeatureVars(self):
+        feature = self.processor.nextFeature()
+
+        if feature:
+            kodiutil.setGlobalProperty('feature.next.title', feature.title)
+            kodiutil.setGlobalProperty('feature.next.dbid', str(feature.ID))
+            kodiutil.setGlobalProperty('feature.next.dbtype', feature.dbType)
+            kodiutil.setGlobalProperty('feature.next.path', feature.path)
+        else:
+            self.initSkinFeatureVars()
 
     def playMusic(self, image_queue):
         if not image_queue.music:
@@ -1101,6 +1123,7 @@ class ExperiencePlayer(xbmc.Player):
         if kodiutil.getSetting('allow.video.skip', True):
             if video.type == 'FEATURE':
                 self.playVideos(None, features=[video])
+                self.setSkinFeatureVars()
             else:
                 self.playVideos([video])
         else:
@@ -1127,6 +1150,12 @@ class ExperiencePlayer(xbmc.Player):
             return
 
         DEBUG_LOG('Playing next item: {0}'.format(playable))
+
+        if playable.type not in ('ACTION', 'COMMAND'):
+            kodiutil.setGlobalProperty('module.current', playable.module._type)
+            kodiutil.setGlobalProperty('module.current.name', playable.module.displayRaw())
+            kodiutil.setGlobalProperty('module.next', self.processor.upNext() and self.processor.upNext().module._type or '')
+            kodiutil.setGlobalProperty('module.next.name', self.processor.upNext() and self.processor.upNext().module.displayRaw() or '')
 
         if playable.type == 'IMAGE':
             try:

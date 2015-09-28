@@ -11,7 +11,21 @@ import util
 
 
 # Playabe is implemented as a dict to be easily serializable to JSON
-class Playable(dict):
+class PlayableBase(dict):
+    type = None
+
+    @property
+    def module(self):
+        if hasattr(self, '_module'):
+            return self._module
+
+    def fromModule(self, module):
+        self._module = module
+        self['module'] = module._type
+        return self
+
+
+class Playable(PlayableBase):
     type = None
 
     @property
@@ -20,6 +34,10 @@ class Playable(dict):
 
     def __repr__(self):
         return '{0}: {1}'.format(self.type, repr(self.path))
+
+
+class PlayableQueue(PlayableBase):
+    pass
 
 
 class Image(Playable):
@@ -74,7 +92,7 @@ class Song(Playable):
         return int(self['duration'])
 
 
-class ImageQueue(dict):
+class ImageQueue(PlayableQueue):
     type = 'IMAGE.QUEUE'
 
     def __init__(self, handler, s_item, *args, **kwargs):
@@ -264,7 +282,7 @@ class Video(Playable):
         self['volume'] = val
 
 
-class VideoQueue(dict):
+class VideoQueue(PlayableQueue):
     type = 'VIDEO.QUEUE'
 
     def __init__(self, handler, s_item, *args, **kwargs):
@@ -445,23 +463,24 @@ class FeatureHandler:
 
         util.DEBUG_LOG('[{0}] x {1}'.format(sItem.typeChar, count))
 
-        features = caller.featureQueue[:count]
-        caller.featureQueue = caller.featureQueue[count:]
+        features = caller.getNextFeatures(count)
+
         playables = []
         mediaType = sItem.getLive('ratingBumper')
 
         for f in features:
+            f.fromModule(sItem)
             f.volume = sItem.getLive('volume')
             bumper = None
             if mediaType == 'video':
                 bumper = self.getRatingBumper(sItem, f)
                 if bumper:
-                    playables.append(Video(bumper.path))
+                    playables.append(Video(bumper.path).fromModule(sItem))
                     util.DEBUG_LOG('    - Video Rating: {0}'.format(repr(bumper.path)))
             if mediaType == 'image' or mediaType == 'video' and not bumper:
                 bumper = self.getRatingBumper(sItem, f, image=True)
                 if bumper:
-                    playables.append(Image(bumper.path, duration=10, fade=3000))
+                    playables.append(Image(bumper.path, duration=10, fade=3000).fromModule(sItem))
                     util.DEBUG_LOG('    - Image Rating: {0}'.format(repr(bumper.path)))
 
             playables.append(f)
@@ -479,11 +498,11 @@ class TriviaHandler:
         util.DEBUG_LOG('[{0}] {1}m'.format(sItem.typeChar, duration))
 
         durationLimit = duration * 60
-        queue = ImageQueue(self, sItem)
+        queue = ImageQueue(self, sItem).fromModule(sItem)
         queue.transition = sItem.getLive('transition')
         queue.transitionDuration = sItem.getLive('transitionDuration')
 
-        vqueue = VideoQueue(self, sItem)
+        vqueue = VideoQueue(self, sItem).fromModule(sItem)
 
         for slides in self.getTriviaImages(sItem):
             if isinstance(slides, Video):
@@ -619,7 +638,7 @@ class TriviaHandler:
 
     def createTriviaImages(self, sItem, trivia, durations):
         if trivia.type == 'video':
-            return Video(trivia.answerPath, duration=trivia.duration, set_id=trivia.TID)
+            return Video(trivia.answerPath, duration=trivia.duration, set_id=trivia.TID).fromModule(sItem)
         else:
             clues = [getattr(trivia, 'cluePath{0}'.format(x)) for x in range(9, -1, -1)]
             paths = [trivia.answerPath] + clues + [trivia.questionPath]
@@ -627,7 +646,7 @@ class TriviaHandler:
             setNumber = 0
             for p, d in zip(paths, durations):
                 if p:
-                    slides.append(Image(p, d, setNumber, trivia.TID))
+                    slides.append(Image(p, d, setNumber, trivia.TID).fromModule(sItem))
                     setNumber += 1
 
             slides.reverse()  # Slides are backwards
@@ -667,12 +686,20 @@ class TrailerHandler:
         playables = []
         if source == 'scrapers':
             util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
-            scrapers = [s.strip() for s in (sItem.getLive('scrapers') or '').split(',')]
-            for scraper in scrapers:
+            scrapersList = (sItem.getLive('scrapers') or '').split(',')
+
+            if util.getSettingDefault('trailer.preferUnwatched'):
+                scrapers = [(s.strip(), True, False) for s in scrapersList]
+                scrapers += [(s.strip(), False, True) for s in scrapersList]
+            else:
+                scrapers = [(s.strip(), True, True) for s in scrapersList]
+
+            for scraper, unwatched, watched in scrapers:
                 util.DEBUG_LOG('    - [{0}]'.format(scraper))
-                playables = self.scraperHandler(scraper)
+                playables += self.scraperHandler(scraper, count, unwatched=unwatched, watched=watched)
                 if len(playables) >= count:
                     break
+                count -= min(len(playables), count)
         elif source == 'dir' or source == 'content':
             playables = self.dirHandler(sItem)
         elif source == 'file':
@@ -698,42 +725,35 @@ class TrailerHandler:
         ratingLimitMethod = self.sItem.getLive('ratingLimit')
         false = False  # To make my IDE happy about == and false
 
+        where = [
+            DB.Trailers.source == source,
+            DB.Trailers.broken == false,
+            DB.Trailers.watched == watched
+        ]
+
+        orderby = [
+            DB.Trailers.release.desc(),
+            DB.Trailers.date
+        ]
+
+        if self.sItem.getLive('filter3D'):
+            where.append(DB.Trailers.is3D == self.caller.nextQueuedFeature.is3D)
+
         if ratingLimitMethod and ratingLimitMethod != 'none':
             if ratingLimitMethod == 'max':
                 maxr = ratings.getRating(self.sItem.getLive('ratingMax').replace('.', ':', 1))
-                for t in DB.Trailers.select().where(
-                    DB.Trailers.source == source,
-                    DB.Trailers.broken == false,
-                    DB.Trailers.watched == watched
-                ).order_by(
-                    DB.Trailers.release.desc(),
-                    DB.Trailers.date
-                ):
+                for t in DB.Trailers.select().where(*where).order_by(*orderby):
                     if ratings.getRating(t.rating).value <= maxr.value:
                         yield t
             elif self.caller.ratings:
                 minr = min(self.caller.ratings.values(), key=lambda x: x.value)
                 maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
 
-                for t in DB.Trailers.select().where(
-                    DB.Trailers.source == source,
-                    DB.Trailers.broken == false,
-                    DB.Trailers.watched == watched
-                ).order_by(
-                    DB.Trailers.release.desc(),
-                    DB.Trailers.date
-                ):
+                for t in DB.Trailers.select().where(*where).order_by(*orderby):
                     if minr.value <= ratings.getRating(t.rating).value <= maxr.value:
                         yield t
         else:
-            for t in DB.Trailers.select().where(
-                DB.Trailers.source == source,
-                DB.Trailers.broken == false,
-                DB.Trailers.watched == watched
-            ).order_by(
-                DB.Trailers.release.desc(),
-                DB.Trailers.date
-            ):
+            for t in DB.Trailers.select().where(*where).order_by(*orderby):
                 yield t
 
     def _getTrailersFromDBGenre(self, source, watched=False):
@@ -745,9 +765,8 @@ class TrailerHandler:
             for t in self._getTrailersFromDBRating(source, watched=watched):
                 yield t
 
-    def getTrailersFromDB(self, source, watched=False):
+    def getTrailersFromDB(self, source, count, watched=False):
         # Get trailers + a few to make the random more random
-        count = self.sItem.getLive('count')
         poolSize = count + 5
         trailers = []
         ct = 0
@@ -783,7 +802,7 @@ class TrailerHandler:
                 title=t.title,
                 thumb=t.thumb,
                 volume=self.sItem.getLive('volume')
-            ) for t in trailers
+            ).fromModule(self.sItem) for t in trailers
         ]
 
     def updateTrailers(self, source):
@@ -816,14 +835,22 @@ class TrailerHandler:
             util.DEBUG_LOG('    - {0} trailers added to database'.format(ct))
 
     @DB.sessionW
-    def scraperHandler(self, source):
+    def scraperHandler(self, source, count, unwatched=False, watched=False):
         self.updateTrailers(source)
 
-        trailers = self.getTrailersFromDB(source)
+        trailers = []
 
-        if not trailers:
-            util.DEBUG_LOG('    - No matching unwatched trailers - trying watched')
-            trailers = self.getTrailersFromDB(source, watched=True)
+        if unwatched:
+            util.DEBUG_LOG('    - Searching un-watched trailers')
+            trailers = self.getTrailersFromDB(source, count)
+            if not watched:
+                return trailers
+
+            count -= min(len(trailers), count)
+
+        if watched:
+            util.DEBUG_LOG('    - Searching watched trailers')
+            trailers = self.getTrailersFromDB(source, count, watched=True)
 
         return trailers
 
@@ -844,7 +871,7 @@ class TrailerHandler:
         try:
             files = util.vfs.listdir(path)
             files = random.sample(files, min((count, len(files))))
-            return [Video(util.pathJoin(path, p), volume=sItem.getLive('volume')) for p in files]
+            return [Video(util.pathJoin(path, p).fromModule(sItem), volume=sItem.getLive('volume')) for p in files]
         except:
             util.ERROR()
             return []
@@ -856,7 +883,7 @@ class TrailerHandler:
 
         util.DEBUG_LOG('[{0}] File: {1}'.format(sItem.typeChar, repr(path)))
 
-        return [Video(path, volume=sItem.getLive('volume'))]
+        return [Video(path, volume=sItem.getLive('volume')).fromModule(sItem)]
 
 
 class VideoBumperHandler:
@@ -895,13 +922,13 @@ class VideoBumperHandler:
 
     @DB.session
     def defaultHandler(self, sItem):
-        is3D = self.caller.currentFeature.is3D and sItem.play3D
+        is3D = self.caller.nextQueuedFeature.is3D and sItem.play3D
 
         if sItem.random:
             util.DEBUG_LOG('    - Random')
             try:
                 bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
-                return [Video(bumper.path, volume=sItem.getLive('volume'))]
+                return [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem)]
             except IndexError:
                 util.DEBUG_LOG('    - No matches!')
                 pass
@@ -910,26 +937,26 @@ class VideoBumperHandler:
                 util.DEBUG_LOG('    - Falling back to 2D bumper')
                 try:
                     bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))])
-                    return [Video(bumper.path)]
+                    return [Video(bumper.path).fromModule(sItem)]
                 except IndexError:
                     util.DEBUG_LOG('    - No matches!')
                     pass
         else:
             util.DEBUG_LOG('    - Via source')
             if sItem.source:
-                return [Video(sItem.source)]
+                return [Video(sItem.source).fromModule(sItem)]
             else:
                 util.DEBUG_LOG('    - Empty path!')
 
         return []
 
     def _3DIntro(self, sItem):
-        if not self.caller.currentFeature.is3D:
+        if not self.caller.nextQueuedFeature.is3D:
             return []
         return self.defaultHandler(sItem)
 
     def _3DOutro(self, sItem):
-        if not self.caller.currentFeature.is3D:
+        if not self.caller.nextQueuedFeature.is3D:
             return []
         return self.defaultHandler(sItem)
 
@@ -971,7 +998,7 @@ class VideoBumperHandler:
 
     def file(self, sItem):
         if sItem.file:
-            return [Video(sItem.file, volume=sItem.getLive('volume'))]
+            return [Video(sItem.file, volume=sItem.getLive('volume')).fromModule(sItem)]
         else:
             return []
 
@@ -986,7 +1013,7 @@ class VideoBumperHandler:
             else:
                 files = files[:sItem.count]
 
-            return [Video(util.pathJoin(sItem.dir, p), volume=sItem.getLive('volume')) for p in files]
+            return [Video(util.pathJoin(sItem.dir, p), volume=sItem.getLive('volume')).fromModule(sItem) for p in files]
         except:
             util.ERROR()
             return []
@@ -1002,26 +1029,26 @@ class AudioFormatHandler:
 
         util.DEBUG_LOG('[{0}] Method: {1} Fallback: {2} Format: {3}'.format(sItem.typeChar, method, fallback, format_))
 
-        is3D = caller.currentFeature.is3D and sItem.play3D
+        is3D = caller.nextQueuedFeature.is3D and sItem.play3D
 
         if method == 'af.detect':
             util.DEBUG_LOG('    - Detect')
-            if caller.currentFeature.audioFormat:
+            if caller.nextQueuedFeature.audioFormat:
                 try:
                     bumper = random.choice(
                         [x for x in DB.AudioFormatBumpers.select().where(
-                            (DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat) & (DB.AudioFormatBumpers.is3D == is3D)
+                            (DB.AudioFormatBumpers.format == caller.nextQueuedFeature.audioFormat) & (DB.AudioFormatBumpers.is3D == is3D)
                         )]
                     )
-                    util.DEBUG_LOG('    - Detect: Using bumper based on feature codec info ({0})'.format(caller.currentFeature.title))
+                    util.DEBUG_LOG('    - Detect: Using bumper based on feature codec info ({0})'.format(caller.nextQueuedFeature.title))
                 except IndexError:
                     util.DEBUG_LOG('    - Detect: No codec matches!')
                     if is3D and util.getSettingDefault('bumper.fallback2D'):
                         try:
                             bumper = random.choice(
-                                [x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.currentFeature.audioFormat)]
+                                [x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == caller.nextQueuedFeature.audioFormat)]
                             )
-                            util.DEBUG_LOG('    - Using bumper based on feature codec info and falling back to 2D ({0})'.format(caller.currentFeature.title))
+                            util.DEBUG_LOG('    - Using bumper based on feature codec info and falling back to 2D ({0})'.format(caller.nextQueuedFeature.title))
                         except IndexError:
                             pass
             else:
@@ -1041,13 +1068,13 @@ class AudioFormatHandler:
                         (DB.AudioFormatBumpers.format == format_) & (DB.AudioFormatBumpers.is3D == is3D)
                     )]
                 )
-                util.DEBUG_LOG('    - Format: Using bumper based on setting ({0})'.format(repr(caller.currentFeature.title)))
+                util.DEBUG_LOG('    - Format: Using bumper based on setting ({0})'.format(repr(caller.nextQueuedFeature.title)))
             except IndexError:
                 util.DEBUG_LOG('    - Format: No matches!')
                 if is3D and util.getSettingDefault('bumper.fallback2D'):
                     try:
                         bumper = random.choice([x for x in DB.AudioFormatBumpers.select().where(DB.AudioFormatBumpers.format == format_)])
-                        util.DEBUG_LOG('    - Using bumper based on format setting and falling back to 2D ({0})'.format(caller.currentFeature.title))
+                        util.DEBUG_LOG('    - Using bumper based on format setting and falling back to 2D ({0})'.format(caller.nextQueuedFeature.title))
                     except IndexError:
                         pass
         if (
@@ -1057,11 +1084,11 @@ class AudioFormatHandler:
                 )
             )
         ):
-            util.DEBUG_LOG('    - File: Using bumper based on setting ({0})'.format(caller.currentFeature.title))
-            return [Video(sItem.getLive('file'), volume=sItem.getLive('volume'))]
+            util.DEBUG_LOG('    - File: Using bumper based on setting ({0})'.format(caller.nextQueuedFeature.title))
+            return [Video(sItem.getLive('file'), volume=sItem.getLive('volume')).fromModule(sItem)]
 
         if bumper:
-            return [Video(bumper.path, volume=sItem.getLive('volume'))]
+            return [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem)]
 
         util.DEBUG_LOG('    - NOT SHOWING')
         return []
@@ -1089,6 +1116,7 @@ class SequenceProcessor:
         self.ratings = {}
         self.genres = []
         self.contentPath = content_path
+        self.lastFeature = None
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 
@@ -1096,8 +1124,15 @@ class SequenceProcessor:
         return self.pos >= self.end
 
     @property
-    def currentFeature(self):
-        return self.featureQueue and self.featureQueue[0] or self.defaultFeature
+    def nextQueuedFeature(self):
+        return self.featureQueue and self.featureQueue[0] or self.lastFeature
+
+    def getNextFeatures(self, count):
+        features = self.featureQueue[:count]
+        self.featureQueue = self.featureQueue[count:]
+        if features:
+            self.lastFeature = features[-1]
+        return features
 
     def createDefaultFeature(self):
         self.defaultFeature = Feature('')
@@ -1181,7 +1216,7 @@ class SequenceProcessor:
 
             for sett in (
                 'bumper.fallback2D', 'trivia.music', 'trivia.musicVolume', 'trivia.musicFadeIn', 'trivia.musicFadeOut',
-                'trailer.playUnwatched', 'trailer.ratingMax', 'rating.system.default'
+                'trailer.preferUnwatched', 'trailer.ratingMax', 'rating.system.default'
             ):
                 util.DEBUG_LOG('{0}: {1}'.format(sett, repr(util.getSettingDefault(sett))))
 
@@ -1214,3 +1249,15 @@ class SequenceProcessor:
             playable = self.playables[self.pos]
 
         return playable
+
+    def upNext(self):
+        if self.atEnd():
+            return None
+        return self.playables[self.pos + 1]
+
+    def nextFeature(self):
+        for i in range(self.pos + 1, len(self.playables) - 1):
+            p = self.playables[i]
+            if p.type == 'FEATURE':
+                return p
+        return None

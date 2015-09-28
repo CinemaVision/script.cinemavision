@@ -4,7 +4,10 @@ import xbmc
 import kodiutil
 import cinemavision
 
-cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T)
+DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|' +\
+    '3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB|[\. _]TAB[\. _]'
+
+cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T, kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE))
 
 
 def defaultSavePath():

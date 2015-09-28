@@ -8,9 +8,10 @@ import kodigui
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
+import cvutil
+
 from lib import cinemavision
 
-cinemavision.init(kodiutil.DEBUG())
 
 API_LEVEL = 1
 
@@ -219,8 +220,6 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                     return
                 value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_MULTI_SELECT:
-            import cvutil
-
             options = sItem.Select(attr)
             if not options:
                 xbmcgui.Dialog().ok('No Options', '', u'No options found.')
@@ -370,7 +369,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if self.checkForContentDB() and not kodiutil.getSetting('database.autoUpdate', False):
             return
 
-        import cvutil
         cvutil.loadContent()
 
     def checkForContentDB(self):
@@ -710,7 +708,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 self.updateItemSettings(item)
 
         if not self.checkForContentDB():
-            import cvutil
             cvutil.loadContent()
 
     def test(self):
@@ -821,7 +818,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not path:
                 return
         else:
-            import cvutil
             selection = cvutil.selectSequence()
 
             if not selection:

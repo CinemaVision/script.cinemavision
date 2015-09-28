@@ -144,7 +144,8 @@ class Progress(object):
         self.dialog.update(self.pct, self.line1, self.line2, self.line3)
 
     def msg(self, msg=None, heading=None, pct=None):
-        self.pct = pct is not None and pct or self.pct
+        if pct is not None:
+            self.pct = pct
         self.heading = heading is not None and heading or self.heading
         self.message = msg is not None and msg or self.message
         self.update(self.pct, self.heading, self.message)

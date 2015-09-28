@@ -11,7 +11,6 @@ from .. import _scrapers
 class Trailer(_scrapers.Trailer):
     def __init__(self, data):
         self.data = data
-        self.is3D = False
         if self.data.get('rating', '').lower().startswith('not'):
             self.data['rating'] = 'NR'
         self.rating = ratings.getRating('MPAA', self.data['rating'])
