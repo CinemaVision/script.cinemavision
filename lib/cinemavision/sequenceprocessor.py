@@ -685,16 +685,17 @@ class TrailerHandler:
 
         playables = []
         if source == 'scrapers':
+            scrapers.setContentPath(self.caller.contentPath)
             util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
             scrapersList = (sItem.getLive('scrapers') or '').split(',')
 
             if util.getSettingDefault('trailer.preferUnwatched'):
-                scrapers = [(s.strip(), True, False) for s in scrapersList]
-                scrapers += [(s.strip(), False, True) for s in scrapersList]
+                scrapersInfo = [(s.strip(), True, False) for s in scrapersList]
+                scrapersInfo += [(s.strip(), False, True) for s in scrapersList]
             else:
-                scrapers = [(s.strip(), True, True) for s in scrapersList]
+                scrapersInfo = [(s.strip(), True, True) for s in scrapersList]
 
-            for scraper, unwatched, watched in scrapers:
+            for scraper, unwatched, watched in scrapersInfo:
                 util.DEBUG_LOG('    - [{0}]'.format(scraper))
                 playables += self.scraperHandler(scraper, count, unwatched=unwatched, watched=watched)
                 if len(playables) >= count:
@@ -857,12 +858,8 @@ class TrailerHandler:
     def dirHandler(self, sItem):
         count = sItem.getLive('count')
 
-        if sItem.getLive('source') == 'content':
-            path = util.pathJoin(self.caller.contentPath, 'Trailers')
-            util.DEBUG_LOG('[{0}] Content x {1}'.format(sItem.typeChar, count))
-        else:
-            path = sItem.getLive('dir')
-            util.DEBUG_LOG('[{0}] Directory x {1}'.format(sItem.typeChar, count))
+        path = sItem.getLive('dir')
+        util.DEBUG_LOG('[{0}] Directory x {1}'.format(sItem.typeChar, count))
 
         if not path:
             util.DEBUG_LOG('    - Empty path!')
@@ -870,8 +867,11 @@ class TrailerHandler:
 
         try:
             files = util.vfs.listdir(path)
+            if self.sItem.getLive('filter3D'):
+                files = [f for f in files if self.caller.nextQueuedFeature.is3D == util.pathIs3D(f)]
             files = random.sample(files, min((count, len(files))))
-            return [Video(util.pathJoin(path, p).fromModule(sItem), volume=sItem.getLive('volume')) for p in files]
+            [util.DEBUG_LOG('    - Using: {0}'.format(repr(f))) for f in files] or util.DEBUG_LOG('    - No matching files')
+            return [Video(util.pathJoin(path, p), volume=sItem.getLive('volume')).fromModule(sItem) for p in files]
         except:
             util.ERROR()
             return []

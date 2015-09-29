@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 DEBUG = True
 
@@ -7,8 +8,13 @@ STORAGE_PATH = None
 
 TAGS_3D_REGEX = ''
 
+
 def T(ID, eng=''):
     return eng
+
+
+def pathIs3D(path):
+    return bool(re.search(TAGS_3D_REGEX, path))
 
 
 class Progress:
@@ -184,7 +190,7 @@ try:
             return _getSettingDefault(key)
 
         if key == 'trailer.source':
-            return ['scrapers', 'content', 'dir', 'file'][int(default)]
+            return ['scrapers', 'dir', 'file'][int(default)]
         elif key == 'trailer.ratingLimit':
             return ['none', 'max', 'match'][int(default)]
         elif key == 'trivia.format':

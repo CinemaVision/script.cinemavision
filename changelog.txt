@@ -17,6 +17,10 @@ Changelog for CinemaVision
 - add:     Detection of 3D trailers based on tag match for Kodi Database trailers
 - add:     Scraper Stereoscopynews.com
 - add:     Trailers module setting 'Filter 3D based on feature'
+- change:  Removed 'Content' from Trailers setting 'Source'
+- add:     'Content' added as option to Trailers Setting 'Scrapers'
+- add:     Content trailers now checked for 3D tags
+- add:     Trailer source 'Directory' now uses 3D tags to filter files when 'Filter 3D based on feature' is enabled
 
 [- 0.0.44 -]
 

@@ -6,9 +6,6 @@ from .. import _scrapers
 
 
 class Trailer(_scrapers.Trailer):
-    def __init__(self, data):
-        self.data = data
-
     @property
     def ID(self):
         return 'stereoscopynews:{0}'.format(self.data['ID'])
@@ -16,30 +13,6 @@ class Trailer(_scrapers.Trailer):
     @property
     def title(self):
         return self.data.get('title')
-
-    @property
-    def thumb(self):
-        return ''
-
-    @property
-    def genres(self):
-        return []
-
-    @property
-    def rating(self):
-        return 'NR'
-
-    @property
-    def ratingFormat(self):
-        return 'MPAA'
-
-    @property
-    def fullRating(self):
-        return '{0}:{1}'.format(self.ratingFormat, self.rating)
-
-    @property
-    def userAgent(self):
-        return None
 
     @property
     def is3D(self):
@@ -57,7 +30,7 @@ class StereoscopyNewsTrailerScraper(_scrapers.Scraper):
 
     def getTrailers(self):
         if self.allIsDue():
-            util.DEBUG_LOG('    - Fetching all trailers')
+            util.DEBUG_LOG(' - Fetching all trailers')
             return [Trailer(t) for t in scraper.getTrailers()]
 
         return []

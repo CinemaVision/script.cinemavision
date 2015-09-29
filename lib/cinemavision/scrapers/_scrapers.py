@@ -1,7 +1,13 @@
 import datetime
+from .. import ratings
+
+CONTENT_PATH = None
 
 
 class Trailer:
+    def __init__(self, data):
+        self.data = data
+
     @property
     def ID(self):
         return ''
@@ -17,6 +23,16 @@ class Trailer:
     @property
     def genres(self):
         return []
+
+    @property
+    def rating(self):
+        if not hasattr(self, '_rating'):
+            self._rating = ratings.getRating(self.data.get('ratingFormat', 'MPAA'), self.data.get('rating', 'NR'))
+        return self._rating
+
+    @property
+    def fullRating(self):
+        return '{0}:{1}'.format(self.ratingFormat, self.rating)
 
     @property
     def userAgent(self):

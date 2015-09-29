@@ -317,6 +317,7 @@ class UserContent:
     @DB.sessionW
     def getTrailers(self):
         import scrapers
+        scrapers.setContentPath(self._contentDirectory)
 
         for source in self._trailer_sources:
             util.DEBUG_LOG('Getting trailers from {0}'.format(source))

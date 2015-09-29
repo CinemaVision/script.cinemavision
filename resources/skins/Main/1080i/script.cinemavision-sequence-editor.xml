@@ -20,9 +20,9 @@
 
         <control type="image">
             <posx>0</posx>
-            <posy>-100</posy>
+            <posy>0</posy>
             <width>1920</width>
-            <height>535</height>
+            <height>306</height>
             <texture>script.cinemavision-sequence-editor-back.png</texture>
             <colordiffuse>20FFFFFF</colordiffuse>
             <aspectratio>stretch</aspectratio>

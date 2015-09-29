@@ -1,9 +1,10 @@
-
+import _scrapers
 
 _SOURCES = {
     'itunes': 'iTunes',
     'kodidb': 'kodiDB',
-    'stereoscopynews': 'StereoscopyNews'
+    'stereoscopynews': 'StereoscopyNews',
+    'content': 'Content'
 }
 
 
@@ -19,6 +20,9 @@ def getScraper(source=None):
     elif source == 'StereoscopyNews':
         import stereoscopynews
         return stereoscopynews.StereoscopyNewsTrailerScraper()
+    elif source == 'Content':
+        import content
+        return content.ContentTrailerScraper()
     return None
 
 
@@ -44,3 +48,7 @@ def getPlayableURL(ID, quality=None, source=None, url=None):
         return None
 
     return scraper.getPlayableURL(ID, quality, url)
+
+
+def setContentPath(path):
+    _scrapers.CONTENT_PATH = path

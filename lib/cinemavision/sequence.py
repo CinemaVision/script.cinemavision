@@ -411,7 +411,7 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': [None, 'scrapers', 'content', 'dir', 'file'],
+            'limits': [None, 'scrapers', 'dir', 'file'],
             'name': 'Source',
             'default': None
         },
@@ -490,9 +490,10 @@ class Trailer(Item):
     typeChar = 'T'
 
     _scrapers = [
-        ['iTunes', 'iTunes', 'itunes'],
-        ['KodiDB', 'KodiDB', 'kodidb'],
-        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
+        ['iTunes', 'Apple iTunes', 'itunes'],
+        ['KodiDB', 'Kodi Database', 'kodidb'],
+        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews'],
+        ['Content', 'Content', 'content']
     ]
 
     def __init__(self):
@@ -527,16 +528,16 @@ class Trailer(Item):
             if self.getLive('source') != 'dir':
                 return False
         elif attr == 'count':
-            if self.getLive('source') not in ('dir', 'itunes', 'scrapers'):
+            if self.getLive('source') not in ('dir', 'scrapers'):
                 return False
         elif attr == 'scrapers':
             if self.getLive('source') != 'scrapers':
                 return False
         elif attr == 'filter3D':
-            if self.getLive('source') != 'scrapers':
+            if self.getLive('source') not in ('scrapers', 'dir'):
                 return False
         elif attr in ('limitRating', 'limitGenre'):
-            if self.getLive('source') == 'scrapers':
+            if not self.getLive('source') == 'scrapers':
                 return False
         elif attr == 'quality':
             if self.getLive('source') != 'scrapers' or 'iTunes' not in self.liveScrapers():
@@ -557,7 +558,7 @@ class Trailer(Item):
 
     def Select(self, attr):
         selected = [s.strip().lower() for s in self.liveScrapers()]
-        ret = list(self._scrapers)
+        ret = [list(x) for x in self._scrapers]
         for s in ret:
             s[2] = s[2] in selected
         ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)

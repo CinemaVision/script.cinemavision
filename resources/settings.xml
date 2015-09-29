@@ -41,8 +41,8 @@
         <setting id="trailer.preferUnwatched" label="Prefer unwatched over priority" type="bool"   default="true" />
         <setting id="trailer.CLEAR"           label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"       label="Source"               type="enum"      values="Scrapers|Content|Directory|Single File" default="0" />
-        <setting id="trailer.scrapers"     label="Scrapers (by priority)"             type="action"    action="RunScript(script.cinemavision,trailer.scrapers)" default="iTunes,KodiDB" />
+        <setting id="trailer.source"       label="Source"               type="enum"      values="Scrapers|Directory|Single File" default="0" />
+        <setting id="trailer.scrapers"     label="Scrapers (by priority)" type="action"    action="RunScript(script.cinemavision,trailer.scrapers)" default="iTunes,KodiDB" />
         <setting id="trailer.dir"          label="Source: Directory"    type="folder"    sources="auto" value="" />
         <setting id="trailer.file"         label="Source: File"         type="file"      sources="auto" value="" />
         <setting id="trailer.count"        label="Count"                type="slider"    default="1" range="1,10" option="int" />

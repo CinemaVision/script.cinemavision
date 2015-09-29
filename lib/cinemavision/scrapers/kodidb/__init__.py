@@ -1,4 +1,3 @@
-import re
 import scraper
 from lib import cvutil
 from ... import util
@@ -8,8 +7,8 @@ from .. import _scrapers
 
 class Trailer(_scrapers.Trailer):
     def __init__(self, data):
-        self.data = data
-        self._is3D = bool(re.search(util.TAGS_3D_REGEX, self.data.get('url', '')))
+        _scrapers.Trailer.__init__(self, data)
+        self._is3D = util.pathIs3D(self.data.get('url', ''))
         if not self.data.get('rating'):
             self.data['rating'] = u'NR'
 
@@ -20,10 +19,6 @@ class Trailer(_scrapers.Trailer):
     @property
     def title(self):
         return self.data['title']
-
-    @property
-    def thumb(self):
-        return ''
 
     @property
     def genres(self):
@@ -42,10 +37,6 @@ class Trailer(_scrapers.Trailer):
     @rating.setter
     def rating(self, val):
         self['rating'] = val
-
-    @property
-    def userAgent(self):
-        return ''
 
     @property
     def is3D(self):
