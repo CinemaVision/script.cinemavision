@@ -24,6 +24,9 @@ Changelog for CinemaVision
 - add:     Trailer source 'Directory' now uses 3D tags to filter files when 'Filter 3D based on feature' is enabled
 - fix:     Unified some strings between addon level and module level settings
 - change:  Trailers ratings now compared to features remaining in the queue instead of initial queue
+- change:  Re-order settings sections
+- change:  Re-order moudules in sequence editor in 'add' menu
+- change:  'Rating style selection' now defaults to random
 
 [- 0.0.44 -]
 

@@ -53,7 +53,7 @@ def _getSettingDefault(key):
     defaults = {
         'feature.count': 1,
         'feature.ratingBumper': 'video',
-        'feature.ratingStyleSelection': 'style',
+        'feature.ratingStyleSelection': 'random',
         'feature.ratingStyle': 'Classic',
         'feature.volume': 100,
         'trivia.format': 'slide',

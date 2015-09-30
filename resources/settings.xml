@@ -12,17 +12,22 @@
         <setting id="content.path"        label="Content path"           type="folder" sources="auto" option="writeable" value="" />
         <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
-        <setting label="Scrapers (trailers)" type="lsep"/>
-        <setting id="scraper.trailers.iTunes"          label="Apple iTunes"        type="bool" default="true" />
+        <setting label="Trailer Scrapers" type="lsep"/>
+        <setting id="scraper.trailers.Content"         label="Content Folder"      type="bool" default="true" />
         <setting id="scraper.trailers.KodiDB"          label="Kodi Database"       type="bool" default="true" />
+        <setting id="scraper.trailers.iTunes"          label="Apple iTunes"        type="bool" default="true" />
         <setting id="scraper.trailers.StereoscopyNews" label="StereoscopyNews.com" type="bool" default="false" />
-        <setting id="scraper.trailers.Content"         label="Content Folder"      type="bool" default="false" />
     </category>
 
     <category label="Playback">
         <setting id="hide.queue.dialog"        label="Hide queue dialog"       type="bool" default="false" />
         <setting id="hide.queue.dialog.single" label="If only one item queued" type="bool" default="false" subsetting="true" enable="eq(-1,true)"/>
         <setting id="allow.video.skip"         label="Allow video skipping"    type="bool" default="true" />
+    </category>
+
+    <category label="Video">
+        <setting label="Module Defaults" type="lsep"/>
+        <setting id="video.volume" label="Volume (% of current)" type="slider" default="100" range="1,100" option="percent" />
     </category>
 
     <category label="Trivia">
@@ -44,7 +49,7 @@
         <setting id="trivia.musicFile"   label="Music: file"                 type="file"   sources="auto" value="" />
     </category>
 
-    <category label="Trailer">
+    <category label="Trailers">
         <setting id="trailer.preferUnwatched" label="Prefer unwatched over priority" type="bool"   default="true" />
         <setting id="trailer.CLEAR"           label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
@@ -72,22 +77,17 @@
         <setting id="audioformat.volume"   label="Volume (% of current)" type="slider" default="100" range="1,100" option="percent" />
     </category>
 
-    <category label="Feature">
+    <category label="Features">
         <setting id="settings.ratings.initialized" label="" type="bool"   default="false" visible="false"/>
         <setting id="rating.system.default"        label="Default rating system"  type="fileenum"   values="$PROFILE/settings/ratings"  default="MPAA" mask="/" visible="eq(-1,true)"/>
         <setting id="rating.system.default.dummy"  label="Default rating system (needs Content path set and updated)"  type="enum"   values="None"  default="0" visible="!eq(-2,true)" enable="false" />
         <setting label="Module Defaults" type="lsep"/>
         <setting id="feature.count"                label="Count"                  type="slider" default="1" range="1,10" option="int" />
         <setting id="feature.ratingBumper"         label="Rating bumper"          type="enum"   values="None|Video|Image"  default="1" />
-        <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="1" />
+        <setting id="feature.ratingStyleSelection" label="Rating style selection" type="enum"   values="Random|Style"  default="0" />
         <setting id="feature.ratingStyle"          label="Rating style"           type="action" default="" action="RunScript(script.cinemavision,feature.setRatingBumperStyle)" subsetting="true" visible="eq(-7,true)"/>
         <setting id="feature.ratingStyle.dummy"    label="Rating style (needs Content path set and updated)"  type="enum"   values="None"  default="0" subsetting="true" visible="!eq(-8,true)" enable="false" />
         <setting id="feature.volume"               label="Volume (% of current)"  type="slider" default="100"  range="1,100"    option="percent" />
-    </category>
-
-    <category label="Video Bumpers">
-        <setting label="Module Defaults" type="lsep"/>
-        <setting id="video.volume" label="Volume (% of current)" type="slider" default="100" range="1,100" option="percent" />
     </category>
 
     <category label="Actions">

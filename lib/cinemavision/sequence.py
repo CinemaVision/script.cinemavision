@@ -912,13 +912,13 @@ CONTENT_CLASSES = {
 }
 
 ITEM_TYPES = [
-    ('!', 'Action', '_', Action),
-    ('A', 'Audio Format Bumpers', 'A', AudioFormat),
-    ('C', 'Command', 'C', Command),
-    ('F', 'Features', 'F', Feature),
+    ('V', 'Video Bumpers', 'V', Video),
     ('Q', 'Trivia Slides', 'Q', Trivia),
-    ('V', 'Videos', 'V', Video),
     ('T', 'Trailers', 'T', Trailer),
+    ('A', 'Audio Format Bumpers', 'A', AudioFormat),
+    ('F', 'Features', 'F', Feature),
+    ('C', 'Commands', 'C', Command),
+    ('!', 'Actions', '_', Action)
 ]
 
 
