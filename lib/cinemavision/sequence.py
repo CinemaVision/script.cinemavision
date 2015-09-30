@@ -47,6 +47,8 @@ SETTINGS_DISPLAY = {
     'off': 'None',
     'none': 'None',
     'fade': 'Fade',
+    'max': 'Max',
+    'match': 'Match features',
     'slideL': 'Slide Left',
     'slideR': 'Slide Right',
     'slideU': 'Slide Up',
@@ -444,17 +446,17 @@ class Trailer(Item):
             'default': None
         },
         {
+            'attr': 'limitGenre',
+            'type': strToBoolWithDefault,
+            'limits': LIMIT_BOOL_DEFAULT,
+            'name': 'Match feature genres',
+            'default': None
+        },
+        {
             'attr': 'filter3D',
             'type': strToBoolWithDefault,
             'limits': LIMIT_BOOL_DEFAULT,
             'name': 'Filter for 3D based on Feature',
-            'default': None
-        },
-        {
-            'attr': 'limitGenre',
-            'type': strToBoolWithDefault,
-            'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Limit By Genre',
             'default': None
         },
         {
@@ -493,7 +495,7 @@ class Trailer(Item):
         ['iTunes', 'Apple iTunes', 'itunes'],
         ['KodiDB', 'Kodi Database', 'kodidb'],
         ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews'],
-        ['Content', 'Content', 'content']
+        ['Content', 'Content Folder', 'content']
     ]
 
     def __init__(self):
@@ -558,11 +560,29 @@ class Trailer(Item):
 
     def Select(self, attr):
         selected = [s.strip().lower() for s in self.liveScrapers()]
-        ret = [list(x) for x in self._scrapers]
-        for s in ret:
-            s[2] = s[2] in selected
+        contentScrapers = util.contentScrapers()
+        temp = [list(x) for x in self._scrapers]
+        ret = []
+        for s in temp:
+            for ctype, c in contentScrapers:
+                if ctype == 'trailers' and c == s[0]:
+                    s[2] = s[2] in selected
+                    ret.append(s)
         ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
         return ret
+
+    def getLive(self, attr):
+        if attr != 'scrapers':
+            return Item.getLive(self, attr)
+
+        val = Item.getLive(self, attr)
+        if not val:
+            return val
+
+        inSettings = (val).split(',')
+
+        contentScrapers = [s for t, s in util.contentScrapers() if t == 'trailers']
+        return ','.join([s for s in inSettings if s in contentScrapers])
 
 
 ################################################################################

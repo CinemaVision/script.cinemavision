@@ -172,7 +172,7 @@ class UserContent:
         self.loadAudioFormatBumpers()
         self.loadVideoBumpers()
         self.loadRatingsBumpers()
-        self.getTrailers()
+        self.scrapeContent()
 
     def loadMusic(self):
         self.logHeading('LOADING MUSIC')
@@ -315,48 +315,49 @@ class UserContent:
             )
 
     @DB.sessionW
-    def getTrailers(self):
+    def scrapeContent(self):
         import scrapers
         scrapers.setContentPath(self._contentDirectory)
 
-        for source in self._trailer_sources:
-            util.DEBUG_LOG('Getting trailers from {0}'.format(source))
-            self._callback(heading='Adding {0} trailers...'.format(source))
-            self._callback('Getting trailer list...', pct=0)
-            trailers = scrapers.getTrailers(source)
-            total = len(trailers)
-            util.DEBUG_LOG(' - Received {0} trailers'.format(total))
-            if trailers:
-                total = float(total)
-                allct = 0
-                ct = 0
+        for stype, source in util.contentScrapers():
+            if stype == 'trailers':
+                util.DEBUG_LOG('Getting trailers from {0}'.format(source))
+                self._callback(heading='Adding {0} trailers...'.format(source))
+                self._callback('Getting trailer list...', pct=0)
+                trailers = scrapers.getTrailers(source)
+                total = len(trailers)
+                util.DEBUG_LOG(' - Received {0} trailers'.format(total))
+                if trailers:
+                    total = float(total)
+                    allct = 0
+                    ct = 0
 
-                for t in trailers:
-                    allct += 1
-                    try:
-                        DB.Trailers.get(DB.Trailers.WID == t.ID)
-                    except DB.peewee.DoesNotExist:
-                        ct += 1
-                        url = t.getStaticURL()
-                        DB.Trailers.create(
-                            WID=t.ID,
-                            source=source,
-                            watched=False,
-                            title=t.title,
-                            url=url,
-                            userAgent=t.userAgent,
-                            rating=str(t.rating),
-                            genres=','.join(t.genres),
-                            thumb=t.thumb,
-                            release=t.release,
-                            is3D=t.is3D
-                        )
-                    pct = int((allct/total)*100)
-                    self._callback(t.title, pct=pct)
+                    for t in trailers:
+                        allct += 1
+                        try:
+                            DB.Trailers.get(DB.Trailers.WID == t.ID)
+                        except DB.peewee.DoesNotExist:
+                            ct += 1
+                            url = t.getStaticURL()
+                            DB.Trailers.create(
+                                WID=t.ID,
+                                source=source,
+                                watched=False,
+                                title=t.title,
+                                url=url,
+                                userAgent=t.userAgent,
+                                rating=str(t.rating),
+                                genres=','.join(t.genres),
+                                thumb=t.thumb,
+                                release=t.release,
+                                is3D=t.is3D
+                            )
+                        pct = int((allct/total)*100)
+                        self._callback(t.title, pct=pct)
 
-                util.DEBUG_LOG(' - {0} new {1} trailers added to database'.format(ct, source))
-            else:
-                util.DEBUG_LOG(' - No new {0} trailers added to database'.format(source))
+                    util.DEBUG_LOG(' - {0} new {1} trailers added to database'.format(ct, source))
+                else:
+                    util.DEBUG_LOG(' - No new {0} trailers added to database'.format(source))
 
 
 class MusicHandler:

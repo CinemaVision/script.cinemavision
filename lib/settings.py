@@ -183,9 +183,14 @@ def setScrapers():
     import cinemavision
 
     selected = [s.strip().lower() for s in kodiutil.getSetting('trailer.scrapers', '').split(',')]
-    options = [list(x) for x in cinemavision.sequence.Trailer._scrapers]
-    for s in options:
-        s[2] = s[2] in selected
+    contentScrapers = cinemavision.util.contentScrapers()
+    temp = [list(x) for x in cinemavision.sequence.Trailer._scrapers]
+    options = []
+    for s in temp:
+        for ctype, c in contentScrapers:
+            if ctype == 'trailers' and c == s[0]:
+                s[2] = s[2] in selected
+                options.append(s)
     options.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
 
     result = cvutil.multiSelect(options, default=True)

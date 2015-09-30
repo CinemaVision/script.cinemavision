@@ -14,13 +14,16 @@ Changelog for CinemaVision
 - change:  Changed Trailers setting 'Play unwatched trailers first' to 'Prefer unwatched over priority'
            Note: When enabled will search unwatched by source priority then watched by source priority
                  When disabled will search unwatched and then watched for each source by priority
+- change:  Settings in section 'General' under heading 'Content' moved to new 'Content' section
+- add:     Settings in 'Content' section under 'Scrapers (trailers)': Apple iTunes, Kodi Database, StereoscopyNews.com, Content Folder
 - add:     Detection of 3D trailers based on tag match for Kodi Database trailers
-- add:     Scraper Stereoscopynews.com
+- add:     Trailers scraper Stereoscopynews.com
 - add:     Trailers module setting 'Filter 3D based on feature'
-- change:  Removed 'Content' from Trailers setting 'Source'
-- add:     'Content' added as option to Trailers Setting 'Scrapers'
+- change:  Removed 'Content' from Trailers setting 'Source' - added as option to Trailers Setting 'Scrapers' as 'Content Folder'
 - add:     Content trailers now checked for 3D tags
 - add:     Trailer source 'Directory' now uses 3D tags to filter files when 'Filter 3D based on feature' is enabled
+- fix:     Unified some strings between addon level and module level settings
+- change:  Trailers ratings now compared to features remaining in the queue instead of initial queue
 
 [- 0.0.44 -]
 

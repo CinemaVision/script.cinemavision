@@ -224,6 +224,25 @@ try:
 
         return default
 
+    def contentScrapers():
+        ret = []
+        for stype, scraper, default in (
+            ('trailers', 'iTunes', True),
+            ('trailers', 'KodiDB', True),
+            ('trailers', 'StereoscopyNews', False),
+            ('trailers', 'Content', False)
+        ):
+            sett = xbmcaddon.Addon().getSetting('scraper.{0}.{1}'.format(stype, scraper))
+            if sett in ('true', 'false'):
+                sett = sett == 'true'
+            else:
+                sett = default
+
+            if sett:
+                ret.append((stype, scraper))
+
+        return ret
+
     videoExtensions = tuple(xbmc.getSupportedMedia('video').split('|') + ['.cvurl'])
     musicExtensions = tuple(xbmc.getSupportedMedia('music').split('|'))
     imageExtensions = tuple(xbmc.getSupportedMedia('picture').split('|'))
@@ -305,6 +324,9 @@ except:
 
     def getSettingDefault(key):
         return _getSettingDefault(key)
+
+    def contentScrapers():
+        return []
 
     videoExtensions = ('.mp4',)
     musicExtensions = ('.mp3', '.wav')

@@ -688,7 +688,6 @@ class TrailerHandler:
             scrapers.setContentPath(self.caller.contentPath)
             util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
             scrapersList = (sItem.getLive('scrapers') or '').split(',')
-
             if util.getSettingDefault('trailer.preferUnwatched'):
                 scrapersInfo = [(s.strip(), True, False) for s in scrapersList]
                 scrapersInfo += [(s.strip(), False, True) for s in scrapersList]
@@ -698,9 +697,10 @@ class TrailerHandler:
             for scraper, unwatched, watched in scrapersInfo:
                 util.DEBUG_LOG('    - [{0}]'.format(scraper))
                 playables += self.scraperHandler(scraper, count, unwatched=unwatched, watched=watched)
-                if len(playables) >= count:
-                    break
                 count -= min(len(playables), count)
+                if count <= 0:
+                    break
+
         elif source == 'dir' or source == 'content':
             playables = self.dirHandler(sItem)
         elif source == 'file':
@@ -747,8 +747,8 @@ class TrailerHandler:
                     if ratings.getRating(t.rating).value <= maxr.value:
                         yield t
             elif self.caller.ratings:
-                minr = min(self.caller.ratings.values(), key=lambda x: x.value)
-                maxr = max(self.caller.ratings.values(), key=lambda x: x.value)
+                minr = min(self.caller.ratings, key=lambda x: x.value)
+                maxr = max(self.caller.ratings, key=lambda x: x.value)
 
                 for t in DB.Trailers.select().where(*where).order_by(*orderby):
                     if minr.value <= ratings.getRating(t.rating).value <= maxr.value:
@@ -843,15 +843,17 @@ class TrailerHandler:
 
         if unwatched:
             util.DEBUG_LOG('    - Searching un-watched trailers')
-            trailers = self.getTrailersFromDB(source, count)
+            trailers += self.getTrailersFromDB(source, count)
             if not watched:
                 return trailers
 
             count -= min(len(trailers), count)
+            if count <= 0:
+                return trailers
 
         if watched:
             util.DEBUG_LOG('    - Searching watched trailers')
-            trailers = self.getTrailersFromDB(source, count, watched=True)
+            trailers += self.getTrailersFromDB(source, count, watched=True)
 
         return trailers
 
@@ -1113,7 +1115,6 @@ class SequenceProcessor:
         self.sequence = []
         self.featureQueue = []
         self.playables = []
-        self.ratings = {}
         self.genres = []
         self.contentPath = content_path
         self.lastFeature = None
@@ -1141,13 +1142,14 @@ class SequenceProcessor:
         self.defaultFeature.audioFormat = 'Other'
 
     def addFeature(self, feature):
-        if feature.rating:
-            self.ratings[str(feature.rating)] = feature.rating
-
         if feature.genres:
             self.genres += feature.genres
 
         self.featureQueue.append(feature)
+
+    @property
+    def ratings(self):
+        return [feature.rating for feature in self.featureQueue if feature.rating]
 
     def commandHandler(self, sItem):
         if sItem.condition == 'feature.queue=full' and not self.featureQueue:
@@ -1173,7 +1175,7 @@ class SequenceProcessor:
     def process(self):
         util.DEBUG_LOG('Processing sequence...')
         util.DEBUG_LOG('Feature count: {0}'.format(len(self.featureQueue)))
-        util.DEBUG_LOG('Ratings: {0}'.format(', '.join(self.ratings.keys())))
+        util.DEBUG_LOG('Ratings: {0}'.format(', '.join([str(r) for r in self.ratings])))
         util.DEBUG_LOG('Genres: {0}'.format(', '.join(self.genres)))
 
         if self.featureQueue:
