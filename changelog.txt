@@ -1,5 +1,11 @@
 Changelog for CinemaVision
 
+[- 0.0.46 -]
+
+- fix:     Fix error with music enabled for trivia when locale is one that uses commas to represent a decimal point
+- fix:     iTunes trailers now will use whatever is available (such as teasers) when no trailers are available
+- fix:     Trailers that failed to resolve a URL were reducing the number of played trailers by one
+
 [- 0.0.45 -]
 
 - add:     Addon now sets the following home window properties:

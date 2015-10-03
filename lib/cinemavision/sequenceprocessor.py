@@ -711,17 +711,6 @@ class TrailerHandler:
 
         return playables
 
-    def convertItunesURL(self, url, res):
-        repl = None
-        for r in ('h480p', 'h720p', 'h1080p'):
-            if r in url:
-                repl = r
-                break
-        if not repl:
-            return url
-
-        return url.replace(repl, 'h{0}'.format(res))
-
     def _getTrailersFromDBRating(self, source, watched=False):
         ratingLimitMethod = self.sItem.getLive('ratingLimit')
         false = False  # To make my IDE happy about == and false
@@ -768,37 +757,46 @@ class TrailerHandler:
 
     def getTrailersFromDB(self, source, count, watched=False):
         # Get trailers + a few to make the random more random
-        poolSize = count + 5
-        trailers = []
-        ct = 0
-        for t in self._getTrailersFromDBGenre(source, watched=watched):
-            trailers.append(t)
-            ct += 1
-            if ct >= poolSize:
-                break
-
-        if len(trailers) > count:
-            trailers = random.sample(trailers, count)
-
         now = datetime.datetime.now()
         quality = self.sItem.getLive('quality')
 
-        for t in trailers:
-            url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
-            watched = t.watched
+        poolSize = count + 5
+        trailers = []
+        modified = []
+        pool = []
+        ct = 0
+        for t in self._getTrailersFromDBGenre(source, watched=watched):
+            pool.append(t)
+            ct += 1
+            if ct >= poolSize:
+                random.shuffle(pool)
 
-            t.watched = True
-            t.date = now
-            t.url = url
-            t.broken = not url
+                for t in pool:
+                    url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
+                    watched = t.watched
+
+                    t.watched = True
+                    t.date = now
+                    t.url = url
+                    t.broken = not url
+                    modified.append(t)
+                    if not t.broken:
+                        trailers.append(t)
+                        util.DEBUG_LOG(
+                            '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')
+                        )
+                        if len(trailers) >= count:
+                            break
+
+            if len(trailers) >= count:
+                break
+
+        for t in modified:
             t.save()
-            util.DEBUG_LOG(
-                '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')
-            )
 
         return [
             Video(
-                self.convertItunesURL(t.url, self.sItem.getLive('quality')),
+                t.url,
                 t.userAgent,
                 title=t.title,
                 thumb=t.thumb,

@@ -71,22 +71,19 @@ class ItunesTrailerScraper(_scrapers.Scraper):
         if not all_:
             return None
 
-        try:
-            versions = [t for t in all_ if t['title'] == 'Trailer']
-        except IndexError:
-            versions = all_
+        trailers = [t for t in all_ if t['title'] == 'Trailer']
 
-        version = None
-        try:
-            version = [v for v in versions if any(res in u for u in v['urls'])][0]
-            if version:
-                return [u for u in version['urls'] if res in u][0]
-        except:
-            import traceback
-            traceback.print_exc()
+        if trailers:
+            try:
+                version = [v for v in trailers if any(res in u for u in v['urls'])][0]
+                if version:
+                    return [u for u in version['urls'] if res in u][0]
+            except:
+                import traceback
+                traceback.print_exc()
 
         try:
-            return versions[0]['urls'][0]
+            return all_[0]['urls'][0]
         except:
             import traceback
             traceback.print_exc()
@@ -137,3 +134,15 @@ class ItunesTrailerScraper(_scrapers.Scraper):
             return [Trailer(t) for t in ms.get_most_recent_movies(None)]
 
         return []
+
+    def convertURL(self, url, res):
+        # Not currently used
+        repl = None
+        for r in ('h480p', 'h720p', 'h1080p'):
+            if r in url:
+                repl = r
+                break
+        if not repl:
+            return url
+
+        return url.replace(repl, 'h{0}'.format(res))

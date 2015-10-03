@@ -218,7 +218,7 @@ try:
             return int(default)
 
         try:
-            return float(default)
+            return float(default.replace(',', '.'))
         except ValueError:
             pass
 
