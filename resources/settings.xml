@@ -6,6 +6,7 @@
         <setting id="sequence.3D"         label="3D sequence"            type="action" action="RunScript(script.cinemavision,sequence.3D)" />
         <setting id="3D.tag.regex"        label="3D tag detection regex" type="text"   default="(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper"  type="bool"   default="false" />
+        <setting id="scope"               label="Scope (Restart editor to apply)" type="labelenum" values="16:9|2.35:1|2.40:1"  default="0" />
     </category>
 
     <category label="Content">
@@ -106,6 +107,7 @@
         <setting id="pastebin.user"       label="Pastebin user (necessary to paste as user)"  type="text" default="" />
         <setting id="pastebin.delete.key" label="Delete Pastebin user key"      type="action" action="RunScript(script.cinemavision,pastebin.delete.key)" />
         <setting label="Miscellaneous" type="lsep"/>
+        <setting id="video.preDelay"      label="Video Pre-Delay (ms)"          type="slider" default="0" range="0,100,3000" option="int" />
         <setting id="reset.database"      label="Reset content database"        type="action" action="RunScript(script.cinemavision,reset.database)" />
         <setting id="trailer.CLEARBROKEN" label="Clear trailers broken status"  type="action" action="RunScript(script.cinemavision,trailer.clearBroken)" />
     </category>

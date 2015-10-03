@@ -56,6 +56,7 @@ class PlaylistDialog(kodigui.BaseDialog):
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
+        kodiutil.setScope()
         self.features = kwargs.get('features', [])
         self.play = False
         self.moving = None

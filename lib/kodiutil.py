@@ -97,6 +97,13 @@ def getGlobalProperty(key):
     return xbmc.getInfoLabel('Window(10000).Property(script.cinemavision.{0})'.format(key))
 
 
+def setScope():
+    setGlobalProperty('scope.2.40:1', '')
+    setGlobalProperty('scope.2.35:1', '')
+    setGlobalProperty('scope.16:9', '')
+    setGlobalProperty('scope.{0}'.format(getSetting('scope', '16:9')), '1')
+
+
 try:
     xbmc.Monitor().waitForAbort
 

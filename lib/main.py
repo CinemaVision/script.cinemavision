@@ -701,6 +701,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def settings(self):
         kodiutil.ADDON.openSettings()
 
+        kodiutil.setScope()
         cinemavision.init(kodiutil.DEBUG())
 
         for item in self.sequenceControl:
@@ -897,6 +898,7 @@ def checkAPILevel():
 
 def main():
     checkAPILevel()
+    kodiutil.setScope()
     kodiutil.LOG('Sequence editor: OPENING')
     SequenceEditorWindow.open()
     kodiutil.LOG('Sequence editor: CLOSED')

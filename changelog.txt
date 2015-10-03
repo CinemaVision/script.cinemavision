@@ -5,6 +5,10 @@ Changelog for CinemaVision
 - fix:     Fix error with music enabled for trivia when locale is one that uses commas to represent a decimal point
 - fix:     iTunes trailers now will use whatever is available (such as teasers) when no trailers are available
 - fix:     Trailers that failed to resolve a URL were reducing the number of played trailers by one
+- add:     Support for scoped screens
+- fix:     Volume not being set for video bumpers unless they were set to random
+- fix:     Bug where if fewer than count+5 trailers matched, none were returned
+- add:     Added setting to 'Advanced': 'Video pre-delay (ms)' which allows adding a delay before a video plays
 
 [- 0.0.45 -]
 

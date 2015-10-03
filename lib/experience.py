@@ -200,6 +200,7 @@ class ExperienceWindow(kodigui.BaseWindow):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
         kodiutil.setGlobalProperty('paused', '')
         kodiutil.setGlobalProperty('number', '')
+        kodiutil.setScope()
         self.player = None
         self.action = None
         self.volume = None
@@ -781,6 +782,7 @@ class ExperiencePlayer(xbmc.Player):
                 self.playlist.add(*pli)
 
         self.playlist.add(self.fakeFileNext)
+        self.videoPreDelay()
         rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1})
         xbmc.sleep(100)
         while not xbmc.getCondVisibility('VideoPlayer.IsFullscreen') and not xbmc.abortRequested and not self.abortFlag.isSet() and self.isPlaying():
@@ -798,6 +800,12 @@ class ExperiencePlayer(xbmc.Player):
             item = {'file': feature.path}
 
         rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)
+
+    def videoPreDelay(self):
+        delay = kodiutil.getSetting('video.preDelay', 0)
+        if delay:
+            kodiutil.DEBUG_LOG('Video pre-dalay: {0}ms'.format(delay))
+            xbmc.sleep(delay)
 
     def isPlayingMinimized(self):
         if not xbmc.getCondVisibility('Player.Playing'):  # isPlayingVideo() returns True before video actually plays (ie. is fullscreen)

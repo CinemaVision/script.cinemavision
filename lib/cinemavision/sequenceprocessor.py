@@ -475,7 +475,7 @@ class FeatureHandler:
             if mediaType == 'video':
                 bumper = self.getRatingBumper(sItem, f)
                 if bumper:
-                    playables.append(Video(bumper.path).fromModule(sItem))
+                    playables.append(Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem))
                     util.DEBUG_LOG('    - Video Rating: {0}'.format(repr(bumper.path)))
             if mediaType == 'image' or mediaType == 'video' and not bumper:
                 bumper = self.getRatingBumper(sItem, f, image=True)
@@ -757,12 +757,10 @@ class TrailerHandler:
 
     def getTrailersFromDB(self, source, count, watched=False):
         # Get trailers + a few to make the random more random
-        now = datetime.datetime.now()
         quality = self.sItem.getLive('quality')
 
         poolSize = count + 5
         trailers = []
-        modified = []
         pool = []
         ct = 0
         for t in self._getTrailersFromDBGenre(source, watched=watched):
@@ -772,27 +770,24 @@ class TrailerHandler:
                 random.shuffle(pool)
 
                 for t in pool:
-                    url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
-                    watched = t.watched
-
-                    t.watched = True
-                    t.date = now
-                    t.url = url
-                    t.broken = not url
-                    modified.append(t)
-                    if not t.broken:
+                    t = self.updateTrailer(t, source, quality)
+                    if t:
                         trailers.append(t)
-                        util.DEBUG_LOG(
-                            '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')
-                        )
                         if len(trailers) >= count:
                             break
+                pool = []
+                ct = 0
 
             if len(trailers) >= count:
                 break
-
-        for t in modified:
-            t.save()
+        else:
+            if pool:
+                for t in pool:
+                    t = self.updateTrailer(t, source, quality)
+                    if t:
+                        trailers.append(t)
+                        if len(trailers) >= count:
+                            break
 
         return [
             Video(
@@ -803,6 +798,23 @@ class TrailerHandler:
                 volume=self.sItem.getLive('volume')
             ).fromModule(self.sItem) for t in trailers
         ]
+
+    def updateTrailer(self, t, source, quality):
+        url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
+        watched = t.watched
+
+        t.watched = True
+        t.date = datetime.datetime.now()
+        t.url = url
+        t.broken = not url
+        t.save()
+        if not t.broken:
+            util.DEBUG_LOG(
+                '    - {0}: {1} ({2:%Y-%m-%d}){3}'.format(repr(t.title).lstrip('u').strip("'"), t.rating, t.release, watched and ' - WATCHED' or '')
+            )
+            return t
+
+        return None
 
     def updateTrailers(self, source):
         trailers = scrapers.updateTrailers(source)
@@ -835,11 +847,10 @@ class TrailerHandler:
 
     @DB.sessionW
     def scraperHandler(self, source, count, unwatched=False, watched=False):
-        self.updateTrailers(source)
-
         trailers = []
 
         if unwatched:
+            self.updateTrailers(source)
             util.DEBUG_LOG('    - Searching un-watched trailers')
             trailers += self.getTrailersFromDB(source, count)
             if not watched:
@@ -937,14 +948,14 @@ class VideoBumperHandler:
                 util.DEBUG_LOG('    - Falling back to 2D bumper')
                 try:
                     bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))])
-                    return [Video(bumper.path).fromModule(sItem)]
+                    return [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem)]
                 except IndexError:
                     util.DEBUG_LOG('    - No matches!')
                     pass
         else:
             util.DEBUG_LOG('    - Via source')
             if sItem.source:
-                return [Video(sItem.source).fromModule(sItem)]
+                return [Video(sItem.source, volume=sItem.getLive('volume')).fromModule(sItem)]
             else:
                 util.DEBUG_LOG('    - Empty path!')
 
