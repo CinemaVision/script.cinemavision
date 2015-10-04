@@ -161,7 +161,6 @@ class ActionFileProcessor:
 
     def _run(self):
         for c in self.commands:
-            print 'x'
             c._threadedExecute()
 
     def _loadCommands(self):

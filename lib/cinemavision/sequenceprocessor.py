@@ -1130,8 +1130,10 @@ class SequenceProcessor:
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 
-    def atEnd(self):
-        return self.pos >= self.end
+    def atEnd(self, pos=None):
+        if pos is None:
+            pos = self.pos
+        return pos >= self.end
 
     @property
     def nextQueuedFeature(self):
@@ -1264,7 +1266,16 @@ class SequenceProcessor:
     def upNext(self):
         if self.atEnd():
             return None
-        return self.playables[self.pos + 1]
+
+        pos = self.pos + 1
+        playable = self.playables[pos]
+        while not self.atEnd(pos) and playable and playable.type in ('ACTION', 'COMMAND'):
+            pos += 1
+            playable = self.playables[pos]
+        else:
+            return playable
+
+        return None
 
     def nextFeature(self):
         for i in range(self.pos + 1, len(self.playables) - 1):

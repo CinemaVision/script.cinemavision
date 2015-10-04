@@ -1,5 +1,10 @@
 Changelog for CinemaVision
 
+[- 0.0.47 -]
+
+- fix:     Sequence repeats/jumps when shuffle is enabled for playlists
+- fix:     Error caused when actions were included in a sequence
+
 [- 0.0.46 -]
 
 - fix:     Fix error with music enabled for trivia when locale is one that uses commas to represent a decimal point

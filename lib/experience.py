@@ -783,7 +783,7 @@ class ExperiencePlayer(xbmc.Player):
 
         self.playlist.add(self.fakeFileNext)
         self.videoPreDelay()
-        rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1})
+        rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1}, options={'shuffled': False, 'resume': False, 'repeat': 'off'})
         xbmc.sleep(100)
         while not xbmc.getCondVisibility('VideoPlayer.IsFullscreen') and not xbmc.abortRequested and not self.abortFlag.isSet() and self.isPlaying():
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
