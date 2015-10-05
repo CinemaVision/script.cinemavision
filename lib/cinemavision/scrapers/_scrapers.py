@@ -62,4 +62,4 @@ class Scraper:
         return []
 
     def updateTrailers(self):
-        return self.getTrailers()
+        return []

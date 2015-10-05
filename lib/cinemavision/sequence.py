@@ -56,7 +56,8 @@ SETTINGS_DISPLAY = {
     'video': 'Video',
     'image': 'Image',
     'slide': 'Slide',
-    'random':  'Random',
+    'random': 'Random',
+    'newest': 'Newest',
     'style': 'Style',
     'DTS-X': 'DTS:X'
 }
@@ -413,7 +414,7 @@ class Trailer(Item):
         {
             'attr': 'source',
             'type': None,
-            'limits': [None, 'scrapers', 'dir', 'file'],
+            'limits': [None, 'content', 'dir', 'file'],
             'name': 'Source',
             'default': None
         },
@@ -421,8 +422,29 @@ class Trailer(Item):
             'attr': 'scrapers',
             'type': None,
             'limits': LIMIT_MULTI_SELECT,
-            'name': 'Scrapers (by priority)',
+            'name': '- Scrapers filter (scrapers)',
             'default': None
+        },
+        {
+            'attr': 'order',
+            'type': None,
+            'limits': [None, 'newest', 'random'],
+            'name': '- Content order',
+            'default': None
+        },
+        {
+            'attr': 'file',
+            'type': None,
+            'limits': LIMIT_FILE,
+            'name': '- Path',
+            'default': ''
+        },
+        {
+            'attr': 'dir',
+            'type': None,
+            'limits': LIMIT_DIR,
+            'name': '- Path',
+            'default': ''
         },
         {
             'attr': 'count',
@@ -467,20 +489,6 @@ class Trailer(Item):
             'default': None
         },
         {
-            'attr': 'file',
-            'type': None,
-            'limits': LIMIT_FILE,
-            'name': 'Path',
-            'default': ''
-        },
-        {
-            'attr': 'dir',
-            'type': None,
-            'limits': LIMIT_DIR,
-            'name': 'Path',
-            'default': ''
-        },
-        {
             'attr': 'volume',
             'type': int,
             'limits': (0, 100, 1),
@@ -492,10 +500,10 @@ class Trailer(Item):
     typeChar = 'T'
 
     _scrapers = [
-        ['iTunes', 'Apple iTunes', 'itunes'],
+        ['Content', 'Content Folder', 'content'],
         ['KodiDB', 'Kodi Database', 'kodidb'],
-        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews'],
-        ['Content', 'Content Folder', 'content']
+        ['iTunes', 'Apple iTunes', 'itunes'],
+        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
     ]
 
     def __init__(self):
@@ -503,6 +511,7 @@ class Trailer(Item):
         self.count = 0
         self.scrapers = None
         self.source = None
+        self.order = None
         self.file = None
         self.dir = None
         self.ratingLimit = None
@@ -530,19 +539,16 @@ class Trailer(Item):
             if self.getLive('source') != 'dir':
                 return False
         elif attr == 'count':
-            if self.getLive('source') not in ('dir', 'scrapers'):
-                return False
-        elif attr == 'scrapers':
-            if self.getLive('source') != 'scrapers':
+            if self.getLive('source') not in ('dir', 'content'):
                 return False
         elif attr == 'filter3D':
-            if self.getLive('source') not in ('scrapers', 'dir'):
+            if self.getLive('source') not in ('content', 'dir'):
                 return False
-        elif attr in ('limitRating', 'limitGenre'):
-            if not self.getLive('source') == 'scrapers':
+        elif attr in ('scrapers', 'order', 'limitRating', 'limitGenre'):
+            if self.getLive('source') != 'content':
                 return False
         elif attr == 'quality':
-            if self.getLive('source') != 'scrapers' or 'iTunes' not in self.liveScrapers():
+            if self.getLive('source') != 'content' or 'iTunes' not in self.liveScrapers():
                 return False
         elif attr == 'ratingMax':
             if self.getLive('ratingLimit') != 'max':

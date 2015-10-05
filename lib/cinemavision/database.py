@@ -15,7 +15,7 @@ except TypeError:
 from peewee import peewee
 import util
 
-DATABASE_VERSION = 5
+DATABASE_VERSION = 6
 
 fn = peewee.fn
 
@@ -101,6 +101,17 @@ def migrateDB(DB, version):
             )
         except peewee.OperationalError:
             util.MINOR_ERROR('Migration (Trailers: Add is3D column)')
+        except:
+            util.ERROR()
+            return False
+
+    if version < 6:
+        try:
+            migrate.migrate(
+                migratorW.add_column('Trailers', 'verified', peewee.BooleanField(default=True)),
+            )
+        except peewee.OperationalError:
+            util.MINOR_ERROR('Migration (Trailers: Add verified column)')
         except:
             util.ERROR()
             return False
@@ -287,6 +298,7 @@ def initialize(path=None, callback=None):
         thumb = peewee.CharField(null=True)
         broken = peewee.BooleanField(default=False)
         is3D = peewee.BooleanField(default=False)
+        verified = peewee.BooleanField(default=True)
 
     Trailers.create_table(fail_silently=True)
 

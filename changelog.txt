@@ -1,5 +1,19 @@
 Changelog for CinemaVision
 
+[- 0.0.48 -]
+
+- add:     Scan Trailers directory recursively
+- change:  Heading 'Trailers Scrrapers' in section 'Content' changed to 'Content Scrapers'
+- add:     Unavailable trailers will now be removed from the database when updating content
+- fix:     When trivia paused during music fade in, music would not play
+- fix:     Error when 'Enable video skips' was disabled
+- change:  'Scrapers' source for Trailers renamed to 'Content'
+- change:  'Scrapers filter (by priority)' renamed to 'Content filter (scrapers)'
+- add:     Kodi database trailers now stored with release year for ordering
+- add:     Trailer setting 'Content order' with the options 'Newest' and 'Random'
+- change:  'Scope (Restart editor to apply)' moved to advanced section and renamed 'Scope (requires add-on restart)'
+- add:     Setting 'Execute action on sequence resume' now has options Off, Last and File (default=File). Last will use the last module action file executed
+
 [- 0.0.47 -]
 
 - fix:     Sequence repeats/jumps when shuffle is enabled for playlists

@@ -156,6 +156,9 @@ class KodiVolumeControl:
 
         DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
         for step in steps:
+            while not kodiutil.wait(0.1) and xbmc.getCondVisibility('Player.Paused'):
+                pass
+
             if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
                 DEBUG_LOG(
                     'Fade ended early({0}): {1}'.format(step, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
@@ -496,7 +499,12 @@ class ExperiencePlayer(xbmc.Player):
 
     def onPlayBackResumed(self):
         DEBUG_LOG('PLAYBACK RESUMED')
-        if self.resumeAction:
+        if self.resumeAction is True:
+            resumeAction = self.processor.lastAction()
+            if resumeAction:
+                DEBUG_LOG('Executing resume action (last): {0}'.format(resumeAction))
+                resumeAction.run()
+        elif self.resumeAction:
             DEBUG_LOG('Executing resume action: {0}'.format(self.resumeAction))
             self.resumeAction.run()
 
@@ -692,9 +700,11 @@ class ExperiencePlayer(xbmc.Player):
             actionFile = kodiutil.getSetting('action.onPause.file')
             self.pauseAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
 
-        if kodiutil.getSetting('action.onResume', False):
+        if kodiutil.getSetting('action.onResume', 0) == 2:
             actionFile = kodiutil.getSetting('action.onResume.file')
             self.resumeAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+        elif kodiutil.getSetting('action.onResume', 0) == 1:
+            self.resumeAction = True
 
         if kodiutil.getSetting('action.onAbort', False):
             actionFile = kodiutil.getSetting('action.onAbort.file')
@@ -1135,7 +1145,7 @@ class ExperiencePlayer(xbmc.Player):
             else:
                 self.playVideos([video])
         else:
-            self.play(*self.getListItemFromVideo(video))
+            self.play(*self.getPathAndListItemFromVideo(video))
 
     def doAction(self, action):
         action.run()

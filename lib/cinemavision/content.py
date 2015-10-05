@@ -328,6 +328,10 @@ class UserContent:
                 total = len(trailers)
                 util.DEBUG_LOG(' - Received {0} trailers'.format(total))
                 if trailers:
+                    DB.Trailers.update(verified=False).where(
+                        DB.Trailers.source == source
+                    ).execute()
+
                     total = float(total)
                     allct = 0
                     ct = 0
@@ -335,7 +339,9 @@ class UserContent:
                     for t in trailers:
                         allct += 1
                         try:
-                            DB.Trailers.get(DB.Trailers.WID == t.ID)
+                            t = DB.Trailers.get(DB.Trailers.WID == t.ID)
+                            t.verified = True
+                            t.save()
                         except DB.peewee.DoesNotExist:
                             ct += 1
                             url = t.getStaticURL()
@@ -350,12 +356,19 @@ class UserContent:
                                 genres=','.join(t.genres),
                                 thumb=t.thumb,
                                 release=t.release,
-                                is3D=t.is3D
+                                is3D=t.is3D,
+                                verified=True
                             )
                         pct = int((allct/total)*100)
                         self._callback(t.title, pct=pct)
 
+                    rows = DB.Trailers.delete().where(
+                        DB.Trailers.verified == 0,
+                        DB.Trailers.source == source
+                    ).execute()
+
                     util.DEBUG_LOG(' - {0} new {1} trailers added to database'.format(ct, source))
+                    util.DEBUG_LOG(' - {0} {1} trailers removed from database'.format(rows, source))
                 else:
                     util.DEBUG_LOG(' - No new {0} trailers added to database'.format(source))
 

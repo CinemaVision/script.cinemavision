@@ -35,9 +35,6 @@ class StereoscopyNewsTrailerScraper(_scrapers.Scraper):
 
         return []
 
-    def updateTrailers(self):
-        return []
-
     @staticmethod
     def getPlayableURL(ID, res='720p', url=None):
         return 'plugin://plugin.video.youtube/play/?video_id={0}'.format(ID)

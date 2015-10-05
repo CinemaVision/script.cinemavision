@@ -39,6 +39,11 @@ class Trailer(_scrapers.Trailer):
         self['rating'] = val
 
     @property
+    def release(self):
+        print self.data['release']
+        return self.data['release']
+
+    @property
     def is3D(self):
         return self._is3D
 

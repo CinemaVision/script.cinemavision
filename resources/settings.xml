@@ -6,24 +6,24 @@
         <setting id="sequence.3D"         label="3D sequence"            type="action" action="RunScript(script.cinemavision,sequence.3D)" />
         <setting id="3D.tag.regex"        label="3D tag detection regex" type="text"   default="(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB" />
         <setting id="bumper.fallback2D"   label="Fallback to 2D bumper"  type="bool"   default="false" />
-        <setting id="scope"               label="Scope (Restart editor to apply)" type="labelenum" values="16:9|2.35:1|2.40:1"  default="0" />
     </category>
 
     <category label="Content">
         <setting id="content.path"        label="Content path"           type="folder" sources="auto" option="writeable" value="" />
         <setting id="database.update"     label="Update content"         type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
         <setting id="database.autoUpdate" label="Auto update when editor starts" type="bool" default="false" subsetting="true" />
-        <setting label="Trailer Scrapers" type="lsep"/>
-        <setting id="scraper.trailers.Content"         label="Content Folder"      type="bool" default="true" />
-        <setting id="scraper.trailers.KodiDB"          label="Kodi Database"       type="bool" default="true" />
-        <setting id="scraper.trailers.iTunes"          label="Apple iTunes"        type="bool" default="true" />
-        <setting id="scraper.trailers.StereoscopyNews" label="StereoscopyNews.com" type="bool" default="false" />
+        <setting label="Content Scrapers" type="lsep"/>
+        <setting id="scraper.trailers.Content"         label="Trailers: Content Folder"      type="bool" default="true" />
+        <setting id="scraper.trailers.KodiDB"          label="Trailers: Kodi Database"       type="bool" default="true" />
+        <setting id="scraper.trailers.iTunes"          label="Trailers: Apple iTunes"        type="bool" default="true" />
+        <setting id="scraper.trailers.StereoscopyNews" label="Trailers: StereoscopyNews.com" type="bool" default="false" />
     </category>
 
     <category label="Playback">
-        <setting id="hide.queue.dialog"        label="Hide queue dialog"       type="bool" default="false" />
-        <setting id="hide.queue.dialog.single" label="If only one item queued" type="bool" default="false" subsetting="true" enable="eq(-1,true)"/>
-        <setting id="allow.video.skip"         label="Allow video skipping"    type="bool" default="true" />
+        <setting id="hide.queue.dialog"        label="Hide queue dialog"              type="bool" default="false" />
+        <setting id="hide.queue.dialog.single" label="If only one item queued"        type="bool" default="false" subsetting="true" enable="eq(-1,true)"/>
+        <setting id="allow.video.skip"         label="Allow video skipping"           type="bool" default="true" />
+        <setting id="video.preDelay"           label="Video delay (milliseconds)" type="slider" default="0" range="0,100,3000" option="int" />
     </category>
 
     <category label="Video">
@@ -44,18 +44,19 @@
         <setting id="trivia.aDuration"   label="Answer duration (seconds)"   type="slider" default="6"  range="1,60" option="int" />
         <setting id="trivia.sDuration"   label="Still duration (seconds)"    type="slider" default="10" range="1,60" option="int" />
         <setting id="trivia.transition"  label="Transition"                  type="enum"   values="None|Fade|Slide Left|Slide Right|Slide Up|Slide Down"  default="1" />
-        <setting id="trivia.transitionDuration" label="Transition: Duration (ms)" type="slider" default="400" range="100,100,2000" option="int" />
+        <setting id="trivia.transitionDuration" label="Transition: Duration (milliseconds)" type="slider" default="400" range="100,100,2000" option="int" />
         <setting id="trivia.music"       label="Music"                       type="enum"   values="None|Content|Directory|File" default="1" />
-        <setting id="trivia.musicDir"    label="Music: path"                 type="folder" sources="auto" value="" />
-        <setting id="trivia.musicFile"   label="Music: file"                 type="file"   sources="auto" value="" />
+        <setting id="trivia.musicDir"    label="Music: Path"                 type="folder" sources="auto" value="" />
+        <setting id="trivia.musicFile"   label="Music: File"                 type="file"   sources="auto" value="" />
     </category>
 
     <category label="Trailers">
         <setting id="trailer.preferUnwatched" label="Prefer unwatched over priority" type="bool"   default="true" />
         <setting id="trailer.CLEAR"           label="Clear trailers watched status" type="action" action="RunScript(script.cinemavision,trailer.clearWatched)" />
         <setting label="Module Defaults" type="lsep"/>
-        <setting id="trailer.source"       label="Source"               type="enum"      values="Scrapers|Directory|Single File" default="0" />
-        <setting id="trailer.scrapers"     label="Scrapers filter (by priority)" type="action" action="RunScript(script.cinemavision,trailer.scrapers)" default="iTunes,KodiDB" />
+        <setting id="trailer.source"       label="Source"               type="enum"      values="Content|Directory|Single File" default="0" />
+        <setting id="trailer.scrapers"     label="Source: Content filter (scrapers)" type="action" action="RunScript(script.cinemavision,trailer.scrapers)" default="Content,KodiDB,iTunes" />
+        <setting id="trailer.order"        label="Source: Content order" type="enum"     values="Newest|Random" default="0" />
         <setting id="trailer.dir"          label="Source: Directory"    type="folder"    sources="auto" value="" />
         <setting id="trailer.file"         label="Source: File"         type="file"      sources="auto" value="" />
         <setting id="trailer.count"        label="Count"                type="slider"    default="1" range="1,10" option="int" />
@@ -94,20 +95,20 @@
     <category label="Actions">
         <setting id="action.onPause"       label="Execute action on sequence pause"  type="bool" default="false" />
         <setting id="action.onPause.file"  label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onResume"      label="Execute action on sequence resume" type="bool" default="false" />
-        <setting id="action.onResume.file" label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.onResume"      label="Execute action on sequence resume" type="enum" values="None|Last|File"  default="0" />
+        <setting id="action.onResume.file" label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,2)" />
         <setting id="action.onAbort"       label="Execute action on sequence abort"  type="bool" default="false" />
         <setting id="action.onAbort.file"  label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
     </category>
 
     <category label="Advanced">
+        <setting id="scope"               label="Scope (requires add-on restart)" type="labelenum" values="16:9|2.35:1|2.40:1"  default="0" />
         <setting label="Logging" type="lsep"/>
         <setting id="debug.log"           label="Debug logging"                 type="bool"   default="true" />
         <setting id="pastebin.paste.log"  label="Paste my kodi.log to pastebin" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
         <setting id="pastebin.user"       label="Pastebin user (necessary to paste as user)"  type="text" default="" />
         <setting id="pastebin.delete.key" label="Delete Pastebin user key"      type="action" action="RunScript(script.cinemavision,pastebin.delete.key)" />
-        <setting label="Miscellaneous" type="lsep"/>
-        <setting id="video.preDelay"      label="Video Pre-Delay (ms)"          type="slider" default="0" range="0,100,3000" option="int" />
+        <setting label="Debugging" type="lsep"/>
         <setting id="reset.database"      label="Reset content database"        type="action" action="RunScript(script.cinemavision,reset.database)" />
         <setting id="trailer.CLEARBROKEN" label="Clear trailers broken status"  type="action" action="RunScript(script.cinemavision,trailer.clearBroken)" />
     </category>

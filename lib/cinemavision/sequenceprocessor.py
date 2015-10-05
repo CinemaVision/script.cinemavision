@@ -684,7 +684,7 @@ class TrailerHandler:
         count = sItem.getLive('count')
 
         playables = []
-        if source == 'scrapers':
+        if source == 'content':
             scrapers.setContentPath(self.caller.contentPath)
             util.DEBUG_LOG('[{0}] {1} x {2}'.format(self.sItem.typeChar, source, count))
             scrapersList = (sItem.getLive('scrapers') or '').split(',')
@@ -721,10 +721,17 @@ class TrailerHandler:
             DB.Trailers.watched == watched
         ]
 
-        orderby = [
-            DB.Trailers.release.desc(),
-            DB.Trailers.date
-        ]
+        if self.sItem.getLive('order') == 'newest':
+            util.DEBUG_LOG('    - Order: Newest')
+            orderby = [
+                DB.Trailers.release.desc(),
+                DB.Trailers.date
+            ]
+        else:
+            util.DEBUG_LOG('    - Order: Random')
+            orderby = [
+                DB.fn.Random()
+            ]
 
         if self.sItem.getLive('filter3D'):
             where.append(DB.Trailers.is3D == self.caller.nextQueuedFeature.is3D)
@@ -1127,6 +1134,7 @@ class SequenceProcessor:
         self.genres = []
         self.contentPath = content_path
         self.lastFeature = None
+        self._lastAction = None
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 
@@ -1249,6 +1257,9 @@ class SequenceProcessor:
         self.pos += 1
         playable = self.playables[self.pos]
 
+        if playable.type == 'ACTION':
+            self._lastAction = playable
+
         return playable
 
     def prev(self):
@@ -1283,3 +1294,6 @@ class SequenceProcessor:
             if p.type == 'FEATURE':
                 return p
         return None
+
+    def lastAction(self):
+        return self._lastAction
