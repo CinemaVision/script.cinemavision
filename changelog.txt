@@ -13,6 +13,7 @@ Changelog for CinemaVision
 - add:     Trailer setting 'Content order' with the options 'Newest' and 'Random'
 - change:  'Scope (Restart editor to apply)' moved to advanced section and renamed 'Scope (requires add-on restart)'
 - add:     Setting 'Execute action on sequence resume' now has options Off, Last and File (default=File). Last will use the last module action file executed
+- fix:     Fade time for trivia music was being extended arbitrarily
 
 [- 0.0.47 -]
 

@@ -146,29 +146,30 @@ class KodiVolumeControl:
         self._fader.start()
 
     def _fadeWorker(self, start, end, fade_time_millis):
-        mod = end > start and 1 or -1
-        steps = range(start, end + mod, mod)
-        count = len(steps)
-        if not count:
-            return
+        volWidth = end - start
 
-        interval = fade_time_millis / count
+        func = end > start and min or max
+
+        duration = fade_time_millis / 1000.0
+        endTime = time.time() + duration
+        vol = start
+        left = duration
 
         DEBUG_LOG('Fade: START ({0}) - {1}ms'.format(start, fade_time_millis))
-        for step in steps:
-            while not kodiutil.wait(0.1) and xbmc.getCondVisibility('Player.Paused'):
-                pass
+        while time.time() < endTime and not kodiutil.wait(0.1):
+            while xbmc.getCondVisibility('Player.Paused') and not kodiutil.wait(0.1):
+                endTime = time.time() + left
 
             if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
                 DEBUG_LOG(
-                    'Fade ended early({0}): {1}'.format(step, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
+                    'Fade ended early({0}): {1}'.format(vol, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
                 )
-                # self._set(end)
                 return
-            xbmc.sleep(interval)
-            self._set(step)
+            left = endTime - time.time()
+            vol = func(end, int(start + (((duration - left) / duration) * volWidth)))
+            self._set(vol)
 
-        DEBUG_LOG('Fade: END ({0})'.format(step))
+        DEBUG_LOG('Fade: END ({0})'.format(vol))
 
 
 class SettingControl:
@@ -962,7 +963,7 @@ class ExperiencePlayer(xbmc.Player):
             if image_queue and image_queue.music:
                 self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
                 while self.volume.fading() and not self.abortFlag.isSet() and not kodiutil.wait(0.1):
-                    if self.window.hasAction():
+                    if self.window.hasAction() and self.window.action != 'RESUME':
                         break
 
             kodiutil.DEBUG_LOG('Stopping music')
