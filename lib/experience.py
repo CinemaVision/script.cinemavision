@@ -869,9 +869,8 @@ class ExperiencePlayer(xbmc.Player):
 
     def _start(self, sequence_path):
         import cvutil
-        dbPath = cvutil.getDBPath()
 
-        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, db_path=dbPath, content_path=kodiutil.getSetting('content.path'))
+        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, content_path=cvutil.getContentPath())
         [self.processor.addFeature(f) for f in self.features]
 
         kodiutil.DEBUG_LOG('\n.')

@@ -686,7 +686,7 @@ class Video(Item):
         elif attr == 'dir':
             return self.vtype == 'dir'
         elif attr == 'count':
-            return self.vtype == 'dir'
+            return self.vtype == 'dir' or (self.vtype != 'file' and self.random)
         elif attr == 'file':
             return self.vtype == 'file'
         elif attr == 'random':
@@ -698,12 +698,18 @@ class Video(Item):
 
     def display(self):
         if self.name:
-            return self.name
+            name = self.name
 
-        if not self.vtype:
-            return self.displayName
+        elif not self.vtype:
+            name = self.displayName
 
-        return settingDisplay(self.vtype)
+        else:
+            name = settingDisplay(self.vtype)
+
+        if self.count > 1 and (self.vtype == 'dir' or (self.vtype != 'file' and self.random)):
+            return '{0} x {1}'.format(name, self.count)
+
+        return name
 
     def DBChoices(self, attr):
         import database as DB

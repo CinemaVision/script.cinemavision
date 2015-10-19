@@ -40,12 +40,15 @@ class Trailer(_scrapers.Trailer):
 
     @property
     def release(self):
-        print self.data['release']
         return self.data['release']
 
     @property
     def is3D(self):
         return self._is3D
+
+    @property
+    def watched(self):
+        return self.data['watched']
 
     def getStaticURL(self):
         return self.data['url']

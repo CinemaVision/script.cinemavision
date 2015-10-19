@@ -61,37 +61,42 @@ def selectSequence():
     return {'path': path, 'name': options[idx][:-6]}
 
 
-def getDBPath(from_load=False):
-    dbPath = None
-    if not kodiutil.getSetting('content.path'):
-        dbPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')
-        if not os.path.exists(dbPath):
+def getContentPath(from_load=False):
+    contentPath = kodiutil.getSetting('content.path')
+    demoPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')
+
+    if contentPath:
+        kodiutil.setSetting('content.initialized', True)
+        if os.path.exists(demoPath):
+            try:
+                import shutil
+                shutil.rmtree(demoPath)
+            except:
+                kodiutil.ERROR()
+
+        return contentPath
+    else:
+        if not os.path.exists(demoPath):
             copyDemoContent()
             downloadDemoContent()
             if not from_load:
                 loadContent()
-        return dbPath
-    return None
+        return demoPath
 
 
 def loadContent(from_settings=False):
     import xbmcgui
 
-    contentPath = kodiutil.getSetting('content.path')
-    if from_settings and not contentPath:
+    if from_settings and not kodiutil.getSetting('content.path'):
         xbmcgui.Dialog().ok('No Content Path', ' ', 'Content path not set or not applied')
         return
 
-    dbPath = getDBPath(from_load=True)
-    if contentPath:
-        kodiutil.setSetting('content.initialized', True)
-    else:
-        contentPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')
+    contentPath = getContentPath(from_load=True)
 
     kodiutil.DEBUG_LOG('Loading content...')
 
     with kodiutil.Progress('Loading Content') as p:
-        cinemavision.content.UserContent(contentPath, callback=p.msg, db_path=dbPath,  trailer_sources=kodiutil.getSetting('trailer.scrapers', '').split(','))
+        cinemavision.content.UserContent(contentPath, callback=p.msg, trailer_sources=kodiutil.getSetting('trailer.scrapers', '').split(','))
 
     createSettingsRSDirs()
 

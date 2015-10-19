@@ -46,6 +46,10 @@ class Trailer:
     def is3D(self):
         return False
 
+    @property
+    def watched(self):
+        return False
+
     def getStaticURL(self):
         return None
 

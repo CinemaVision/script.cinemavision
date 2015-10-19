@@ -944,21 +944,23 @@ class VideoBumperHandler:
 
         if sItem.random:
             util.DEBUG_LOG('    - Random')
-            try:
-                bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))])
-                return [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem)]
-            except IndexError:
-                util.DEBUG_LOG('    - No matches!')
-                pass
 
-            if is3D and util.getSettingDefault('bumper.fallback2D'):
+            bumpers = [x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype) & (DB.VideoBumpers.is3D == is3D))]
+            bumpers = random.sample(bumpers, min(sItem.count, len(bumpers)))
+            bumpers = [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem) for bumper in bumpers]
+
+            if not bumpers and is3D and util.getSettingDefault('bumper.fallback2D'):
                 util.DEBUG_LOG('    - Falling back to 2D bumper')
-                try:
-                    bumper = random.choice([x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))])
-                    return [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem)]
-                except IndexError:
-                    util.DEBUG_LOG('    - No matches!')
-                    pass
+
+                bumpers = [x for x in DB.VideoBumpers.select().where((DB.VideoBumpers.type == sItem.vtype))]
+                bumpers = random.sample(bumpers, min(sItem.count, len(bumpers)))
+                bumpers = [Video(bumper.path, volume=sItem.getLive('volume')).fromModule(sItem) for bumper in bumpers]
+
+            if not bumpers:
+                util.DEBUG_LOG('    - No matches!')
+
+            return bumpers
+
         else:
             util.DEBUG_LOG('    - Via source')
             if sItem.source:

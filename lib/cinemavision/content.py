@@ -339,16 +339,17 @@ class UserContent:
                     for t in trailers:
                         allct += 1
                         try:
-                            t = DB.Trailers.get(DB.Trailers.WID == t.ID)
-                            t.verified = True
-                            t.save()
+                            dt = DB.Trailers.get(DB.Trailers.WID == t.ID)
+                            dt.verified = True
+                            dt.watched = t.watched or dt.watched
+                            dt.save()
                         except DB.peewee.DoesNotExist:
                             ct += 1
                             url = t.getStaticURL()
                             DB.Trailers.create(
                                 WID=t.ID,
                                 source=source,
-                                watched=False,
+                                watched=t.watched,
                                 title=t.title,
                                 url=url,
                                 userAgent=t.userAgent,
@@ -569,9 +570,8 @@ class TriviaDirectoryHandler:
                     defaults=defaults
                 )
             except:
-                print data
+                print repr(data)
                 util.ERROR()
-                raise
 
     @DB.session
     def processSimpleDir(self, path):
