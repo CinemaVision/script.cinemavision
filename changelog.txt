@@ -10,7 +10,7 @@ Changelog for CinemaVision
 [- 0.0.48 -]
 
 - add:     Scan Trailers directory recursively
-- change:  Heading 'Trailers Scrrapers' in section 'Content' changed to 'Content Scrapers'
+- change:  Heading 'Trailers Scrapers' in section 'Content' changed to 'Content Scrapers'
 - add:     Unavailable trailers will now be removed from the database when updating content
 - fix:     When trivia paused during music fade in, music would not play
 - fix:     Error when 'Enable video skips' was disabled
