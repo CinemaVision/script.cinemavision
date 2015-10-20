@@ -1,5 +1,9 @@
 Changelog for CinemaVision
 
+[- 0.0.50 -]
+
+- change:  cvseq file format is now JSON instead of XML
+
 [- 0.0.49 -]
 
 - change:  Switch from demo mode to normal now works more intuitively (ie. trailers are not lost)
