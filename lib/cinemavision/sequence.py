@@ -1,5 +1,4 @@
-from xml.etree import ElementTree as ET
-import xml.dom.minidom as minidom
+import json
 import os
 import re
 
@@ -117,7 +116,9 @@ class Item:
     def fileChar(self):
         return self.typeChar
 
+    # -- Serialize: XML ---------------------------------------
     def toNode(self):
+        from xml.etree import ElementTree as ET
         item = ET.Element(self._tag)
         item.set('type', self._type)
         item.set('enabled', str(self.enabled))
@@ -151,6 +152,40 @@ class Item:
                     new._set(e['attr'], e['type'](sub.text))
                 else:
                     new._set(e['attr'], sub.text)
+        return new
+
+    # -- Serialize: JSON --------------------------------------
+    def toDict(self):
+        data = {}
+        data['type'] = self._type
+        data['enabled'] = self.enabled
+        data['name'] = self.name
+        data['settings'] = {}
+
+        for e in self._elements:
+            val = getattr(self, e['attr'])
+            if not val and val is not False:
+                continue
+            data['settings'][e['attr']] = val
+        return data
+
+    @staticmethod
+    def fromDict(data):
+        itype = data['type']
+        if itype in CONTENT_CLASSES:
+            return CONTENT_CLASSES[itype]._fromDict(data)
+
+    @classmethod
+    def _fromDict(cls, data):
+        new = cls()
+        new.enabled = data.get('enabled', True)
+        new.name = data.get('name', '')
+        for e in new._elements:
+            attr = e['attr']
+            if attr not in data['settings']:
+                continue
+
+            setattr(new, attr, data['settings'][attr])
         return new
 
     def elementData(self, element_name):
@@ -939,39 +974,58 @@ def getItem(token):
         if i[0] == token:
             return i[3]
 
+# - Old XML save methods
+# def prettify(elem):
+#     from xml.etree import ElementTree as ET
+#     import xml.dom.minidom as minidom
+#     """Return a pretty-printed XML string for the Element.
+#     """
+#     rough_string = ET.tostring(elem)
+#     reparsed = minidom.parseString(rough_string)
 
-def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
-    """
-    rough_string = ET.tostring(elem)
-    reparsed = minidom.parseString(rough_string)
+#     uglyXml = reparsed.toprettyxml(indent='    ').encode('ascii', 'xmlcharrefreplace')
+#     text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
+#     prettyXml = text_re.sub('>\g<1></', uglyXml)
+#     return prettyXml
+#     # return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
 
-    uglyXml = reparsed.toprettyxml(indent='    ').encode('ascii', 'xmlcharrefreplace')
-    text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
-    prettyXml = text_re.sub('>\g<1></', uglyXml)
-    return prettyXml
-    # return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
+# def getSaveString(items):
+#     from xml.etree import ElementTree as ET
+#     base = ET.Element('sequence')
+#     for item in items:
+#         base.append(item.toNode())
 
-
-def getSaveString(items):
-    base = ET.Element('sequence')
-    for item in items:
-        base.append(item.toNode())
-
-    return prettify(base)
+#     return prettify(base)
 
 
-def getItemsFromString(xml_string):
-    e = ET.fromstring(xml_string)
+def getItemsFromXMLString(dstring):
+    from xml.etree import ElementTree as ET
+    e = ET.fromstring(dstring)
     items = []
     for node in e.findall('item'):
         items.append(Item.fromNode(node))
     return items
 
 
+def getSaveString(items):
+    data = []
+    for i in items:
+        data.append(i.toDict())
+
+    return json.dumps({'version': 1, 'items': data}, indent=1)
+
+
+def getItemsFromString(dstring):
+    try:
+        data = json.loads(dstring)
+        return [Item.fromDict(ddict) for ddict in data['items']]
+    except ValueError:
+        return getItemsFromXMLString(dstring)
+
+
 def loadSequence(path):
     import xbmcvfs
     f = xbmcvfs.File(path, 'r')
-    xmlString = f.read().decode('utf-8')
+    dstring = f.read().decode('utf-8')
     f.close()
-    return getItemsFromString(xmlString)
+    return getItemsFromString(dstring)
