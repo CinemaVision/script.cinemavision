@@ -2,7 +2,7 @@ Changelog for CinemaVision
 
 [- 0.0.49 -]
 
-- change:  Switch from demo mode to normal now works more intuitively (ie. trailers are not lost)
+- change:  Switch from demo mode to normal now works more intuitively (i.e. trailers are not lost)
 - change:  You can now set the count for all video bumper types except file
 - add:     In section 'Content' as a subsetting to 'Trailers: Kodi Database' added 'Ignore YouTube trailers'
 - add:     In section 'Content' as a subsetting to 'Trailers: Kodi Database' added 'Mark watched if movie is watched'
