@@ -1,5 +1,10 @@
 Changelog for CinemaVision
 
+[- 1.0.0b1 -]
+
+- fix:     When clearing action file in the module, was displaying default
+- add:     Localize settings strings
+
 [- 0.0.50 -]
 
 - change:  .cvseq file format is now JSON instead of XML
