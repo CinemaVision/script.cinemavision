@@ -199,3 +199,21 @@ def setScrapers():
         return
 
     kodiutil.setSetting('trailer.scrapers', result)
+
+
+def testEventActions():
+    import cvutil
+    import kodiutil
+
+    paths = []
+
+    if kodiutil.getSetting('action.onPause', False):
+        paths.append(kodiutil.getSetting('action.onPause.file').decode('utf-8'))
+
+    if kodiutil.getSetting('action.onResume', 0) == 2:
+        paths.append(kodiutil.getSetting('action.onResume.file').decode('utf-8'))
+
+    if kodiutil.getSetting('action.onAbort', False):
+        paths.append(kodiutil.getSetting('action.onAbort.file').decode('utf-8'))
+
+    cvutil.evalActionFile(paths)

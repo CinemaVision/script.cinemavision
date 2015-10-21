@@ -103,6 +103,10 @@ class AddonCommand(ActionCommand):
 class HTTPCommand(ActionCommand):
     type = 'HTTP'
 
+    def __init__(self, data):
+        data = 'http://' + data
+        ActionCommand.__init__(self, data)
+
     def execute(self):
         import requests
         import json
@@ -137,14 +141,43 @@ class HTTPCommand(ActionCommand):
         util.DEBUG_LOG('Action (HTTP) Response: {0}'.format(repr(resp.text)))
 
 
+class HTTPSCommand(HTTPCommand):
+    def __init__(self, data):
+        data = 'https://' + data
+        ActionCommand.__init__(self, data)
+
+
 class ActionFileProcessor:
-    def __init__(self, path):
+    commandClasses = {
+        'http': HTTPCommand,
+        'https': HTTPSCommand,
+        'script': ScriptCommand,
+        'addon': AddonCommand,
+        'module': ModuleCommand,
+        'command': CommandCommand,
+        'sleep': SleepCommand
+    }
+
+    def __init__(self, path, test=False):
+        self.test = test
         self.path = path
+        self.fileExists = None
         self.commands = []
+        self.parserLog = []
         self.init()
 
     def __repr__(self):
         return 'AFP ({0})'.format(','.join([a.type for a in self.commands]))
+
+    def logParseErrorLine(self, msg, type_):
+        if not self.test:
+            util.DEBUG_LOG('    -| {0}'.format(msg))
+        self.parserLog.append((type_, msg))
+
+    def parseError(self, msg, line, lineno, type_='ERROR'):
+        self.logParseErrorLine('ACTION {0} (line {1}): {2}'.format(type_, lineno, repr(self.path).lstrip('u').strip("'")), type_)
+        self.logParseErrorLine('{0}'.format(repr(line)), type_)
+        self.logParseErrorLine('{0}'.format(msg), type_)
 
     def init(self):
         try:
@@ -153,8 +186,13 @@ class ActionFileProcessor:
             util.ERROR()
 
     def readFile(self):
-        with util.vfs.File(self.path, 'r') as f:
-            return f.read()
+        if util.vfs.exists(self.path):
+            self.fileExists = True
+            with util.vfs.File(self.path, 'r') as f:
+                return f.read()
+        else:
+            self.fileExists = False
+            return None
 
     def run(self):
         threading.Thread(target=self._run).start()
@@ -163,8 +201,16 @@ class ActionFileProcessor:
         for c in self.commands:
             c._threadedExecute()
 
+    def _prepareLine(self, line):
+        if line.startswith('\\'):
+            line = line[1:]
+        return line
+
     def _loadCommands(self):
         data = self.readFile()
+        if not data:
+            return
+
         command = None
         lineno = 0
         for line in data.splitlines():
@@ -172,32 +218,30 @@ class ActionFileProcessor:
             if line:
                 if line.startswith('#'):
                     continue
-                elif line.startswith('\\'):
-                    line = line[1:]
 
                 if command:
-                    command.addArg(line)
-                else:
                     try:
                         name, data = line.split('://', 1)
+                        if name in self.commandClasses:
+                            self.parseError(
+                                'Argument looks like a command - actions must be separated by a blank line. Prefix with \\ to hide this warning',
+                                line,
+                                lineno,
+                                type_='WARNING'
+                            )
                     except ValueError:
-                        util.DEBUG_LOG('    -| ACTION ERROR (line {0}): {1}'.format(lineno, repr(self.path)))
-                        util.DEBUG_LOG('    -| {0}'.format(repr(line)))
-                        util.DEBUG_LOG('    -| First action line must have the form: protocol://whatever')
+                        pass
+
+                    command.addArg(self._prepareLine(line))
+                else:
+                    try:
+                        name, data = self._prepareLine(line).split('://', 1)
+                    except ValueError:
+                        self.parseError('First action line must have the form: protocol://whatever', line, lineno)
                         return
 
-                    if name in ('http', 'https'):
-                        command = HTTPCommand(name + '://' + data)
-                    elif name == 'script':
-                        command = ScriptCommand(data)
-                    elif name == 'addon':
-                        command = AddonCommand(data)
-                    elif name == 'module':
-                        command = ModuleCommand(data)
-                    elif name == 'command':
-                        command = CommandCommand(data)
-                    elif name == 'sleep':
-                        command = SleepCommand(data)
+                    if name in self.commandClasses:
+                        command = self.commandClasses[name](data)
             else:
                 if command:
                     self.commands.append(command)

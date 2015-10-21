@@ -47,6 +47,9 @@ if __name__ == '__main__':
     elif arg == 'trailer.scrapers':
         from lib import settings
         settings.setScrapers()
+    elif arg == 'test.actions':
+        from lib import settings
+        settings.testEventActions()
     elif str(arg).startswith('sequence.'):
         from lib import settings
         settings.setDefaultSequence(arg)

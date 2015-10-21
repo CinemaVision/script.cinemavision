@@ -101,6 +101,8 @@
         <setting id="action.onResume.file" label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,2)" />
         <setting id="action.onAbort"       label="Execute action on sequence abort"  type="bool" default="false" />
         <setting id="action.onAbort.file"  label="Action file"                       type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting label="Settings must be applied before testing action files" type="lsep"/>
+        <setting id="action.test"          label="Check action files for errors"     type="action" action="RunScript(script.cinemavision,test.actions)" enable="eq(-7,true)|eq(-5,2)|eq(-3,true)"/>
     </category>
 
     <category label="Advanced">

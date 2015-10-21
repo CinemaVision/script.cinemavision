@@ -2,7 +2,9 @@ Changelog for CinemaVision
 
 [- 0.0.50 -]
 
-- change:  cvseq file format is now JSON instead of XML
+- change:  .cvseq file format is now JSON instead of XML
+- add:     Option for action modules to check sequence file errors
+- add:     Option in settings in 'Action' section to check sequence files errors
 
 [- 0.0.49 -]
 

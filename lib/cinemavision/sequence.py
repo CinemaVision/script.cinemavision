@@ -1,6 +1,5 @@
 import json
 import os
-import re
 
 import util
 
@@ -10,6 +9,7 @@ LIMIT_DB_CHOICE = 2
 LIMIT_BOOL = 3
 LIMIT_BOOL_DEFAULT = 4
 LIMIT_MULTI_SELECT = 5
+LIMIT_ACTION = 6
 
 
 SETTINGS_DISPLAY = {
@@ -847,6 +847,13 @@ class Action(Item):
             'name': 'Action File Path',
             'default': ''
         },
+        {
+            'attr': 'eval',
+            'type': None,
+            'limits': LIMIT_ACTION,
+            'name': 'Check for errors',
+            'default': ''
+        }
     )
     displayName = 'Action'
     typeChar = '!'
@@ -855,6 +862,14 @@ class Action(Item):
     def __init__(self):
         Item.__init__(self)
         self.file = ''
+        self.eval = None
+
+    def elementVisible(self, e):
+        attr = e['attr']
+        if attr == 'eval':
+            return bool(self.file)
+
+        return True
 
 
 ################################################################################

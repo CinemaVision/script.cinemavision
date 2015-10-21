@@ -49,7 +49,9 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             if not sItem.elementVisible(e):
                 continue
             attr = e['attr']
-            mli = kodigui.ManagedListItem(e['name'], unicode(sItem.getSettingDisplay(attr)), data_source=attr)
+            mli = kodigui.ManagedListItem(
+                e['name'], e['limits'] != cinemavision.sequence.LIMIT_ACTION and unicode(sItem.getSettingDisplay(attr)) or '', data_source=attr
+            )
             if sItem.getType(attr) == int:
                 mli.setProperty('type', 'integer')
             items.append(mli)
@@ -238,6 +240,10 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 value = None
         elif options == cinemavision.sequence.LIMIT_BOOL:
             value = not sItem.getSetting(attr)
+        elif options == cinemavision.sequence.LIMIT_ACTION:
+            if self.item.dataSource._type == 'action':
+                cvutil.evalActionFile(self.item.dataSource.file)
+            return False
         elif isinstance(options, list):
             idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
             if idx < 0:
@@ -638,6 +644,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         for e in sItem._elements:
             if not sItem.elementVisible(e):
                 continue
+
+            if e['limits'] == cinemavision.sequence.LIMIT_ACTION:
+                continue
+
             disp = sItem.getSettingDisplay(e['attr'])
             item.setProperty('setting{0}'.format(ct), disp)
             item.setProperty('setting{0}_name'.format(ct), e['name'])

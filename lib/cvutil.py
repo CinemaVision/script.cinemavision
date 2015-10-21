@@ -189,6 +189,35 @@ def setRatingBumperStyle():
 
     kodiutil.setSetting('feature.ratingStyle', styles[idx][0])
 
+
+def evalActionFile(paths):
+    import xbmcgui
+
+    if not paths:
+        xbmcgui.Dialog().ok('None found', 'No action file(s) set')
+        return
+
+    if not isinstance(paths, list):
+        paths = [paths]
+
+    messages = []
+
+    for path in paths:
+        processor = cinemavision.actions.ActionFileProcessor(path, test=True)
+        if processor.fileExists:
+            if processor.parserLog:
+                messages += ['{0}[CR]'.format(os.path.basename(path))]
+                messages += ['[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg) for type_, msg in processor.parserLog]
+                messages += ['[CR]']
+        else:
+            messages += ['{0} - [COLOR FFFF0000]MISSING![/COLOR][CR]'.format(os.path.basename(path))]
+
+    if messages:
+        showText('Parser Messages', '[CR]'.join(messages))
+    else:
+        xbmcgui.Dialog().ok('Done', 'Action file(s) parsed OK')
+
+
 _RATING_PARSER = None
 
 
@@ -294,3 +323,25 @@ def multiSelect(options, default=False):
         return ','.join(result)
 
     return result
+
+
+def showText(heading, text):
+    import kodigui
+
+    class TextView(kodigui.BaseDialog):
+        xmlFile = 'script.cinemavision-text-dialog.xml'
+        path = kodiutil.ADDON_PATH
+        theme = 'Main'
+        res = '1080i'
+
+        def __init__(self, *args, **kwargs):
+            kodigui.BaseDialog.__init__(self, *args, **kwargs)
+            self.heading = kwargs.get('heading', '')
+            self.text = kwargs.get('text', '')
+
+        def onFirstInit(self):
+            self.setProperty('heading', self.heading)
+            self.getControl(100).setText(self.text)
+
+    w = TextView.open(heading=heading, text=text)
+    del w
