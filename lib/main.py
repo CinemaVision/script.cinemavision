@@ -185,12 +185,15 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
         options = sItem.getSettingOptions(attr)
 
-        if options == cinemavision.sequence.LIMIT_FILE:
+        if options in (cinemavision.sequence.LIMIT_FILE, cinemavision.sequence.LIMIT_FILE_DEFAULT):
             select = True
             if sItem.getSetting(attr):
                 yes = xbmcgui.Dialog().yesno('Change Path', '', 'Would choose a new path, or clear the current path?', '', 'Choose', 'Clear')
                 if yes:
-                    value = None
+                    if options == cinemavision.sequence.LIMIT_FILE:
+                        value = ''
+                    else:
+                        value = None
                     select = False
 
             if select:

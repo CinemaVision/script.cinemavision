@@ -237,7 +237,7 @@ class ActionFileProcessor:
                     try:
                         name, data = self._prepareLine(line).split('://', 1)
                     except ValueError:
-                        self.parseError('First action line must have the form: protocol://whatever', line, lineno)
+                        self.parseError('First action line must have the form: <protocol>://<protocol data>', line, lineno)
                         return
 
                     if name in self.commandClasses:

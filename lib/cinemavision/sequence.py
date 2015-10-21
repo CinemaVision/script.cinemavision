@@ -4,12 +4,13 @@ import os
 import util
 
 LIMIT_FILE = 0
-LIMIT_DIR = 1
-LIMIT_DB_CHOICE = 2
-LIMIT_BOOL = 3
-LIMIT_BOOL_DEFAULT = 4
-LIMIT_MULTI_SELECT = 5
-LIMIT_ACTION = 6
+LIMIT_FILE_DEFAULT = 1
+LIMIT_DIR = 2
+LIMIT_DB_CHOICE = 3
+LIMIT_BOOL = 4
+LIMIT_BOOL_DEFAULT = 5
+LIMIT_MULTI_SELECT = 6
+LIMIT_ACTION = 7
 
 
 SETTINGS_DISPLAY = {
@@ -387,7 +388,7 @@ class Trivia(Item):
         {
             'attr': 'musicFile',
             'type': None,
-            'limits': LIMIT_FILE,
+            'limits': LIMIT_FILE_DEFAULT,
             'name': 'File',
             'default': None
         }
@@ -470,7 +471,7 @@ class Trailer(Item):
         {
             'attr': 'file',
             'type': None,
-            'limits': LIMIT_FILE,
+            'limits': LIMIT_FILE_DEFAULT,
             'name': '- Path',
             'default': ''
         },
@@ -683,7 +684,7 @@ class Video(Item):
         {
             'attr': 'file',
             'type': None,
-            'limits': LIMIT_FILE,
+            'limits': LIMIT_FILE_DEFAULT,
             'name': 'File'
         },
         {
@@ -780,7 +781,7 @@ class AudioFormat(Item):
         {
             'attr': 'file',
             'type': None,
-            'limits': LIMIT_FILE,
+            'limits': LIMIT_FILE_DEFAULT,
             'name': 'Path',
             'default': ''
         },
