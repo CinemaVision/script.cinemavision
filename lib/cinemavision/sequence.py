@@ -2,6 +2,7 @@ import json
 import os
 
 import util
+from util import T
 
 LIMIT_FILE = 0
 LIMIT_FILE_DEFAULT = 1
@@ -14,51 +15,50 @@ LIMIT_ACTION = 7
 
 
 SETTINGS_DISPLAY = {
-    '3D.intro': '3D Intro',
-    '3D.outro': '3D Outro',
-    'countdown': 'Countdown',
-    'courtesy': 'Courtesy',
-    'feature.intro': 'Feature Intro',
-    'feature.outro': 'Feature Outro',
-    'intermission': 'Intermission',
-    'short.film': 'Short Film',
-    'theater.intro': 'Theater Intro',
-    'theater.outro': 'Theater Outro',
-    'trailers.intro': 'Trailers Intro',
-    'trailers.outro': 'Trailers Outro',
-    'trivia.intro': 'Trivia Intro',
-    'trivia.outro': 'Trivia Outro',
-    'back': 'Back',
-    'skip': 'Skip',
-    'feature.queue=full': 'Feature queue is full',
-    'feature.queue=empty': 'Feature queue is empty',
+    '3D.intro': T(32300, '3D Intro'),
+    '3D.outro': T(32301, '3D Outro'),
+    'countdown': T(32302, 'Countdown'),
+    'courtesy': T(32303, 'Courtesy'),
+    'feature.intro': T(32304, 'Feature Intro'),
+    'feature.outro': T(32305, 'Feature Outro'),
+    'intermission': T(32306, 'Intermission'),
+    'short.film': T(32307, 'Short Film'),
+    'theater.intro': T(32308, 'Theater Intro'),
+    'theater.outro': T(32309, 'Theater Outro'),
+    'trailers.intro': T(32310, 'Trailers Intro'),
+    'trailers.outro': T(32311, 'Trailers Outro'),
+    'trivia.intro': T(32312, 'Trivia Intro'),
+    'trivia.outro': T(32313, 'Trivia Outro'),
+    'back': T(32314, 'Back'),
+    'skip': T(32315, 'Skip'),
+    'feature.queue=full': T(32316, 'Feature queue is full'),
+    'feature.queue=empty': T(32317, 'Feature queue is empty'),
     'itunes': 'Apple iTunes',
-    'kodidb': 'Kodi Database',
-    'scrapers': 'Scrapers',
-    'dir': 'Directory',
-    'file': 'Single File',
-    'content': 'Content',
-    'standard': 'Standard',
-    'af.detect': 'Auto-detect from source',
-    'af.format': 'Choose format',
-    'af.file': 'Choose file',
-    'True': 'Yes',
-    'False': 'No',
-    'off': 'None',
-    'none': 'None',
-    'fade': 'Fade',
-    'max': 'Max',
-    'match': 'Match features',
-    'slideL': 'Slide Left',
-    'slideR': 'Slide Right',
-    'slideU': 'Slide Up',
-    'slideD': 'Slide Down',
-    'video': 'Video',
-    'image': 'Image',
-    'slide': 'Slide',
-    'random': 'Random',
-    'newest': 'Newest',
-    'style': 'Style',
+    'kodidb': T(32318, 'Kodi Database'),
+    'scrapers': T(32319, 'Scrapers'),
+    'dir': T(32047, 'Directory'),
+    'file': T(32053, 'Single File'),
+    'content': T(32007, 'Content'),
+    'af.detect': T(32069, 'Auto-detect from source'),
+    'af.format': T(32070, 'Choose format'),
+    'af.file': T(32071, 'Choose file'),
+    'True': T(32320, 'Yes'),
+    'False': T(32321, 'No'),
+    'off': T(32037, 'None'),
+    'none': T(32037, 'None'),
+    'fade': T(32038, 'Fade'),
+    'max': T(32062, 'Max'),
+    'match': T(32063, 'Match features'),
+    'slideL': T(32039, 'Slide Left'),
+    'slideR': T(32040, 'Slide Right'),
+    'slideU': T(32041, 'Slide Up'),
+    'slideD': T(32042, 'Slide Down'),
+    'video': T(32023, 'Video'),
+    'image': T(32078, 'Image'),
+    'slide': T(32046, 'Slide'),
+    'random': T(32057, 'Random'),
+    'newest': T(32056, 'Newest'),
+    'style': T(32079, 'Style'),
     'DTS-X': 'DTS:X'
 }
 
@@ -240,11 +240,11 @@ class Item:
         limits = self.getLimits(setting)
         if limits == LIMIT_BOOL_DEFAULT:
             if val is None:
-                return 'Default ({0})'.format(settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
-            return val is True and 'Yes' or 'No'
+                return u'{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
+            return val is True and T(32320, 'Yes') or T(32321, 'No')
 
         if val is None or val is 0:
-            return 'Default ({0})'.format(settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
+            return u'{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
 
         return unicode(settingDisplay(val))
 
@@ -265,39 +265,39 @@ class Feature(Item):
             'attr': 'count',
             'type': int,
             'limits': (0, 10, 1),
-            'name': 'Count',
+            'name': T(32060, 'Count'),
             'default': 0
         },
         {
             'attr': 'ratingBumper',
             'type': None,
             'limits': [None, 'none', 'video', 'image'],
-            'name': 'Rating Bumper',
+            'name': T(32077, 'Rating bumper'),
             'default': None
         },
         {
             'attr': 'ratingStyleSelection',
             'type': None,
             'limits': [None, 'random', 'style'],
-            'name': 'Style Selection',
+            'name': T(32080, 'Rating style selection'),
             'default': None
         },
         {
             'attr': 'ratingStyle',
             'type': None,
             'limits': LIMIT_DB_CHOICE,
-            'name': 'Style',
+            'name': T(32081, 'Rating style'),
             'default': None
         },
         {
             'attr': 'volume',
             'type': int,
             'limits': (0, 100, 1),
-            'name': 'Volume %',
+            'name': T(32025, 'Volume (% of current)'),
             'default': 0
         }
     )
-    displayName = 'Features'
+    displayName = T(32073, 'Features')
     typeChar = 'F'
 
     def __init__(self):
@@ -311,7 +311,7 @@ class Feature(Item):
     def display(self):
         name = self.name or self.displayName
         if self.count > 1:
-            return '{0} x {1}'.format(name, self.count)
+            return u'{0} x {1}'.format(name, self.count)
         return name
 
     def elementVisible(self, e):
@@ -349,51 +349,51 @@ class Trivia(Item):
             'attr': 'format',
             'type': None,
             'limits': [None, 'slide', 'video'],
-            'name': 'Format',
+            'name': T(32030, 'Format'),
             'default': None
         },
-        {'attr': 'duration',    'type': int, 'limits': (0, 60, 1), 'name': 'Duration (minutes)',          'default': 0},
-        {'attr': 'qDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Question Duration (seconds)', 'default': 0},
-        {'attr': 'cDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Clue Duration (seconds)',     'default': 0},
-        {'attr': 'aDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Answer Duration (seconds)',   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': 'Single Duration (seconds)',   'default': 0},
+        {'attr': 'duration',    'type': int, 'limits': (0, 60, 1), 'name': T(32031, 'Duration (minutes)'),          'default': 0},
+        {'attr': 'qDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32032, 'Question Duration (seconds)'), 'default': 0},
+        {'attr': 'cDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32033, 'Clue Duration (seconds)'),     'default': 0},
+        {'attr': 'aDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32034, 'Answer Duration (seconds)'),   'default': 0},
+        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32035, 'Single Duration (seconds)'),   'default': 0},
         {
             'attr': 'transition',
             'type': None,
             'limits': [None, 'none', 'fade', 'slideL', 'slideR', 'slideU', 'slideD'],
-            'name': 'Transition',
+            'name': T(32036, 'Transition'),
             'default': None
         },
         {
             'attr': 'transitionDuration',
             'type': int,
             'limits': (0, 2000, 100),
-            'name': 'Transition Duration',
+            'name': T(32043, 'Transition: Duration (milliseconds)'),
             'default': 0
         },
         {
             'attr': 'music',
             'type': None,
             'limits': [None, 'off', 'content', 'dir', 'file'],
-            'name': 'Music',
+            'name': T(32027, 'Music'),
             'default': None
         },
         {
             'attr': 'musicDir',
             'type': None,
             'limits': LIMIT_DIR,
-            'name': 'Path',
+            'name': T(32044, 'Music: Path'),
             'default': None
         },
         {
             'attr': 'musicFile',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': 'File',
+            'name': T(32045, 'Music: File'),
             'default': None
         }
     )
-    displayName = 'Trivia Slides'
+    displayName = T(32026, 'Trivia Slides')
     typeChar = 'Q'
 
     def __init__(self):
@@ -413,7 +413,7 @@ class Trivia(Item):
     def display(self):
         name = self.name or self.displayName
         if self.duration > 0:
-            return '{0} ({1}m)'.format(name, self.duration)
+            return u'{0} ({1}m)'.format(name, self.duration)
         return name
 
     def getLive(self, attr):
@@ -451,93 +451,93 @@ class Trailer(Item):
             'attr': 'source',
             'type': None,
             'limits': [None, 'content', 'dir', 'file'],
-            'name': 'Source',
+            'name': T(32052, 'Source'),
             'default': None
         },
         {
             'attr': 'scrapers',
             'type': None,
             'limits': LIMIT_MULTI_SELECT,
-            'name': '- Scrapers filter (scrapers)',
+            'name': u'- {0}'.format(T(32323, 'Scrapers filter (scrapers)')),
             'default': None
         },
         {
             'attr': 'order',
             'type': None,
             'limits': [None, 'newest', 'random'],
-            'name': '- Content order',
+            'name': u'- {0}'.format(T(32324, 'Content order')),
             'default': None
         },
         {
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': '- Path',
+            'name': u'- {0}'.format(T(32325, 'Path')),
             'default': ''
         },
         {
             'attr': 'dir',
             'type': None,
             'limits': LIMIT_DIR,
-            'name': '- Path',
+            'name': u'- {0}'.format(T(32325, 'Path')),
             'default': ''
         },
         {
             'attr': 'count',
             'type': int,
             'limits': (0, 10, 1),
-            'name': 'Count',
+            'name': T(32060, 'Count'),
             'default': 0
         },
         {
             'attr': 'ratingLimit',
             'type': None,
             'limits': [None, 'none', 'max', 'match'],
-            'name': 'Rating Limit',
+            'name': T(32061, 'Rating Limit'),
             'default': None
         },
         {
             'attr': 'ratingMax',
             'type': None,
             'limits': LIMIT_DB_CHOICE,
-            'name': '- Max',
+            'name': u'- {0}'.format(T(32062, 'Max')),
             'default': None
         },
         {
             'attr': 'limitGenre',
             'type': strToBoolWithDefault,
             'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Match feature genres',
+            'name': T(32065, 'Match feature genres'),
             'default': None
         },
         {
             'attr': 'filter3D',
             'type': strToBoolWithDefault,
             'limits': LIMIT_BOOL_DEFAULT,
-            'name': 'Filter for 3D based on Feature',
+            'name': T(32066, 'Filter for 3D based on feature'),
             'default': None
         },
         {
             'attr': 'quality',
             'type': None,
             'limits': [None, '480p', '720p', '1080p'],
-            'name': 'Quality',
+            'name': T(32067, 'Quality'),
             'default': None
         },
         {
             'attr': 'volume',
             'type': int,
             'limits': (0, 100, 1),
-            'name': 'Volume %',
+            'name': T(32025, 'Volume (% of current)'),
             'default': 0
         }
     )
-    displayName = 'Trailers'
+    displayName = T(32049, 'Trailers')
     typeChar = 'T'
 
     _scrapers = [
-        ['Content', 'Content Folder', 'content'],
-        ['KodiDB', 'Kodi Database', 'kodidb'],
+        ['Content', T(32326, 'Content Folder'), 'content'],
+        ['KodiDB', T(32318, 'Kodi Database'), 'kodidb'],
         ['iTunes', 'Apple iTunes', 'itunes'],
         ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
     ]
@@ -560,7 +560,7 @@ class Trailer(Item):
     def display(self):
         name = self.name or self.displayName
         if self.count > 1:
-            return '{0} x {1}'.format(name, self.count)
+            return u'{0} x {1}'.format(name, self.count)
         return name
 
     def liveScrapers(self):
@@ -598,7 +598,7 @@ class Trailer(Item):
         system = ratings.getRatingsSystem(default)
         if not system:
             return None
-        return [('{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
+        return [(u'{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
 
     def Select(self, attr):
         selected = [s.strip().lower() for s in self.liveScrapers()]
@@ -654,54 +654,54 @@ class Video(Item):
                 'dir',
                 'file'
             ],
-            'name': 'Type'
+            'name': T(32327, 'Type')
         },
         {
             'attr': 'random',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': 'Random'
+            'name': T(32057, 'Random')
         },
         {
             'attr': 'source',
             'type': None,
             'limits': LIMIT_DB_CHOICE,
-            'name': 'Source'
+            'name': T(32052, 'Source')
         },
         {
             'attr': 'dir',
             'type': None,
             'limits': LIMIT_DIR,
-            'name': 'Directory'
+            'name': T(32047, 'Directory')
         },
         {
             'attr': 'count',
             'type': int,
             'limits': (1, 10, 1),
-            'name': 'Count',
+            'name': T(32060, 'Count'),
             'default': 0
         },
         {
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': 'File'
+            'name': T(32048, 'File')
         },
         {
             'attr': 'play3D',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': 'Play 3D If 3D Feature'
+            'name': T(32328, 'Play 3D If 3D Feature')
         },
         {
             'attr': 'volume',
             'type': int,
             'limits': (0, 100, 1),
-            'name': 'Volume %',
+            'name': T(32025, 'Volume (% of current)'),
             'default': 0
         }
     )
-    displayName = 'Videos'
+    displayName = T(32023, 'Video')
     typeChar = 'V'
 
     def __init__(self):
@@ -743,7 +743,7 @@ class Video(Item):
             name = settingDisplay(self.vtype)
 
         if self.count > 1 and (self.vtype == 'dir' or (self.vtype != 'file' and self.random)):
-            return '{0} x {1}'.format(name, self.count)
+            return u'{0} x {1}'.format(name, self.count)
 
         return name
 
@@ -768,21 +768,21 @@ class AudioFormat(Item):
             'attr': 'method',
             'type': None,
             'limits': [None, 'af.detect', 'af.format', 'af.file'],
-            'name': 'Method',
+            'name': T(32068, 'Method'),
             'default': None
         },
         {
             'attr': 'fallback',
             'type': None,
             'limits': [None, 'af.format', 'af.file'],
-            'name': 'Fallback',
+            'name': T(32072, 'Fallback'),
             'default': None
         },
         {
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': 'Path',
+            'name': T(32325, 'Path'),
             'default': ''
         },
         {
@@ -792,24 +792,24 @@ class AudioFormat(Item):
                 None, 'Auro-3D', 'Dolby Digital', 'Dolby Digital Plus', 'Dolby TrueHD',
                 'Dolby Atmos', 'DTS', 'DTS-HD Master Audio', 'DTS-X', 'Datasat', 'THX', 'Other'
             ],
-            'name': 'Format',
+            'name': T(32030, 'Format'),
             'default': None
         },
         {
             'attr': 'play3D',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': 'Play 3D If 3D Feature'
+            'name': T(32328, 'Play 3D if 3D feature')
         },
         {
             'attr': 'volume',
             'type': int,
             'limits': (0, 100, 1),
-            'name': 'Volume %',
+            'name': T(32025, 'Volume (% of current)'),
             'default': 0
         }
     )
-    displayName = 'Audio Format Bumpers'
+    displayName = T(32329, 'Audio Format Bumper')
     typeChar = 'A'
 
     def __init__(self):
@@ -845,18 +845,18 @@ class Action(Item):
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE,
-            'name': 'Action File Path',
+            'name': T(32085, 'Action file path'),
             'default': ''
         },
         {
             'attr': 'eval',
             'type': None,
             'limits': LIMIT_ACTION,
-            'name': 'Check for errors',
+            'name': T(32330, 'Check for errors'),
             'default': ''
         }
     )
-    displayName = 'Action'
+    displayName = T(32083, 'Actions')
     typeChar = '!'
     fileChar = '_'
 
@@ -883,22 +883,22 @@ class Command(Item):
             'attr': 'command',
             'type': None,
             'limits': ['back', 'skip'],
-            'name': 'Command'
+            'name': T(32331, 'Command')
         },
         {
             'attr': 'arg',
             'type': None,
             'limits': None,
-            'name': 'Argument'
+            'name': T(32332, 'Argument')
         },
         {
             'attr': 'condition',
             'type': None,
             'limits': ['feature.queue=full', 'feature.queue=empty', 'none'],
-            'name': 'Condition'
+            'name': T(32333, 'Condition')
         }
     )
-    displayName = 'Command'
+    displayName = T(32331, 'Command')
     typeChar = 'C'
 
     def _set(self, attr, value):
@@ -960,8 +960,8 @@ class Command(Item):
 
     def display(self):
         name = self.name or self.displayName
-        command = self.command and ' ({0}:{1})'.format(self.command, self.arg) or ''
-        return '{0}{1}'.format(name, command)
+        command = self.command and u' ({0}:{1})'.format(self.command, self.arg) or ''
+        return u'{0}{1}'.format(name, command)
 
 
 CONTENT_CLASSES = {
@@ -975,13 +975,13 @@ CONTENT_CLASSES = {
 }
 
 ITEM_TYPES = [
-    ('V', 'Video Bumpers', 'V', Video),
-    ('Q', 'Trivia Slides', 'Q', Trivia),
-    ('T', 'Trailers', 'T', Trailer),
-    ('A', 'Audio Format Bumpers', 'A', AudioFormat),
-    ('F', 'Features', 'F', Feature),
-    ('C', 'Commands', 'C', Command),
-    ('!', 'Actions', '_', Action)
+    ('V', T(32334, 'Video Bumper'), 'V', Video),
+    ('Q', T(32026, 'Trivia'), 'Q', Trivia),
+    ('T', T(32049, 'Trailers'), 'T', Trailer),
+    ('A', T(32329, 'Audio Format Bumper'), 'A', AudioFormat),
+    ('F', T(32073, 'Features'), 'F', Feature),
+    ('C', T(32331, 'Command'), 'C', Command),
+    ('!', T(32083, 'Actions'), '_', Action)
 ]
 
 

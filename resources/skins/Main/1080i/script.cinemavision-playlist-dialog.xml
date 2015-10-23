@@ -258,7 +258,7 @@
                     <posy>185</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]PLAY[/B]</label>
+                    <label>[B][UPPERCASE]$ADDON[script.cinemavision 32547][/UPPERCASE][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
@@ -283,7 +283,7 @@
                     <posy>290</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]CANCEL[/B]</label>
+                    <label>[B][UPPERCASE]$ADDON[script.cinemavision 32587][/UPPERCASE][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
@@ -308,7 +308,7 @@
                     <posy>430</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]APPLY TO QUEUE[/B]</label>
+                    <label>[B][UPPERCASE]$ADDON[script.cinemavision 32588][/UPPERCASE][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
@@ -358,7 +358,7 @@
                 <height>395</height>
                 <font>font16</font>
                 <textcolor>FFFFFFFF</textcolor>
-                <label>Click an item to start a move.[CR][CR]Click the [COLOR FF64A0FF]context menu button[/COLOR] or [COLOR FF64A0FF]delete key[/COLOR] on a keyboard to remove an item.</label>
+                <label>$ADDON[script.cinemavision 32589][CR][CR]$ADDON[script.cinemavision 32590]</label>
             </control>
         </control>
     </controls>

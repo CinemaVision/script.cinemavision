@@ -6,6 +6,8 @@ import xbmcvfs
 import kodiutil
 import kodigui
 
+from kodiutil import T
+
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
 import cvutil
@@ -188,7 +190,14 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         if options in (cinemavision.sequence.LIMIT_FILE, cinemavision.sequence.LIMIT_FILE_DEFAULT):
             select = True
             if sItem.getSetting(attr):
-                yes = xbmcgui.Dialog().yesno('Change Path', '', 'Would choose a new path, or clear the current path?', '', 'Choose', 'Clear')
+                yes = xbmcgui.Dialog().yesno(
+                    T(32517, 'Change Path'),
+                    '',
+                    T(32518, 'Would choose a new path, or clear the current path?'),
+                    '',
+                    T(32519, 'Choose'),
+                    T(32520, 'Clear')
+                )
                 if yes:
                     if options == cinemavision.sequence.LIMIT_FILE:
                         value = ''
@@ -197,37 +206,44 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                     select = False
 
             if select:
-                value = xbmcgui.Dialog().browse(1, 'Select File', 'files', None, False, False, sItem.getSetting(attr))
+                value = xbmcgui.Dialog().browse(1, T(32521, 'Select File'), 'files', None, False, False, sItem.getSetting(attr))
                 if not value:
                     return
                 value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_DB_CHOICE:
             options = sItem.DBChoices(attr)
             if not options:
-                xbmcgui.Dialog().ok('No Content', '', u'No matching content found.')
+                xbmcgui.Dialog().ok(T(32508, 'No Content'), '', T(32522, 'No matching content found.'))
                 return False
-            options.insert(0, (None, 'Default'))
-            idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
+            options.insert(0, (None, T(32322, 'Default')))
+            idx = xbmcgui.Dialog().select(T(32523, 'Options'), [x[1] for x in options])
             if idx < 0:
                 return False
             value = options[idx][0]
         elif options == cinemavision.sequence.LIMIT_DIR:
             select = True
             if sItem.getSetting(attr):
-                yes = xbmcgui.Dialog().yesno('Change Path', '', 'Would choose a new path, or clear the current path?', '', 'Clear', 'Choose')
+                yes = xbmcgui.Dialog().yesno(
+                    T(32517, 'Change Path'),
+                    '',
+                    T(32518, 'Choose a new path or clear the current path?'),
+                    '',
+                    T(32520, 'Clear'),
+                    T(32519, 'Choose')
+                )
                 if yes:
                     value = None
                     select = False
 
             if select:
-                value = xbmcgui.Dialog().browse(0, 'Select Directory', 'files')
+                value = xbmcgui.Dialog().browse(0, T(32524, 'Select Directory'), 'files')
                 if not value:
                     return
                 value = value.decode('utf-8')
         elif options == cinemavision.sequence.LIMIT_MULTI_SELECT:
             options = sItem.Select(attr)
             if not options:
-                xbmcgui.Dialog().ok('No Options', '', u'No options found.')
+                xbmcgui.Dialog().ok(T(32525, 'No Options'), '', T(32526, 'No options found.'))
                 return False
             result = cvutil.multiSelect(options)
             if result is False:
@@ -248,7 +264,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 cvutil.evalActionFile(self.item.dataSource.file)
             return False
         elif isinstance(options, list):
-            idx = xbmcgui.Dialog().select('Option', [x[1] for x in options])
+            idx = xbmcgui.Dialog().select(T(32523, 'Options'), [x[1] for x in options])
             if idx < 0:
                 return False
             value = options[idx][0]
@@ -353,7 +369,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def handleClose(self):
         yes = True
         if self.modified:
-            yes = xbmcgui.Dialog().yesno('Confirm', 'Sequence was modified.', '', 'Do you really want to exit without saving changes?')
+            yes = xbmcgui.Dialog().yesno(
+                T(32527, 'Confirm'),
+                T(32528, 'Sequence was modified.'),
+                '',
+                T(32529, 'Do you really want to exit without saving changes?')
+            )
 
         if yes:
             return False
@@ -390,36 +411,40 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def fillOptions(self):
         for i in cinemavision.sequence.ITEM_TYPES:
-            item = kodigui.ManagedListItem('Add {0}'.format(i[1]), thumbnailImage='small/script.cinemavision-{0}.png'.format(i[2]), data_source=i[0])
+            item = kodigui.ManagedListItem(
+                '{0}: {1}'.format(T(32530, 'Add'), i[1]),
+                thumbnailImage='small/script.cinemavision-{0}.png'.format(i[2]),
+                data_source=i[0]
+            )
             item.setProperty('thumb.focus', 'small/script.cinemavision-{0}_selected.png'.format(i[2]))
             self.addItemControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Edit', 'Edit', thumbnailImage='small/script.cinemavision-edit.png', data_source='edit')
+        item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage='small/script.cinemavision-edit.png', data_source='edit')
         item.setProperty('alt.thumb', 'small/script.cinemavision-edit.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Rename', 'Rename', thumbnailImage='small/script.cinemavision-rename.png', data_source='rename')
+        item = kodigui.ManagedListItem(T(32532, 'Rename'), T(32532, 'Rename'), thumbnailImage='small/script.cinemavision-rename.png', data_source='rename')
         item.setProperty('alt.thumb', 'small/script.cinemavision-rename.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Copy', 'Copy', thumbnailImage='small/script.cinemavision-copy.png', data_source='copy')
+        item = kodigui.ManagedListItem(T(32533, 'Copy'), T(32533, 'Copy'), thumbnailImage='small/script.cinemavision-copy.png', data_source='copy')
         item.setProperty('alt.thumb', 'small/script.cinemavision-copy.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Move', 'Move', thumbnailImage='small/script.cinemavision-move.png', data_source='move')
+        item = kodigui.ManagedListItem(T(32534, 'Move'), T(32534, 'Move'), thumbnailImage='small/script.cinemavision-move.png', data_source='move')
         item.setProperty('alt.thumb', 'small/script.cinemavision-move.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Disable', 'Enable', thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
+        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32535, 'Disable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
         item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem('Remove', 'Remove', thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
+        item = kodigui.ManagedListItem(T(32536, 'Remove'), T(32536, 'Remove'), thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
         item.setProperty('alt.thumb', 'small/script.cinemavision-minus.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
@@ -590,7 +615,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = True
 
     def removeItem(self):
-        if not xbmcgui.Dialog().yesno('Confirm', '', 'Do you really want to remove this module?'):
+        if not xbmcgui.Dialog().yesno(T(32527, 'Confirm'), '', T(32537, 'Do you really want to remove this module?')):
             return
 
         pos = self.sequenceControl.getSelectedPosition()
@@ -641,8 +666,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem = item.dataSource
 
         ct = 0
-        item.setProperty('setting{0}'.format(ct), sItem.enabled and 'Yes' or 'No')
-        item.setProperty('setting{0}_name'.format(ct), 'Enabled')
+        item.setProperty('setting{0}'.format(ct), sItem.enabled and T(32320, 'Yes') or T(32321, 'No'))
+        item.setProperty('setting{0}_name'.format(ct), T(32538, 'Enabled'))
         ct += 1
         for e in sItem._elements:
             if not sItem.elementVisible(e):
@@ -666,7 +691,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         sItem = item.dataSource
 
-        name = xbmcgui.Dialog().input('Enter a name for this item', sItem.name)
+        name = xbmcgui.Dialog().input(T(32539, 'Enter a name for this item'), sItem.name)
 
         if name == sItem.name:
             return
@@ -681,15 +706,15 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def doMenu(self):
         options = []
-        options.append(('settings', 'Addon Settings'))
-        options.append(('new', 'New'))
-        options.append(('save', 'Save'))
-        options.append(('saveas', 'Save As...'))
-        options.append(('load', 'Load'))
-        options.append(('import', 'Import'))
-        options.append(('export', 'Export'))
-        options.append(('test', 'Play'))
-        idx = xbmcgui.Dialog().select('Sequence Options', [o[1] for o in options])
+        options.append(('settings', T(32540, 'Add-on settings')))
+        options.append(('new', T(32541, 'New')))
+        options.append(('save', T(32542, 'Save')))
+        options.append(('saveas', T(32543, 'Save as...')))
+        options.append(('load', T(32544, 'Load')))
+        options.append(('import', T(32545, 'Import')))
+        options.append(('export', T(32546, 'Export')))
+        options.append(('test', T(32547, 'Play')))
+        idx = xbmcgui.Dialog().select(T(32548, 'Sequence Options'), [o[1] for o in options])
         if idx < 0:
             return
         option = options[idx][0]
@@ -735,7 +760,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def abortOnModified(self):
         if self.modified:
-            if not xbmcgui.Dialog().yesno('Confirm', 'Sequence is modified.', 'This will delete all changes.', 'Do you really want to do this?'):
+            if not xbmcgui.Dialog().yesno(
+                T(32527, 'Confirm'),
+                T(32549, 'Sequence is modified.'),
+                T(32550, 'This will delete all changes.'),
+                T(32551, 'Do you really want to do this?')
+            ):
                 return True
         return False
 
@@ -773,13 +803,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def save(self, as_new=False, export=False):
         if export:
-            path = xbmcgui.Dialog().browse(3, 'Select Save Directory', 'files', None, False, False)
+            path = xbmcgui.Dialog().browse(3, T(32552, 'Select Save Directory'), 'files', None, False, False)
             if not path:
                 return
         else:
             contentPath = kodiutil.getSetting('content.path')
             if not contentPath:
-                xbmcgui.Dialog().ok('No Content Path', ' ', 'Please set the content path in addon settings.')
+                xbmcgui.Dialog().ok(T(32503, 'No Content Path'), ' ', T(32553, 'Please set the content path in addon settings.'))
                 return
 
             path = cinemavision.util.pathJoin(contentPath, 'Sequences')
@@ -787,7 +817,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         name = self.name
 
         if not name or as_new or export:
-            name = xbmcgui.Dialog().input('Enter Name For File', name)
+            name = xbmcgui.Dialog().input(T(32554, 'Enter name for file'), name)
             if not name:
                 return
 
@@ -815,9 +845,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             sequence2D = kodiutil.getSetting('sequence.2D')
             sequence3D = kodiutil.getSetting('sequence.3D')
             if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
-                yes = xbmcgui.Dialog().yesno('Set Default', 'Would you like to set this as the default for playback?')
+                yes = xbmcgui.Dialog().yesno(T(32555, 'Set Default'), T(32556, 'Would you like to set this as the default for playback?'))
                 if yes:
-                    as3D = xbmcgui.Dialog().yesno('2D/3D', 'For 2D or 3D?', nolabel='2D', yeslabel='3D')
+                    as3D = xbmcgui.Dialog().yesno('2D/3D', T(32557, 'For 2D or 3D?'), nolabel='2D', yeslabel='3D')
                     if as3D:
                         kodiutil.setSetting('sequence.3D', self.name)
                     else:
@@ -828,7 +858,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             return
 
         if import_:
-            path = xbmcgui.Dialog().browse(1, 'Select File', 'files', '*.cvseq', False, False)
+            path = xbmcgui.Dialog().browse(1, T(32521, 'Select File'), 'files', '*.cvseq', False, False)
             if not path:
                 return
         else:
@@ -883,7 +913,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not xbmcvfs.exists(savePath):
                 self.setName('')
                 self.saveDefault(force=True)
-                new = xbmcgui.Dialog().yesno('Missing', 'Previous save not found.', '', 'Load the default or start a new sequence?', 'Default', 'New')
+                new = xbmcgui.Dialog().yesno(
+                    T(32558, 'Missing'),
+                    T(32559, 'Previous save not found.'),
+                    '',
+                    T(32560, 'Load the default or start a new sequence?'),
+                    T(32322, 'Default'),
+                    T(32541, 'New')
+                )
                 if new:
                     self.setName('')
                     self.setFocusId(self.ADD_ITEM_LIST_ID)

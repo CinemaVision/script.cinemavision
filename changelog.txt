@@ -2,7 +2,7 @@ Changelog for CinemaVision
 
 [- 1.0.0b1 -]
 
-- fix:     When clearing action file in the module, was displaying default
+- fix:     When clearing action file in the module, was displaying Default()
 - add:     Localize settings strings
 
 [- 0.0.50 -]

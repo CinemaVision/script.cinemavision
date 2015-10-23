@@ -4,6 +4,8 @@ import xbmc
 import kodiutil
 import cinemavision
 
+from kodiutil import T
+
 DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|' +\
     '3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB|[\. _]TAB[\. _]'
 
@@ -44,16 +46,16 @@ def selectSequence():
 
     contentPath = kodiutil.getSetting('content.path')
     if not contentPath:
-        xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
 
     sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
     options = cinemavision.util.vfs.listdir(sequencesPath)
     if not options:
-        xbmcgui.Dialog().ok('Not Found', ' ', 'No sequences found.')
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
 
-    idx = xbmcgui.Dialog().select('Choose Sequence', [n[:-6] for n in options])
+    idx = xbmcgui.Dialog().select(T(32502, 'Choose Sequence'), [n[:-6] for n in options])
     if idx < 0:
         return None
     path = cinemavision.util.pathJoin(sequencesPath, options[idx])
@@ -88,14 +90,14 @@ def loadContent(from_settings=False):
     import xbmcgui
 
     if from_settings and not kodiutil.getSetting('content.path'):
-        xbmcgui.Dialog().ok('No Content Path', ' ', 'Content path not set or not applied')
+        xbmcgui.Dialog().ok(T(32503, 'No Content Path'), ' ', T(32504, 'Content path not set or not applied'))
         return
 
     contentPath = getContentPath(from_load=True)
 
     kodiutil.DEBUG_LOG('Loading content...')
 
-    with kodiutil.Progress('Loading Content') as p:
+    with kodiutil.Progress(T(32505, 'Loading Content')) as p:
         cinemavision.content.UserContent(contentPath, callback=p.msg, trailer_sources=kodiutil.getSetting('trailer.scrapers', '').split(','))
 
     createSettingsRSDirs()
@@ -148,7 +150,7 @@ def downloadDemoContent():
         if not response.ok:
             return False
 
-        with kodiutil.Progress('Download', 'Downloading demo content') as p:
+        with kodiutil.Progress(T(32506, 'Download'), T(32507, 'Downloading demo content')) as p:
             for block in response.iter_content(blockSize):
                 sofar += blockSize
                 pct = int((sofar/total) * 100)
@@ -179,10 +181,10 @@ def setRatingBumperStyle():
     styles = cinemavision.sequence.Feature.DBChoices('ratingStyle')
 
     if not styles:
-        xbmcgui.Dialog().ok('No Content', '', 'No content found for current rating system.')
+        xbmcgui.Dialog().ok(T(32508, 'No Content'), '', T(32509, 'No content found for current rating system.'))
         return
 
-    idx = xbmcgui.Dialog().select('Select Style', [x[1] for x in styles])
+    idx = xbmcgui.Dialog().select(T(32510, 'Select Style'), [x[1] for x in styles])
 
     if idx < 0:
         return
@@ -194,7 +196,7 @@ def evalActionFile(paths):
     import xbmcgui
 
     if not paths:
-        xbmcgui.Dialog().ok('None found', 'No action file(s) set')
+        xbmcgui.Dialog().ok(T(32511, 'None found'), T(32512, 'No action file(s) set'))
         return
 
     if not isinstance(paths, list):
@@ -210,12 +212,12 @@ def evalActionFile(paths):
                 messages += ['[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg) for type_, msg in processor.parserLog]
                 messages += ['[CR]']
         else:
-            messages += ['{0} - [COLOR FFFF0000]MISSING![/COLOR][CR]'.format(os.path.basename(path))]
+            messages += [u'{0} - [COLOR FFFF0000]{1}[/COLOR][CR]'.format(os.path.basename(path), T(32513, 'MISSING!'))]
 
     if messages:
-        showText('Parser Messages', '[CR]'.join(messages))
+        showText(T(32514, 'Parser Messages'), '[CR]'.join(messages))
     else:
-        xbmcgui.Dialog().ok('Done', 'Action file(s) parsed OK')
+        xbmcgui.Dialog().ok(T(32515, 'Done'), T(32516, 'Action file(s) parsed OK'))
 
 
 _RATING_PARSER = None

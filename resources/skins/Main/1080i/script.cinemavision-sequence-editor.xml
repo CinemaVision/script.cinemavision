@@ -1040,7 +1040,7 @@
                 <font>font13</font>
                 <textcolor>FF64A0FF</textcolor>
                 <align>right</align>
-                <label>DEMO MODE[CR]Set [COLOR FFA4E0FF]Content path[/COLOR] in settings</label>
+                <label>$ADDON[script.cinemavision 32591][CR]$ADDON[script.cinemavision 32592]</label>
             </control>
         </control>
     </controls>

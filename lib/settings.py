@@ -1,3 +1,7 @@
+import kodiutil
+from kodiutil import T
+
+
 def clearDBWatchedStatus():
     from cinemavision import database as DB
 
@@ -6,7 +10,7 @@ def clearDBWatchedStatus():
     ).execute()
 
     import xbmcgui
-    xbmcgui.Dialog().ok('Done', 'Remove watched status from all trailers.')
+    xbmcgui.Dialog().ok(T(32515, 'Done'), T(32564, 'Removed watched status from all trailers.'))
 
 
 def clearDBBrokenStatus():
@@ -17,17 +21,18 @@ def clearDBBrokenStatus():
     ).execute()
 
     import xbmcgui
-    xbmcgui.Dialog().ok('Done', 'Remove broken status from all trailers.')
+    xbmcgui.Dialog().ok(T(32515, 'Done'), T(32565, 'Removed broken status from all trailers.'))
 
 
 def pasteLog():
     import xbmcgui
     yes = xbmcgui.Dialog().yesno(
-        'Choose', 'Would you like to paste the current old log?',
-        'Paste the old log if you are in a new session, ie. after a Kodi crash.',
+        T(32519, 'Choose'),
+        T(32566, 'Would you like to paste the current old log?'),
+        T(32567, 'Paste the old log if you are in a new session, ie. after a Kodi crash.'),
         '',
-        'Current',
-        'Old'
+        T(32568, 'Current'),
+        T(32569, 'Old')
     )
     if yes:
         _pasteLog('kodi.old.log')
@@ -40,13 +45,12 @@ def _pasteLog(logName='kodi.log'):
     import re
     import xbmc
     import xbmcgui
-    import kodiutil
     from pastebin_python import PastebinPython
 
     logPath = os.path.join(xbmc.translatePath('special://logpath').decode('utf-8'), logName)
 
     if not os.path.exists(logPath):
-        xbmcgui.Dialog().ok('No Log', ' ', 'That log file does not exist!')
+        xbmcgui.Dialog().ok(T(32570, 'No Log'), ' ', T(32571, 'That log file does not exist!'))
         return False
 
     def debug_log(msg):
@@ -70,26 +74,29 @@ def _pasteLog(logName='kodi.log'):
     if apiUser and not apiUserKey:
         debug_log('Username set, asking user for password')
         password = xbmcgui.Dialog().input(
-            'Enter Pastebin password (only needed 1st time - NOT stored)', '', xbmcgui.INPUT_ALPHANUM, xbmcgui.ALPHANUM_HIDE_INPUT
+            T(32572, 'Enter Pastebin password (only needed 1st time - NOT stored)'),
+            '',
+            xbmcgui.INPUT_ALPHANUM,
+            xbmcgui.ALPHANUM_HIDE_INPUT
         )
         if password:
             debug_log('Getting API user key')
             apiUserKey = pb.createAPIUserKey(apiUser, password)
             if apiUserKey.lower().startswith('bad'):
-                xbmcgui.Dialog().ok('Failed', u'Failed to create paste as user: {0}'.format(apiUser), '', apiUserKey)
+                xbmcgui.Dialog().ok(T(32573, 'Failed'), u'{0}: {1}'.format(T(32574, 'Failed to create paste as user'), apiUser), '', apiUserKey)
                 debug_log('Failed get user API key ({0}): {1}'.format(apiUser, apiUserKey))
             else:
                 with open(apiUserKeyFile, 'w') as f:
                     f.write(apiUserKey)
         else:
             debug_log('User aborted')
-            xbmcgui.Dialog().ok('Aborted', ' ', 'Paste aborted!')
+            xbmcgui.Dialog().ok(T(32575, 'Aborted'), ' ', T(32576, 'Paste aborted!'))
             return False
 
     elif apiUserKey:
         debug_log('Creating paste with stored API key')
 
-    with kodiutil.Progress('Pastebin', 'Creating paste...'):
+    with kodiutil.Progress('Pastebin', T(32577, 'Creating paste...')):
         with open(logPath, 'r') as f:
             content = f.read().decode('utf-8')
             for pattern, repl in replaces:
@@ -98,10 +105,17 @@ def _pasteLog(logName='kodi.log'):
 
     showQR = False
     if urlOrError.startswith('http'):
-        showQR = xbmcgui.Dialog().yesno('Done', 'Paste created at:', '', urlOrError, 'OK', 'Show QR Code')
+        showQR = xbmcgui.Dialog().yesno(
+            T(32515, 'Done'),
+            T(32578, 'Paste created at:'),
+            '',
+            urlOrError,
+            T(32579, 'OK'),
+            T(32580, 'Show QR Code')
+        )
         debug_log('Paste created: {0}'.format(urlOrError))
     else:
-        xbmcgui.Dialog().ok('Failed', 'Failed to create paste:', '', urlOrError)
+        xbmcgui.Dialog().ok(T(32573, 'Failed'), T(32581, 'Failed to create paste:'), '', urlOrError)
         debug_log('Failed to create paste: {0}'.format(urlOrError))
 
     if showQR:
@@ -113,7 +127,6 @@ def _pasteLog(logName='kodi.log'):
 def showQRCode(url):
     import os
     import pyqrcode
-    import kodiutil
     import kodigui
     # from kodijsonrpc import rpc
 
@@ -130,7 +143,7 @@ def showQRCode(url):
         def onFirstInit(self):
             self.setProperty('image', self.image)
 
-    with kodiutil.Progress('QR Code', 'Creating QR code...'):
+    with kodiutil.Progress(T(32582, 'QR Code'), T(32583, 'Creating QR code...')):
         code = pyqrcode.create(url)
         QRDir = os.path.join(kodiutil.PROFILE_PATH, 'settings', 'QR')
         if not os.path.exists(QRDir):
@@ -144,18 +157,16 @@ def showQRCode(url):
 def deleteUserKey():
     import os
     import xbmcgui
-    import kodiutil
 
     apiUserKeyFile = os.path.join(kodiutil.PROFILE_PATH, 'settings.pb.key')
     if os.path.exists(apiUserKeyFile):
         os.remove(apiUserKeyFile)
-    xbmcgui.Dialog().ok('Done', ' ', 'User key deleted.')
+    xbmcgui.Dialog().ok(T(32515, 'Done'), ' ', T(32585, 'User key deleted.'))
 
 
 def removeContentDatabase():
     import os
     import xbmcgui
-    import kodiutil
 
     dbFile = os.path.join(kodiutil.PROFILE_PATH, 'content.db')
     if os.path.exists(dbFile):
@@ -163,12 +174,11 @@ def removeContentDatabase():
 
     kodiutil.setSetting('content.initialized', False)
 
-    xbmcgui.Dialog().ok('Done', ' ', 'Database reset.')
+    xbmcgui.Dialog().ok(T(32515, 'Done'), ' ', T(32584, 'Database reset.'))
 
 
 def setDefaultSequence(setting):
     import cvutil
-    import kodiutil
 
     selection = cvutil.selectSequence()
     if not selection:
@@ -179,7 +189,6 @@ def setDefaultSequence(setting):
 
 def setScrapers():
     import cvutil
-    import kodiutil
     import cinemavision
 
     selected = [s.strip().lower() for s in kodiutil.getSetting('trailer.scrapers', '').split(',')]
@@ -203,7 +212,6 @@ def setScrapers():
 
 def testEventActions():
     import cvutil
-    import kodiutil
 
     paths = []
 

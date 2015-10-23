@@ -5,10 +5,17 @@ import kodigui
 import xbmc
 import xbmcgui
 
+from kodiutil import T
+
 
 def showNoFeaturesDialog():
     import xbmcgui
-    xbmcgui.Dialog().ok('No Features', 'No movies are in the Queue.', '', 'Please queue some features and try again.')
+    xbmcgui.Dialog().ok(
+        T(32561, 'No Features'),
+        T(32562, 'No movies are in the Queue.'),
+        '',
+        T(32563, 'Please queue some features and try again.')
+    )
 
 
 def featureComfirmationDialog(features):

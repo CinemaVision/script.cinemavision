@@ -244,7 +244,7 @@
                     <posy>85</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]OK[/B]</label>
+                    <label>[B]$ADDON[script.cinemavision 32579][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
@@ -269,7 +269,7 @@
                     <posy>185</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]USE DEFAULT[/B]</label>
+                    <label>[B]$ADDON[script.cinemavision 32586][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
@@ -294,7 +294,7 @@
                     <posy>290</posy>
                     <width>300</width>
                     <height>70</height>
-                    <label>[B]CANCEL[/B]</label>
+                    <label>[B][UPPERCASE]$ADDON[script.cinemavision 32587][/UPPERCASE][/B]</label>
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>

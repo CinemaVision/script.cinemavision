@@ -9,10 +9,6 @@ STORAGE_PATH = None
 TAGS_3D_REGEX = ''
 
 
-def T(ID, eng=''):
-    return eng
-
-
 def pathIs3D(path):
     return bool(re.search(TAGS_3D_REGEX, path))
 
@@ -103,6 +99,10 @@ try:
     import time
 
     STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
+    _T = xbmcaddon.Addon().getLocalizedString
+
+    def T(ID, eng=''):
+        return _T(ID)
 
     class VFS:
         def __getattr__(self, attr):
@@ -255,6 +255,9 @@ except:
     import zipfile
 
     STORAGE_PATH = '/home/ruuk/tmp/content'
+
+    def T(ID, eng=''):
+        return eng
 
     def vfs():
         pass
