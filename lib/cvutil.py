@@ -192,7 +192,7 @@ def setRatingBumperStyle():
     kodiutil.setSetting('feature.ratingStyle', styles[idx][0])
 
 
-def evalActionFile(paths):
+def evalActionFile(paths, test=True):
     import xbmcgui
 
     if not paths:
@@ -204,20 +204,64 @@ def evalActionFile(paths):
 
     messages = []
 
+    abortPath = kodiutil.getSetting('action.onAbort.file').decode('utf-8')
+    if not kodiutil.getSetting('action.onAbort', False):
+        abortPath = None
+
+    # if not abortPath:
+    #     yes = xbmcgui.Dialog().yesno('No Abort', 'Abort action not set.', '')
+    #     Test = False
+
     for path in paths:
         processor = cinemavision.actions.ActionFileProcessor(path, test=True)
-        if processor.fileExists:
-            if processor.parserLog:
-                messages += ['{0}[CR]'.format(os.path.basename(path))]
-                messages += ['[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg) for type_, msg in processor.parserLog]
-                messages += ['[CR]']
-        else:
-            messages += [u'{0} - [COLOR FFFF0000]{1}[/COLOR][CR]'.format(os.path.basename(path), T(32513, 'MISSING!'))]
+        messages.append(u'[B]VALIDATE ({0}):[/B]'.format(os.path.basename(path)))
+        messages.append('')
+        parseMessages = []
+        hasParseMessages = False
+        hasErrors = False
 
-    if messages:
-        showText(T(32514, 'Parser Messages'), '[CR]'.join(messages))
-    else:
+        if not processor.fileExists:
+            messages.append(u'{0} - [COLOR FFFF0000]{1}[/COLOR]'.format(os.path.basename(path), T(32513, 'MISSING!')))
+            messages.append('')
+            continue
+
+        if processor.parserLog:
+            hasParseMessages = True
+            for type_, msg in processor.parserLog:
+                hasErrors = hasErrors or type_ == 'ERROR'
+                parseMessages .append(u'[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg))
+        else:
+            parseMessages.append('[COLOR FF00FF00]OK[/COLOR]')
+
+        messages += parseMessages
+        messages.append('')
+
+        if test:
+            if hasErrors:
+                messages += [u'[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
+                messages.append(u'[COLOR FFFF0000]{0}[/COLOR]'.format('SKIPPED DUE TO ERRORS'))
+            else:
+                with kodiutil.Progress('Testing', 'Executing actions...'):
+                    messages += ['[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
+                    for line in processor.test():
+                        if line.startswith('Action ('):
+                            lsplit = line.split(': ', 1)
+                            line = '[COLOR FFAAAAFF]{0}:[/COLOR] {1}'.format(lsplit[0], lsplit[1])
+                        elif line.startswith('ERROR:'):
+                            line = '[COLOR FFFF0000]{0}[/COLOR]'.format(line)
+                        messages.append(line)
+            messages.append('')
+
+    if not test and not hasParseMessages:
         xbmcgui.Dialog().ok(T(32515, 'Done'), T(32516, 'Action file(s) parsed OK'))
+    else:
+        showText(T(32514, 'Parser Messages'), '[CR]'.join(messages))
+
+    if test and abortPath:
+        runAbort = kodiutil.getSetting('action.test.runAbort', 0)
+        if runAbort and (runAbort != 2 or xbmcgui.Dialog().yesno(T(32597, 'Cleanup'), T(32598, 'Run abort action?'))):
+            processor = cinemavision.actions.ActionFileProcessor(abortPath)
+            processor.run()
 
 
 _RATING_PARSER = None

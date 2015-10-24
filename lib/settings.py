@@ -210,18 +210,24 @@ def setScrapers():
     kodiutil.setSetting('trailer.scrapers', result)
 
 
-def testEventActions():
+def testEventActions(action):
     import cvutil
 
-    paths = []
+    path = None
 
-    if kodiutil.getSetting('action.onPause', False):
-        paths.append(kodiutil.getSetting('action.onPause.file').decode('utf-8'))
+    if action == 'PAUSE':
+        if kodiutil.getSetting('action.onPause', False):
+            path = kodiutil.getSetting('action.onPause.file').decode('utf-8')
+    elif action == 'RESUME':
+        if kodiutil.getSetting('action.onResume', 0) == 2:
+            path = kodiutil.getSetting('action.onResume.file').decode('utf-8')
+    elif action == 'ABORT':
+        if kodiutil.getSetting('action.onAbort', False):
+            path = kodiutil.getSetting('action.onAbort.file').decode('utf-8')
 
-    if kodiutil.getSetting('action.onResume', 0) == 2:
-        paths.append(kodiutil.getSetting('action.onResume.file').decode('utf-8'))
+    if not path:
+        import xbmcgui
+        xbmcgui.Dialog().ok(T(32090, 'Not Set'), T(32330, 'This action is not set or not yet applied.'))
+        return
 
-    if kodiutil.getSetting('action.onAbort', False):
-        paths.append(kodiutil.getSetting('action.onAbort.file').decode('utf-8'))
-
-    cvutil.evalActionFile(paths)
+    cvutil.evalActionFile(path)

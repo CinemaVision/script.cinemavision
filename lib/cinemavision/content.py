@@ -69,7 +69,7 @@ class UserContent:
             'FSK'
         )),
         'Trailers',
-        'Trivia Slides',
+        'Trivia',
         ('Video Bumpers', (
             '3D Intro',
             '3D Outro',
@@ -146,9 +146,18 @@ class UserContent:
                 util.DEBUG_LOG('Creating: {0}'.format(repr(sub)))
                 util.vfs.mkdirs(sub)
 
+    # TODO: Remove
+    def _fixTriviaSlidesDir(self):
+        ts = util.pathJoin(self._contentDirectory, 'Trivia Slides')
+        if not util.vfs.exists(ts):
+            return
+        t = util.pathJoin(self._contentDirectory, 'Trivia')
+        util.vfs.rename(ts, t)
+
     def setupContentDirectory(self):
         if not self._contentDirectory:  # or util.vfs.exists(self._contentDirectory):
             return
+        self._fixTriviaSlidesDir()
         self._addDirectory(self._contentDirectory, self._tree)
 
     def clean(self):
@@ -182,7 +191,7 @@ class UserContent:
     def loadTrivia(self):
         self.logHeading('LOADING TRIVIA')
 
-        basePath = util.pathJoin(self._contentDirectory, 'Trivia Slides')
+        basePath = util.pathJoin(self._contentDirectory, 'Trivia')
         paths = util.vfs.listdir(basePath)
 
         total = float(len(paths))

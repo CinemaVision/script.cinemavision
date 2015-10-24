@@ -95,15 +95,17 @@
     </category>
 
     <category label="32083">
-        <setting id="action.onPause"       label="32084" type="bool" default="false" />
-        <setting id="action.onPause.file"  label="32085" type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting id="action.onResume"      label="32086" type="enum" lvalues="32037|32087|32048"  default="0" />
-        <setting id="action.onResume.file" label="32085" type="file" sources="auto" value="" subsetting="true" enable="eq(-1,2)" />
-        <setting id="action.onAbort"       label="32088" type="bool" default="false" />
-        <setting id="action.onAbort.file"  label="32085" type="file" sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
-        <setting label="32089" type="lsep"/>
-        <setting id="action.test"          label="32090" type="action" action="RunScript(script.cinemavision,test.actions)" enable="eq(-7,true)|eq(-5,2)|eq(-3,true)"/>
-        <!-- Validate and test action file(s) -->
+        <setting id="action.onPause"       label="32084" type="bool"   default="false" />
+        <setting id="action.onPause.file"  label="32085" type="file"   sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.test.PAUSE"    label="32089" type="action" action="RunScript(script.cinemavision,test.actions,PAUSE)" enable="eq(-2,true) + !eq(-1,)" subsetting="true" />
+        <setting id="action.onResume"      label="32086" type="enum"   lvalues="32037|32087|32048"  default="0" />
+        <setting id="action.onResume.file" label="32085" type="file"   sources="auto" value="" subsetting="true" enable="eq(-1,2)" />
+        <setting id="action.test.RESUME"   label="32089" type="action" action="RunScript(script.cinemavision,test.actions,RESUME)" enable="eq(-2,2) + !eq(-1,)" subsetting="true" />
+        <setting id="action.onAbort"       label="32088" type="bool"   default="false" />
+        <setting id="action.onAbort.file"  label="32085" type="file"   sources="auto" value="" subsetting="true" enable="eq(-1,true)" />
+        <setting id="action.test.ABORT"    label="32089" type="action" action="RunScript(script.cinemavision,test.actions,ABORT)" enable="eq(-2,true) + !eq(-1,)" subsetting="true" />
+        <setting id="action.test.runAbort" label="32593" type="enum"   lvalues="32594|32595|32596"  default="2" enable="eq(-3,true) + !eq(-2,)" />
+
     </category>
 
     <category label="32091">

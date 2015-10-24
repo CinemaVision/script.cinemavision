@@ -7,6 +7,8 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 
+API_LEVEL = 1
+
 ADDON_ID = 'script.cinemavision'
 ADDON = xbmcaddon.Addon(ADDON_ID)
 
@@ -44,6 +46,23 @@ def ERROR(msg=''):
         LOG(msg)
     import traceback
     xbmc.log(traceback.format_exc())
+
+
+def firstRun():
+    LOG('FIRST RUN')
+
+
+def checkAPILevel():
+    old = getSetting('API_LEVEL', 0)
+    if not old:
+        firstRun()
+    elif old == 1 and False:
+        setSetting('from.beta', ADDON.getAddonInfo('version'))
+
+    if getSetting('from.beta'):
+        DEBUG_LOG('UPDATED FROM BETA: {0}'.format(getSetting('from.beta')))
+
+    setSetting('API_LEVEL', API_LEVEL)
 
 
 def getSetting(key, default=None):

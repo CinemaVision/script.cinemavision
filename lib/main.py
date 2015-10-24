@@ -15,9 +15,6 @@ import cvutil
 from lib import cinemavision
 
 
-API_LEVEL = 1
-
-
 class ItemSettingsWindow(kodigui.BaseDialog):
     xmlFile = 'script.cinemavision-sequence-item-settings.xml'
     path = kodiutil.ADDON_PATH
@@ -935,20 +932,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.DEBUG_LOG('Previous save loaded')
 
 
-def firstRun():
-    kodiutil.LOG('FIRST RUN')
-
-
-def checkAPILevel():
-    old = kodiutil.getSetting('API_LEVEL', 0)
-    if not old:
-        firstRun()
-    kodiutil.setSetting('API_LEVEL', API_LEVEL)
-
-
 def main():
-    checkAPILevel()
+    kodiutil.checkAPILevel()
     kodiutil.setScope()
+    kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
     kodiutil.LOG('Sequence editor: OPENING')
     SequenceEditorWindow.open()
     kodiutil.LOG('Sequence editor: CLOSED')

@@ -852,7 +852,7 @@ class Action(Item):
             'attr': 'eval',
             'type': None,
             'limits': LIMIT_ACTION,
-            'name': T(32330, 'Check for errors'),
+            'name': T(32089, 'Test'),
             'default': ''
         }
     )

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <window>
-    <defaultcontrol>201</defaultcontrol>
+    <defaultcontrol>101</defaultcontrol>
     <animation effect="zoom" end="74.074074074,74.074074074" center="960,540" time="0" condition="!IsEmpty(Window(10000).Property(script.cinemavision.scope.2.40:1))">Conditional</animation>
     <animation effect="zoom" end="75.925925926,75.925925926" center="960,540" time="0" condition="!IsEmpty(Window(10000).Property(script.cinemavision.scope.2.35:1))">Conditional</animation>
     <coordinates>
@@ -50,10 +50,25 @@
         <control type="textbox" id="100">
             <left>135</left>
             <top>195</top>
-            <width>1650</width>
-            <height>860</height>
+            <width>1630</width>
+            <height>760</height>
             <font>font10</font>
             <textcolor>FFFFFFFF</textcolor>
+            <pagecontrol>101</pagecontrol>
+        </control>
+        <control type="scrollbar" id="101">
+            <posx>1785</posx>
+            <posy>195</posy>
+            <width>10</width>
+            <height>760</height>
+            <visible>true</visible>
+            <texturesliderbackground>-</texturesliderbackground>
+            <texturesliderbar colordiffuse="FF404040">script.cinemavision-white_square.png</texturesliderbar>
+            <texturesliderbarfocus colordiffuse="FF404040">script.cinemavision-white_square.png</texturesliderbarfocus>
+            <textureslidernib>-</textureslidernib>
+            <textureslidernibfocus>-</textureslidernibfocus>
+            <orientation>vertical</orientation>
+            <showonepage>false</showonepage>
         </control>
     </controls>
 </window>

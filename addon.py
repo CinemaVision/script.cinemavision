@@ -49,7 +49,7 @@ if __name__ == '__main__':
         settings.setScrapers()
     elif arg == 'test.actions':
         from lib import settings
-        settings.testEventActions()
+        settings.testEventActions(args[0])
     elif str(arg).startswith('sequence.'):
         from lib import settings
         settings.setDefaultSequence(arg)

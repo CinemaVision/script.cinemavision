@@ -366,11 +366,11 @@ msgid "Execute action on sequence abort"
 msgstr ""
 
 msgctxt "#32089"
-msgid "Settings must be applied before testing action files"
+msgid "Test"
 msgstr ""
 
 msgctxt "#32090"
-msgid "Check action files for errors"
+msgid "Not Set"
 msgstr ""
 
 msgctxt "#32091"
@@ -535,7 +535,7 @@ msgid "Audio Format Bumper"
 msgstr ""
 
 msgctxt "#32330"
-msgid "Check for errors"
+msgid "This action is not set or not yet applied."
 msgstr ""
 
 msgctxt "#32331"
@@ -551,7 +551,7 @@ msgid "Condition"
 msgstr ""
 
 msgctxt "#32334"
-msgid "Video bumper"
+msgid "Video Bumpers"
 msgstr ""
 
 #Dialogs, etc.
@@ -926,4 +926,28 @@ msgstr ""
 
 msgctxt "#32592"
 msgid "Set Content path in settings"
+msgstr ""
+
+msgctxt "#32593"
+msgid "Execute abort action after tests"
+msgstr ""
+
+msgctxt "#32594"
+msgid "Never"
+msgstr ""
+
+msgctxt "#32595"
+msgid "Always"
+msgstr ""
+
+msgctxt "#32596"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32597"
+msgid "Cleanup"
+msgstr ""
+
+msgctxt "#32598"
+msgid "Run abort action?"
 msgstr ""

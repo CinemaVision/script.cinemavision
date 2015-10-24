@@ -30,6 +30,33 @@
             <aspectratio>stretch</aspectratio>
         </control>
 
+        <control type="group">
+            <posx>1890</posx>
+            <posy>20</posy>
+            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.EDITING))</visible>
+            <control type="label">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>620</width>
+                <height>80</height>
+                <font>font30</font>
+                <textcolor>20FFFFFF</textcolor>
+                <align>right</align>
+                <label>[B]$INFO[Window(10000).Property(script.cinemavision.EDITING)][/B]</label>
+            </control>
+        </control>
+
+        <control type="label">
+            <posx>30</posx>
+            <posy>30</posy>
+            <width>200</width>
+            <height>30</height>
+            <font>font10</font>
+            <textcolor>20FFFFFF</textcolor>
+            <align>left</align>
+            <label>[B]v$INFO[Window(10000).Property(script.cinemavision.VERSION)][/B]</label>
+        </control>
+
         <control type="image">
             <posx>30</posx>
             <posy>535</posy>
@@ -1003,21 +1030,7 @@
 
         </control>
 
-        <control type="group">
-            <posx>1420</posx>
-            <posy>530</posy>
-            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.EDITING))</visible>
-            <control type="label">
-                <posx>470</posx>
-                <posy>0</posy>
-                <width>420</width>
-                <height>80</height>
-                <font>font13</font>
-                <textcolor>FF64A0FF</textcolor>
-                <align>right</align>
-                <label>[B]$INFO[Window(10000).Property(script.cinemavision.EDITING)][/B]</label>
-            </control>
-        </control>
+
 
         <control type="group">
             <posx>1420</posx>

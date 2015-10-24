@@ -4,6 +4,13 @@ Changelog for CinemaVision
 
 - fix:     When clearing action file in the module, was displaying Default()
 - add:     Localize settings strings
+- add:     Added ability to test actions from the module and addon settings
+- change:  Removed settings button in Actions: 'Check action file(s) for errors'
+- add:     Add 'Test' button for 'Pause', 'Resume' and 'Abort' action settings
+- change:  Change Action module option 'Check for errors' to 'Test'
+- change:  Sequence title now displays in the upper right background
+- add:     Addon version now displays in the upper left background
+- change:  Trivia Slides directory name changed to Trivia - will auto-rename when loading content
 
 [- 0.0.50 -]
 

@@ -1,6 +1,7 @@
 import os
 import util
 import threading
+import traceback
 
 
 class ActionCommand:
@@ -10,16 +11,35 @@ class ActionCommand:
         self.thread = None
         self.commandData = data
         self.args = []
+        self.output = []
+
+    def _addOutput(self, output):
+        self.output += output.splitlines()
+
+    def join(self):
+        if self.thread:
+            self.thread.join()
 
     def addArg(self, arg):
         self.args.append(arg)
 
     def _threadedExecute(self):
-        self.thread = threading.Thread(target=self.execute)
+        self.thread = threading.Thread(target=self._execute)
         self.thread.start()
+
+    def _execute(self):
+        try:
+            self.execute()
+        except:
+            util.ERROR()
+            self._addOutput('ERROR: ' + '[CR]'.join(traceback.format_exc().splitlines()))
 
     def execute(self):
         return False
+
+    def log(self, msg):
+        util.DEBUG_LOG(msg)
+        self._addOutput(msg)
 
 
 class SleepCommand(ActionCommand):
@@ -32,6 +52,7 @@ class SleepCommand(ActionCommand):
             ms = int(self.commandData)
         except:
             util.ERROR()
+            self._addOutput(traceback.format_exc())
 
         time.sleep(ms/1000.0)
 
@@ -70,7 +91,8 @@ class ScriptCommand(ActionCommand):
 
         import subprocess
 
-        util.DEBUG_LOG('Action (Script) Command: {0}'.format(repr(' '.join(command))))
+        self.log('Action (Script) Command: {0}'.format(repr(' '.join(command)).lstrip('u').strip("'")))
+
         subprocess.Popen(command)
 
 
@@ -83,7 +105,8 @@ class CommandCommand(ActionCommand):
 
         import subprocess
 
-        util.DEBUG_LOG('Action (Script) Command: {0}'.format(repr(' '.join(command))))
+        self.log('Action (Script) Command: {0}'.format(repr(' '.join(command)).lstrip('u').strip("'")))
+
         subprocess.Popen(command)
 
 
@@ -97,6 +120,9 @@ class AddonCommand(ActionCommand):
             return False
 
         xbmc.executebuiltin('RunScript({commandData},{args})'.format(commandData=self.commandData, args=','.join(self.args)))
+
+        self.log('Action (Addon) Executing: {0} ({1})'.format(self.commandData, ', '.join(self.args)))
+
         return True
 
 
@@ -115,6 +141,8 @@ class HTTPCommand(ActionCommand):
         method = None
         data = None
         args = list(self.args)
+
+        self.log('Action (HTTP) URL: {0}'.format(self.commandData))
 
         while args:
             arg = args.pop()
@@ -138,7 +166,7 @@ class HTTPCommand(ActionCommand):
             else:
                 resp = requests.get(self.commandData, headers=headers)
 
-        util.DEBUG_LOG('Action (HTTP) Response: {0}'.format(repr(resp.text)))
+        self.log('Action (HTTP) Response: {0}'.format(repr(resp.text).lstrip('u').strip("'")))
 
 
 class HTTPSCommand(HTTPCommand):
@@ -159,7 +187,7 @@ class ActionFileProcessor:
     }
 
     def __init__(self, path, test=False):
-        self.test = test
+        self._test = test
         self.path = path
         self.fileExists = None
         self.commands = []
@@ -170,14 +198,14 @@ class ActionFileProcessor:
         return 'AFP ({0})'.format(','.join([a.type for a in self.commands]))
 
     def logParseErrorLine(self, msg, type_):
-        if not self.test:
+        if not self._test:
             util.DEBUG_LOG('    -| {0}'.format(msg))
         self.parserLog.append((type_, msg))
 
     def parseError(self, msg, line, lineno, type_='ERROR'):
-        self.logParseErrorLine('ACTION {0} (line {1}): {2}'.format(type_, lineno, repr(self.path).lstrip('u').strip("'")), type_)
-        self.logParseErrorLine('{0}'.format(repr(line)), type_)
-        self.logParseErrorLine('{0}'.format(msg), type_)
+        self.logParseErrorLine(u'ACTION {0} (line {1}): {2}'.format(type_, lineno, repr(self.path).lstrip('u').strip("'")), type_)
+        self.logParseErrorLine(u'{0}'.format(repr(line)), type_)
+        self.logParseErrorLine(u'{0}'.format(msg), type_)
 
     def init(self):
         try:
@@ -200,6 +228,15 @@ class ActionFileProcessor:
     def _run(self):
         for c in self.commands:
             c._threadedExecute()
+
+    def test(self):
+        self._run()
+        output = []
+        for c in self.commands:
+            c.join()
+            output += c.output
+            output.append('')
+        return output
 
     def _prepareLine(self, line):
         if line.startswith('\\'):
@@ -242,6 +279,9 @@ class ActionFileProcessor:
 
                     if name in self.commandClasses:
                         command = self.commandClasses[name](data)
+                    else:
+                        self.parseError(u'Unrecognized command protocol: {0}'.format(name), line, lineno)
+                        return
             else:
                 if command:
                     self.commands.append(command)

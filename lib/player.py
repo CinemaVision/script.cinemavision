@@ -7,6 +7,8 @@ import xbmcgui
 
 from kodiutil import T
 
+kodiutil.checkAPILevel()
+
 
 def showNoFeaturesDialog():
     import xbmcgui
