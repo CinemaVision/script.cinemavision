@@ -315,7 +315,7 @@ class RatingParser:
 
     def getActualRatingFromMPAA(self, rating, debug=False):
         if debug:
-            kodiutil.DEBUG_LOG('Rating from Kodi: {0}'.format(repr(rating)))
+            kodiutil.DEBUG_LOG('Rating from Kodi: {0}'.format(kodiutil.strRepr(rating)))
 
         if not rating:
             return 'UNKNOWN:NR'

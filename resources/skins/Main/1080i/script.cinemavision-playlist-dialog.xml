@@ -21,12 +21,12 @@
             <aspectratio>stretch</aspectratio>
         </control>
         <control type="group">
-            <posx>170</posx>
+            <posx>180</posx>
             <posy>50</posy>
             <control type="image">
                 <posx>-20</posx>
                 <posy>-20</posy>
-                <width>1630</width>
+                <width>1610</width>
                 <height>1020</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>60000000</colordiffuse>
@@ -35,7 +35,7 @@
             <control type="image">
                 <posx>-5</posx>
                 <posy>-5</posy>
-                <width>1600</width>
+                <width>1580</width>
                 <height>990</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FFDDDDDD</colordiffuse>
@@ -44,7 +44,7 @@
             <control type="image">
                 <posx>0</posx>
                 <posy>0</posy>
-                <width>1590</width>
+                <width>1570</width>
                 <height>980</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FF101010</colordiffuse>
@@ -62,16 +62,16 @@
 
             <control type="list" id="300">
                 <posx>0</posx>
-                <posy>20</posy>
-                <width>1020</width>
-                <height>960</height>
+                <posy>10</posy>
+                <width>1010</width>
+                <height>970</height>
                 <scrolltime>200</scrolltime>
                 <orientation>vertical</orientation>
                 <onright>201</onright>
 
                 <itemlayout height="190">
                     <control type="image">
-                        <posx>20</posx>
+                        <posx>10</posx>
                         <posy>0</posy>
                         <width>980</width>
                         <height>180</height>
@@ -80,7 +80,7 @@
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="group">
-                        <posx>20</posx>
+                        <posx>10</posx>
                         <posy>0</posy>
                         <control type="image">
                             <posx>15</posx>
@@ -88,13 +88,13 @@
                             <width>100</width>
                             <height>150</height>
                             <texture>$INFO[ListItem.Thumb]</texture>
-                            <aspectratio>keep</aspectratio>
+                            <aspectratio aligny="top">keep</aspectratio>
                         </control>
                         <control type="label">
                             <left>135</left>
-                            <top>15</top>
+                            <top>10</top>
                             <width>830</width>
-                            <height>75</height>
+                            <height>40</height>
                             <font>font30</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>left</align>
@@ -103,25 +103,80 @@
                         </control>
                         <control type="label">
                             <left>135</left>
-                            <top>95</top>
+                            <top>75</top>
                             <width>430</width>
                             <height>60</height>
-                            <font>font20</font>
+                            <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>left</align>
                             <aligny>top</aligny>
-                            <label>$INFO[ListItem.Property(year),, - ]$INFO[ListItem.Label2]</label>
+                            <label>$INFO[ListItem.Property(year),, • ]$INFO[ListItem.Label2]</label>
                         </control>
                         <control type="label">
-                            <left>565</left>
-                            <top>95</top>
+                            <left>135</left>
+                            <top>120</top>
+                            <width>615</width>
+                            <height>55</height>
+                            <font>font10</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <align>left</align>
+                            <aligny>bottom</aligny>
+                            <label>$INFO[ListItem.Property(genres)]</label>
+                        </control>
+                        <control type="label">
+                            <left>570</left>
+                            <top>75</top>
                             <width>400</width>
-                            <height>60</height>
-                            <font>font20</font>
-                            <textcolor>FFD0D0D0</textcolor>
+                            <height>40</height>
+                            <font>font13</font>
+                            <textcolor>FFFFFFFF</textcolor>
                             <align>right</align>
                             <aligny>top</aligny>
                             <label>$INFO[ListItem.Property(rating)]</label>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(af))</visible>
+                            <left>770</left>
+                            <top>115</top>
+                            <width>200</width>
+                            <height>55</height>
+                            <texture>logos/af/$INFO[ListItem.Property(af)].png</texture>
+                            <aspectratio align="right">keep</aspectratio>
+                        </control>
+                        <control type="group">
+                            <visible>IsEmpty(ListItem.Property(af)) + !IsEmpty(ListItem.Property(afcodec))</visible>
+                            <posx>770</posx>
+                            <posy>115</posy>
+                            <width>200</width>
+                            <height>55</height>
+                            <control type="image">
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>110</width>
+                                <height>55</height>
+                                <texture>logos/af/$INFO[ListItem.Property(afcodec)].png</texture>
+                                <aspectratio align="right">keep</aspectratio>
+                            </control>
+                            <control type="image">
+                                <posx>90r</posx>
+                                <posy>0</posy>
+                                <width>90</width>
+                                <height>55</height>
+                                <texture>logos/af/$INFO[ListItem.Property(afchannels)].png</texture>
+                                <aspectratio align="right">keep</aspectratio>
+                            </control>
+                        </control>
+                        <control type="label">
+                            <visible>IsEmpty(ListItem.Property(af)) + IsEmpty(ListItem.Property(afcodec))</visible>
+                            <left>770</left>
+                            <top>115</top>
+                            <width>200</width>
+                            <height>55</height>
+                            <font>font13</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <align>right</align>
+                            <aligny>top</aligny>
+                            <label>[B][UPPERCASE]$INFO[ListItem.Property(codec)][/UPPERCASE]$INFO[ListItem.Property(channels), ][/B]</label>
                         </control>
                     </control>
                 </itemlayout>
@@ -131,7 +186,7 @@
                         <visible>!Control.HasFocus(300)</visible>
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>1020</width>
+                        <width>1010</width>
                         <height>180</height>
                         <texture>script.cinemavision-white_square.png</texture>
                         <colordiffuse>20FFFFFF</colordiffuse>
@@ -141,7 +196,7 @@
                         <visible>Control.HasFocus(300)</visible>
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>1020</width>
+                        <width>1010</width>
                         <height>180</height>
                         <texture>script.cinemavision-white_square.png</texture>
                         <colordiffuse>FF26539B</colordiffuse>
@@ -151,14 +206,14 @@
                         <visible>!IsEmpty(ListItem.Property(moving))</visible>
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>1020</width>
+                        <width>1010</width>
                         <height>180</height>
                         <texture>script.cinemavision-white_square.png</texture>
                         <colordiffuse>FF00A000</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="group">
-                        <posx>20</posx>
+                        <posx>10</posx>
                         <posy>0</posy>
                         <control type="image">
                             <posx>15</posx>
@@ -166,13 +221,13 @@
                             <width>100</width>
                             <height>150</height>
                             <texture>$INFO[ListItem.Thumb]</texture>
-                            <aspectratio>keep</aspectratio>
+                            <aspectratio aligny="top">keep</aspectratio>
                         </control>
                         <control type="label">
                             <left>135</left>
-                            <top>15</top>
+                            <top>10</top>
                             <width>830</width>
-                            <height>75</height>
+                            <height>40</height>
                             <font>font30</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>left</align>
@@ -181,32 +236,87 @@
                         </control>
                         <control type="label">
                             <left>135</left>
-                            <top>95</top>
-                            <width>830</width>
+                            <top>75</top>
+                            <width>430</width>
                             <height>60</height>
-                            <font>font20</font>
+                            <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>left</align>
                             <aligny>top</aligny>
-                            <label>$INFO[ListItem.Property(year),, - ]$INFO[ListItem.Label2]</label>
+                            <label>$INFO[ListItem.Property(year),, • ]$INFO[ListItem.Label2]</label>
                         </control>
                         <control type="label">
-                            <left>565</left>
-                            <top>95</top>
+                            <left>135</left>
+                            <top>120</top>
+                            <width>615</width>
+                            <height>55</height>
+                            <font>font10</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <align>left</align>
+                            <aligny>bottom</aligny>
+                            <label>$INFO[ListItem.Property(genres)]</label>
+                        </control>
+                        <control type="label">
+                            <left>570</left>
+                            <top>75</top>
                             <width>400</width>
-                            <height>60</height>
-                            <font>font20</font>
-                            <textcolor>FFD0D0D0</textcolor>
+                            <height>40</height>
+                            <font>font13</font>
+                            <textcolor>FFFFFFFF</textcolor>
                             <align>right</align>
                             <aligny>top</aligny>
                             <label>$INFO[ListItem.Property(rating)]</label>
+                        </control>
+                        <control type="image">
+                            <visible>!IsEmpty(ListItem.Property(af))</visible>
+                            <left>770</left>
+                            <top>115</top>
+                            <width>200</width>
+                            <height>55</height>
+                            <texture>logos/af/$INFO[ListItem.Property(af)].png</texture>
+                            <aspectratio align="right">keep</aspectratio>
+                        </control>
+                        <control type="group">
+                            <visible>IsEmpty(ListItem.Property(af)) + !IsEmpty(ListItem.Property(afcodec))</visible>
+                            <posx>770</posx>
+                            <posy>115</posy>
+                            <width>200</width>
+                            <height>55</height>
+                            <control type="image">
+                                <posx>0</posx>
+                                <posy>0</posy>
+                                <width>110</width>
+                                <height>55</height>
+                                <texture>logos/af/$INFO[ListItem.Property(afcodec)].png</texture>
+                                <aspectratio align="right">keep</aspectratio>
+                            </control>
+                            <control type="image">
+                                <posx>90r</posx>
+                                <posy>0</posy>
+                                <width>90</width>
+                                <height>55</height>
+                                <texture>logos/af/$INFO[ListItem.Property(afchannels)].png</texture>
+                                <aspectratio align="right">keep</aspectratio>
+                            </control>
+                        </control>
+                        <control type="label">
+                            <visible>IsEmpty(ListItem.Property(af)) + IsEmpty(ListItem.Property(afcodec))</visible>
+                            <left>770</left>
+                            <top>115</top>
+                            <width>200</width>
+                            <height>55</height>
+                            <font>font13</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <align>right</align>
+                            <aligny>top</aligny>
+                            <label>[B][UPPERCASE]$INFO[ListItem.Property(codec)][/UPPERCASE]$INFO[ListItem.Property(channels), ][/B]</label>
                         </control>
                     </control>
                 </focusedlayout>
             </control>
 
             <control type="group">
-                <posx>1010</posx>
+                <posx>1000</posx>
                 <posy>0</posy>
                 <control type="image">
                     <posx>0</posx>
@@ -323,12 +433,12 @@
 
         <control type="group">
             <posx>1220</posx>
-            <posy>655</posy>
+            <posy>645</posy>
             <control type="image">
                 <posx>-20</posx>
                 <posy>-20</posy>
                 <width>530</width>
-                <height>375</height>
+                <height>385</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>60000000</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -337,7 +447,7 @@
                 <posx>-5</posx>
                 <posy>-5</posy>
                 <width>500</width>
-                <height>345</height>
+                <height>355</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FFA0A0A0</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -346,7 +456,7 @@
                 <posx>0</posx>
                 <posy>0</posy>
                 <width>490</width>
-                <height>335</height>
+                <height>345</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FF303030</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -355,7 +465,7 @@
                 <left>20</left>
                 <top>20</top>
                 <width>450</width>
-                <height>395</height>
+                <height>325</height>
                 <font>font16</font>
                 <textcolor>FFFFFFFF</textcolor>
                 <label>$ADDON[script.cinemavision 32589][CR][CR]$ADDON[script.cinemavision 32590]</label>

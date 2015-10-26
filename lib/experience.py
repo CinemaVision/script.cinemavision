@@ -596,6 +596,25 @@ class ExperiencePlayer(xbmc.Player):
 
             self.features.append(feature)
 
+    def loadActions(self):
+        self.pauseAction = None
+        self.resumeAction = None
+        self.abortAction = None
+
+        if kodiutil.getSetting('action.onPause', False):
+            actionFile = kodiutil.getSetting('action.onPause.file')
+            self.pauseAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+
+        if kodiutil.getSetting('action.onResume', 0) == 2:
+            actionFile = kodiutil.getSetting('action.onResume.file')
+            self.resumeAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+        elif kodiutil.getSetting('action.onResume', 0) == 1:
+            self.resumeAction = True
+
+        if kodiutil.getSetting('action.onAbort', False):
+            actionFile = kodiutil.getSetting('action.onAbort.file')
+            self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
+
     def featureFromJSON(self, r):
         tags3DRegEx = kodiutil.getSetting('3D.tag.regex', cvutil.DEFAULT_3D_RE)
 
@@ -624,11 +643,16 @@ class ExperiencePlayer(xbmc.Player):
 
         try:
             codec = r['streamdetails']['audio'][0]['codec']
-            DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+            channels = r['streamdetails']['audio'][0].get('channels', 0)
+
+            DEBUG_LOG('CODEC ({0}): {1} ({2} channels)'.format(kodiutil.strRepr(feature.title), codec, channels or '?'))
             DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
+
             feature.audioFormat = AUDIO_FORMATS.get(codec)
+            feature.codec = codec
+            feature.channels = channels
         except:
-            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(kodiutil.strRepr(feature.title)))
             DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
 
         return feature
@@ -692,25 +716,6 @@ class ExperiencePlayer(xbmc.Player):
 
         return True
 
-    def loadActions(self):
-        self.pauseAction = None
-        self.resumeAction = None
-        self.abortAction = None
-
-        if kodiutil.getSetting('action.onPause', False):
-            actionFile = kodiutil.getSetting('action.onPause.file')
-            self.pauseAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
-
-        if kodiutil.getSetting('action.onResume', 0) == 2:
-            actionFile = kodiutil.getSetting('action.onResume.file')
-            self.resumeAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
-        elif kodiutil.getSetting('action.onResume', 0) == 1:
-            self.resumeAction = True
-
-        if kodiutil.getSetting('action.onAbort', False):
-            actionFile = kodiutil.getSetting('action.onAbort.file')
-            self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
-
     def addSelectedFeature(self, movieid=None, episodeid=None, selection=False):
         if selection or movieid or episodeid:
             return self.addFromID(movieid, episodeid, selection)
@@ -748,11 +753,15 @@ class ExperiencePlayer(xbmc.Player):
             feature.is3D = bool(re.search(tags3DRegEx, feature.path))
 
         codec = xbmc.getInfoLabel('ListItem.AudioCodec')
+        channels = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.AudioChannels'))
+
         if codec:
             feature.audioFormat = AUDIO_FORMATS.get(codec)
-            DEBUG_LOG('CODEC ({0}): {1}'.format(repr(feature.title), codec))
+            feature.codec = codec
+            feature.channels = channels
+            DEBUG_LOG('CODEC ({0}): {1} ({2} channels)'.format(kodiutil.strRepr(feature.title), codec, channels or '?'))
         else:
-            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(repr(feature.title)))
+            DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(kodiutil.strRepr(feature.title)))
 
         self.features.append(feature)
         return True

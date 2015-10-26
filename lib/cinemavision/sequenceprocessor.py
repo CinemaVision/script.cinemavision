@@ -385,6 +385,22 @@ class Feature(Video):
         self['audioFormat'] = val
 
     @property
+    def codec(self):
+        return self.get('codec', '')
+
+    @codec.setter
+    def codec(self, val):
+        self['codec'] = val
+
+    @property
+    def channels(self):
+        return self.get('channels', '')
+
+    @channels.setter
+    def channels(self, val):
+        self['channels'] = val
+
+    @property
     def thumb(self):
         return self.get('thumbnail', '')
 

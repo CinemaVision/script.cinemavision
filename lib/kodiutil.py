@@ -65,6 +65,10 @@ def checkAPILevel():
     setSetting('API_LEVEL', API_LEVEL)
 
 
+def strRepr(str_obj):
+    return repr(str_obj).lstrip('u').strip("'")
+
+
 def getSetting(key, default=None):
     setting = ADDON.getSetting(key)
     return _processSetting(setting, default)

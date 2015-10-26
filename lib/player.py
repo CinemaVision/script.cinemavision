@@ -9,6 +9,22 @@ from kodiutil import T
 
 kodiutil.checkAPILevel()
 
+CHANNEL_STRINGS = {
+    0: '0.0',
+    1: '1.0',
+    2: '2.0',
+    3: '2.1',
+    4: '4.0',
+    5: '4.1',
+    6: '5.1',
+    7: '6.1',
+    8: '7.1',
+    10: '9.1',
+    12: '11.1'
+}
+
+CODEC_IMAGES = ('aac', )
+
 
 def showNoFeaturesDialog():
     import xbmcgui
@@ -117,8 +133,16 @@ class PlaylistDialog(kodigui.BaseDialog):
         items = []
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
-            mli.setProperty('rating', str(f.rating or ''))
+            mli.setProperty('rating', str(f.rating or '').replace(':', u' \u2022 '))
             mli.setProperty('year', str(f.year or ''))
+            if f.audioFormat:
+                mli.setProperty('af', f.audioFormat)
+            elif f.codec and f.codec in CODEC_IMAGES:
+                mli.setProperty('afcodec', f.codec)
+                mli.setProperty('afchannels', str(f.channels or ''))
+            mli.setProperty('genres', f.genres and u' \u2022 '.join(f.genres) or '')
+            mli.setProperty('codec', str(f.codec or ''))
+            mli.setProperty('channels', CHANNEL_STRINGS.get(f.channels, ''))
             items.append(mli)
 
         self.videoListControl.addItems(items)
