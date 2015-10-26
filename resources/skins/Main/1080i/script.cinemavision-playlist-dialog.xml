@@ -137,31 +137,31 @@
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(af))</visible>
                             <left>770</left>
-                            <top>115</top>
+                            <top>125</top>
                             <width>200</width>
-                            <height>55</height>
+                            <height>40</height>
                             <texture>logos/af/$INFO[ListItem.Property(af)].png</texture>
                             <aspectratio align="right">keep</aspectratio>
                         </control>
                         <control type="group">
                             <visible>IsEmpty(ListItem.Property(af)) + !IsEmpty(ListItem.Property(afcodec))</visible>
                             <posx>770</posx>
-                            <posy>115</posy>
+                            <posy>125</posy>
                             <width>200</width>
                             <height>55</height>
                             <control type="image">
                                 <posx>0</posx>
                                 <posy>0</posy>
-                                <width>110</width>
-                                <height>55</height>
+                                <width>133</width>
+                                <height>40</height>
                                 <texture>logos/af/$INFO[ListItem.Property(afcodec)].png</texture>
                                 <aspectratio align="right">keep</aspectratio>
                             </control>
                             <control type="image">
-                                <posx>90r</posx>
+                                <posx>59r</posx>
                                 <posy>0</posy>
-                                <width>90</width>
-                                <height>55</height>
+                                <width>59</width>
+                                <height>40</height>
                                 <texture>logos/af/$INFO[ListItem.Property(afchannels)].png</texture>
                                 <aspectratio align="right">keep</aspectratio>
                             </control>
@@ -169,9 +169,9 @@
                         <control type="label">
                             <visible>IsEmpty(ListItem.Property(af)) + IsEmpty(ListItem.Property(afcodec))</visible>
                             <left>770</left>
-                            <top>115</top>
+                            <top>125</top>
                             <width>200</width>
-                            <height>55</height>
+                            <height>40</height>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>right</align>
@@ -270,31 +270,31 @@
                         <control type="image">
                             <visible>!IsEmpty(ListItem.Property(af))</visible>
                             <left>770</left>
-                            <top>115</top>
+                            <top>125</top>
                             <width>200</width>
-                            <height>55</height>
+                            <height>40</height>
                             <texture>logos/af/$INFO[ListItem.Property(af)].png</texture>
                             <aspectratio align="right">keep</aspectratio>
                         </control>
                         <control type="group">
                             <visible>IsEmpty(ListItem.Property(af)) + !IsEmpty(ListItem.Property(afcodec))</visible>
                             <posx>770</posx>
-                            <posy>115</posy>
+                            <posy>125</posy>
                             <width>200</width>
                             <height>55</height>
                             <control type="image">
                                 <posx>0</posx>
                                 <posy>0</posy>
-                                <width>110</width>
-                                <height>55</height>
+                                <width>133</width>
+                                <height>40</height>
                                 <texture>logos/af/$INFO[ListItem.Property(afcodec)].png</texture>
                                 <aspectratio align="right">keep</aspectratio>
                             </control>
                             <control type="image">
-                                <posx>90r</posx>
+                                <posx>59r</posx>
                                 <posy>0</posy>
-                                <width>90</width>
-                                <height>55</height>
+                                <width>59</width>
+                                <height>40</height>
                                 <texture>logos/af/$INFO[ListItem.Property(afchannels)].png</texture>
                                 <aspectratio align="right">keep</aspectratio>
                             </control>
@@ -302,9 +302,9 @@
                         <control type="label">
                             <visible>IsEmpty(ListItem.Property(af)) + IsEmpty(ListItem.Property(afcodec))</visible>
                             <left>770</left>
-                            <top>115</top>
+                            <top>125</top>
                             <width>200</width>
-                            <height>55</height>
+                            <height>40</height>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>right</align>
