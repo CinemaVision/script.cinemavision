@@ -615,6 +615,17 @@ class ExperiencePlayer(xbmc.Player):
             actionFile = kodiutil.getSetting('action.onAbort.file')
             self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
 
+    def getCodecAndChannelsFromStreamDetails(self, details):
+        try:
+            streams = sorted(details['audio'], key=lambda x: x['channels'], reverse=True)
+            for s in streams:
+                codec = s['codec']
+                if codec in AUDIO_FORMATS:
+                    return (codec, s['channels'])
+            return (streams[0]['codec'], streams[0]['channels'])
+        except:
+            return ('', '')
+
     def featureFromJSON(self, r):
         tags3DRegEx = kodiutil.getSetting('3D.tag.regex', cvutil.DEFAULT_3D_RE)
 
@@ -642,8 +653,7 @@ class ExperiencePlayer(xbmc.Player):
             feature.is3D = bool(re.search(tags3DRegEx, r['file']))
 
         try:
-            codec = r['streamdetails']['audio'][0]['codec']
-            channels = r['streamdetails']['audio'][0].get('channels', 0)
+            codec, channels = self.getCodecAndChannelsFromStreamDetails(r['streamdetails'])
 
             DEBUG_LOG('CODEC ({0}): {1} ({2} channels)'.format(kodiutil.strRepr(feature.title), codec, channels or '?'))
             DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))

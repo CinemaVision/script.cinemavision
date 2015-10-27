@@ -863,7 +863,7 @@ class TrailerHandler:
                         rating=str(t.rating),
                         genres=','.join(t.genres),
                         thumb=t.thumb,
-                        release=t.release
+                        release=t.release or datetime.date(1900, 1, 1)
                     )
 
             util.DEBUG_LOG('    - {0} trailers added to database'.format(ct))

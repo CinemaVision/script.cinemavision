@@ -159,12 +159,9 @@ class PlaylistDialog(kodigui.BaseDialog):
         if self.sequencePath:
             return
 
-        seqPath = cvutil.getSequencePath(for_3D=self.queueHas3D())
+        seqPath, name = cvutil.getSequencePath(for_3D=self.queueHas3D(), with_name=True)
         if not seqPath:
             return
-
-        import re
-        name = re.split(r'[/\\]', seqPath)[-1][:-6]
 
         self.getControl(self.SEQUENCE_SELECT_ID).setLabel(name)
 

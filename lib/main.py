@@ -795,8 +795,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.setGlobalProperty('EDITING', name)
 
     def defaultSavePath(self):
-        path = os.path.join(kodiutil.ADDON_PATH, 'resources')
-        return self.savePath(path, 'script.cinemavision.default')
+        return cvutil.defaultSavePath()
 
     def save(self, as_new=False, export=False):
         if export:

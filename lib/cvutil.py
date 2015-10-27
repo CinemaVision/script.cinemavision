@@ -12,8 +12,8 @@ DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL
 cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T, kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE))
 
 
-def defaultSavePath():
-    return os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.default.cvseq')
+def defaultSavePath(for_3D=False):
+    return os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.default{0}.cvseq'.format(for_3D and '3D' or '2D'))
 
 
 def lastSavePath():
@@ -29,16 +29,30 @@ def getSavePath(name):
     return cinemavision.util.pathJoin(contentPath, 'Sequences', name + '.cvseq')
 
 
-def getSequencePath(for_3D=False):
+def getSequenceName(path):
+    if 'script.cinemavision.default2D.cvseq' in path:
+        return u'[ {0} ]'.format(T(32599, 'Default 2D'))
+    elif 'script.cinemavision.default3D.cvseq' in path:
+        return u'[ {0} ]'.format(T(32600, 'Default 3D'))
+
+    return re.split(r'[/\\]', path)[-1][:-6]
+
+
+def getSequencePath(for_3D=False, with_name=False):
     if for_3D:
         name = kodiutil.getSetting('sequence.3D')
     else:
         name = kodiutil.getSetting('sequence.2D')
 
     if name:
-        return getSavePath(name)
+        path = getSavePath(name)
+    else:
+        path = defaultSavePath()
 
-    return defaultSavePath()
+    if with_name:
+        return (path, getSequenceName(path))
+
+    return path
 
 
 def selectSequence():
@@ -51,16 +65,28 @@ def selectSequence():
 
     sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
     options = cinemavision.util.vfs.listdir(sequencesPath)
+    options = [(n, n[:-6]) for n in options]
+    options.append(('default2D', u'[ {0} ]'.format(T(32599, 'Default 2D'))))
+    options.append(('default3D', u'[ {0} ]'.format(T(32600, 'Default 3D'))))
+
     if not options:
         xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
 
-    idx = xbmcgui.Dialog().select(T(32502, 'Choose Sequence'), [n[:-6] for n in options])
+    idx = xbmcgui.Dialog().select(T(32502, 'Choose Sequence'), [o[1] for o in options])
     if idx < 0:
         return None
-    path = cinemavision.util.pathJoin(sequencesPath, options[idx])
 
-    return {'path': path, 'name': options[idx][:-6]}
+    result = options[idx][0]
+
+    if result == 'default2D':
+        path = defaultSavePath()
+    elif result == 'default3D':
+        path = defaultSavePath(for_3D=True)
+    else:
+        path = cinemavision.util.pathJoin(sequencesPath, options[idx])
+
+    return {'path': path, 'name': options[idx][1]}
 
 
 def getContentPath(from_load=False):

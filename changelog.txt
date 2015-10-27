@@ -1,5 +1,12 @@
 Changelog for CinemaVision
 
+[- 1.0.0 -]
+
+- add:     Default 3D sequence
+- add:     You can now load the default sequences
+- fix:     Videos with multiple audio streams could sometimes fail audio format detection
+- fix:     Error caused by trailers with missing release date
+
 [- 1.0.0b1 -]
 
 - fix:     When clearing action file in the module, was displaying Default()

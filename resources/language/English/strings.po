@@ -951,3 +951,11 @@ msgstr ""
 msgctxt "#32598"
 msgid "Run abort action?"
 msgstr ""
+
+msgctxt "#32599"
+msgid "Default 2D"
+msgstr ""
+
+msgctxt "#32600"
+msgid "Default 3D"
+msgstr ""

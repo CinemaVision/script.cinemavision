@@ -55,7 +55,7 @@ def firstRun():
 def checkAPILevel():
     old = getSetting('API_LEVEL', 0)
     if not old:
-        firstRun()
+        return firstRun()
     elif old == 1:
         setSetting('from.beta', ADDON.getAddonInfo('version'))
 
