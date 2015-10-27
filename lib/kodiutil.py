@@ -7,7 +7,7 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 
-API_LEVEL = 1
+API_LEVEL = 2
 
 ADDON_ID = 'script.cinemavision'
 ADDON = xbmcaddon.Addon(ADDON_ID)
@@ -56,7 +56,7 @@ def checkAPILevel():
     old = getSetting('API_LEVEL', 0)
     if not old:
         firstRun()
-    elif old == 1 and False:
+    elif old == 1:
         setSetting('from.beta', ADDON.getAddonInfo('version'))
 
     if getSetting('from.beta'):

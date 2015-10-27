@@ -111,7 +111,7 @@
     <category label="32091">
         <setting id="scope"               label="32092" type="labelenum" values="16:9|2.35:1|2.40:1"  default="0" />
         <setting label="32093" type="lsep"/>
-        <setting id="debug.log"           label="32094" type="bool"   default="true" />
+        <setting id="debug.log"           label="32094" type="bool"   default="false" />
         <setting id="pastebin.paste.log"  label="32095" type="action" action="RunScript(script.cinemavision,pastebin.paste.log)" option="close"/>
         <setting id="pastebin.user"       label="32096" type="text" default="" />
         <setting id="pastebin.delete.key" label="32097" type="action" action="RunScript(script.cinemavision,pastebin.delete.key)" />
