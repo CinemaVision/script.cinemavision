@@ -231,3 +231,8 @@ def testEventActions(action):
         return
 
     cvutil.evalActionFile(path)
+
+
+def installContextMenu():
+    import xbmc
+    xbmc.executebuiltin('PlayMedia(plugin://context.cinemavision)')

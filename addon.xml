@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.cinemavision" name="CinemaVision" version="1.0.0b1" provider-name="CinemaVision">
+<addon id="script.cinemavision" name="CinemaVision" version="1.0.0" provider-name="CinemaVision">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.youtube.dl" version="15.318.0"/>
@@ -22,12 +22,10 @@
         <disclaimer lang="es">Esta obra está bajo licencia de Creative Commons Reconocimiento - Compartir bajo la misma licencia 4.0 Internacional. Visite el sitio web para más detalles.</disclaimer>
         <disclaimer lang="de">Diese Seite ist unter einer Creative Commons Attribution-ShareAlike 4.0 Internationale lizensiert. Besuchen Sie die Website für weitere Details.</disclaimer>
         <disclaimer lang="pt-br">Esta obra está licenciada sob uma Licença Creative Commons Atribuição- Compartilhamento pela mesma licença 4.0 Licença Internacional . Visite o site para mais detalhes.</disclaimer>
-        <language></language>
         <platform>all</platform>
         <license>Creative Commons Attribution-ShareAlike 4.0 International</license>
         <forum>http://www.cinemavision.tv/forums/</forum>
         <website>http://www.cinemavision.tv/</website>
-        <email></email>
         <source>https://github.com/CinemaVision/script.cinemavision</source>
     </extension>
 </addon>

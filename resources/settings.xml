@@ -6,6 +6,9 @@
         <setting id="sequence.3D"         label="32004" type="action" action="RunScript(script.cinemavision,sequence.3D)" />
         <setting id="3D.tag.regex"        label="32005" type="text"   default="(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB" />
         <setting id="bumper.fallback2D"   label="32006" type="bool"   default="false" />
+        <setting label="32101" type="lsep"/>
+        <setting id="install.CM"          label="32102" type="action" action="RunScript(script.cinemavision,install.contextMenu)" visible="!System.HasAddon(context.cinemavision)" option="close" />
+        <setting id="installed.CM"        label="32103" type="action" action="RunScript(script.cinemavision,install.contextMenu)" visible="System.HasAddon(context.cinemavision)" enable="false" />
     </category>
 
     <category label="32007">

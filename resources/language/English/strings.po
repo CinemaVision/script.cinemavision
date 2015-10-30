@@ -86,7 +86,7 @@ msgid "Playback"
 msgstr ""
 
 msgctxt "#32019"
-msgid "Hide queue dialog"
+msgid "Hide queue editor"
 msgstr ""
 
 msgctxt "#32020"
@@ -412,6 +412,19 @@ msgstr ""
 msgctxt "#32100"
 msgid "Clear trailers broken status"
 msgstr ""
+
+msgctxt "#32101"
+msgid "Extras"
+msgstr ""
+
+msgctxt "#32102"
+msgid "Install context menu add-on"
+msgstr ""
+
+msgctxt "#32103"
+msgid "Context menu add-on installed"
+msgstr ""
+
 
 #Sequence
 msgctxt "#32300"

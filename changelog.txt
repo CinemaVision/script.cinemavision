@@ -6,6 +6,7 @@ Changelog for CinemaVision
 - add:     You can now load the default sequences
 - fix:     Videos with multiple audio streams could sometimes fail audio format detection
 - fix:     Error caused by trailers with missing release date
+- add:     Setting in section 'General' under heading 'Extras': 'Install context menu add-on'
 
 [- 1.0.0b1 -]
 

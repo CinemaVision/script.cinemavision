@@ -50,6 +50,9 @@ if __name__ == '__main__':
     elif arg == 'test.actions':
         from lib import settings
         settings.testEventActions(args[0])
+    elif arg == 'install.contextMenu':
+        from lib import settings
+        settings.installContextMenu()
     elif str(arg).startswith('sequence.'):
         from lib import settings
         settings.setDefaultSequence(arg)
