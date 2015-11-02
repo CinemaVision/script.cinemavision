@@ -4,6 +4,7 @@ Changelog for CinemaVision
 
 - add:     Now disables GUI sounds when playing a sequence
 - change:  Trivia Slides->Trivia rename now removes Trivia folder first and logs the actions
+- fix:     Bug preventing the selection of non-default sequences
 
 [- 1.0.0 -]
 

@@ -149,7 +149,9 @@ class UserContent:
     # TODO: Remove
     def _fixTriviaSlidesDir(self):
         ts = util.pathJoin(self._contentDirectory, 'Trivia Slides')
+        util.DEBUG_LOG('Checking for the existence of {0}'.format(repr(ts)))
         if not util.vfs.exists(ts):
+            util.DEBUG_LOG("No 'Trivia Slides' directory exists")
             return
         t = util.pathJoin(self._contentDirectory, 'Trivia')
         success = True
