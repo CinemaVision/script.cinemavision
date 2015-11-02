@@ -152,7 +152,19 @@ class UserContent:
         if not util.vfs.exists(ts):
             return
         t = util.pathJoin(self._contentDirectory, 'Trivia')
-        util.vfs.rename(ts, t)
+        success = True
+        if util.vfs.exists(t):
+            success = util.vfs.rmdir(t)
+
+        if success:
+            success = util.vfs.rename(ts, t)
+        else:
+            util.DEBUG_LOG("Failed to remove existing 'Trivia' directory")
+
+        if success:
+            util.DEBUG_LOG("Renamed 'Trivia Slides' to 'Trivia'")
+        else:
+            util.DEBUG_LOG("Failed to rename 'Trivia Slides' directory")
 
     def setupContentDirectory(self):
         if not self._contentDirectory:  # or util.vfs.exists(self._contentDirectory):

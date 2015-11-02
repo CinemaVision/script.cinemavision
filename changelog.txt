@@ -1,5 +1,10 @@
 Changelog for CinemaVision
 
+[- 1.0.1 -]
+
+- add:     Now disables GUI sounds when playing a sequence
+- change:  Trivia Slides->Trivia rename now removes Trivia folder first and logs the actions
+
 [- 1.0.0 -]
 
 - add:     Default 3D sequence
