@@ -164,7 +164,7 @@ try:
         tail = args.pop(-1).lstrip('/\\')
         for a in args:
             ret.append(a.strip('/\\'))
-        ret.append(re.sub(r'[/\\]+', sep, tail))
+        ret.append(re.sub(r'[/\\]+', re.escape(sep), tail))
         return sep.join(ret)
 
     def isDir(path):
