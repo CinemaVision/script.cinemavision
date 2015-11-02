@@ -164,7 +164,7 @@ class UserContent:
         if success:
             util.DEBUG_LOG("Renamed 'Trivia Slides' to 'Trivia'")
         else:
-            util.DEBUG_LOG("Failed to rename 'Trivia Slides' directory")
+            util.DEBUG_LOG('Failed to rename {0} to {1}'.format(repr(ts), repr(t)))
 
     def setupContentDirectory(self):
         if not self._contentDirectory:  # or util.vfs.exists(self._contentDirectory):
