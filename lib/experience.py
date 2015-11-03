@@ -446,8 +446,8 @@ class ExperiencePlayer(xbmc.Player):
     PLAYING_DUMMY_PREV = -2
     PLAYING_MUSIC = -10
 
-    DUMMY_FILE_PREV = 'script.cinemavision.dummy_PREV.mpeg'
-    DUMMY_FILE_NEXT = 'script.cinemavision.dummy_NEXT.mpeg'
+    DUMMY_FILE_PREV = 'icon.png'
+    DUMMY_FILE_NEXT = 'icon.png'
 
     def create(self, from_editor=False):
         # xbmc.Player.__init__(self)
@@ -516,12 +516,14 @@ class ExperiencePlayer(xbmc.Player):
             return
 
         self.playStatus = time.time()
-        if self.DUMMY_FILE_PREV in self.getPlayingFile():
+        vtype = self.currentVideoType()
+
+        if vtype == 'PREV':
             self.playStatus = self.PLAYING_DUMMY_PREV
             kodiutil.DEBUG_LOG('Stopping for PREV dummy')
             self.stop()
             return
-        elif self.DUMMY_FILE_NEXT in self.getPlayingFile():
+        elif vtype == 'NEXT':
             self.playStatus = self.PLAYING_DUMMY_NEXT
             kodiutil.DEBUG_LOG('Stopping for NEXT dummy')
             self.stop()
@@ -564,6 +566,17 @@ class ExperiencePlayer(xbmc.Player):
         if self.abortAction:
             DEBUG_LOG('Executing abort action: {0}'.format(self.abortAction))
             self.abortAction.run()
+
+    def currentVideoType(self):
+        # file = self.getPlayingFile()
+        pos = self.playlist.getposition()
+        end = self.playlist.size() - 1
+        if pos == 0:
+            return 'PREV'
+        elif pos == end:
+            return 'NEXT'
+
+        return 'NORMAL'
 
     def getPlayingFile(self):
         if self.isPlaying():
@@ -882,10 +895,14 @@ class ExperiencePlayer(xbmc.Player):
         xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', 'True')
         self.initSkinVars()
         self.playGUISounds.disable()
+        self.screensaver.disable()
+        self.visualization.disable()
         try:
             return self._start(sequence_path)
         finally:
             self.playGUISounds.restore()
+            self.screensaver.restore()
+            self.visualization.restore()
             kodiutil.setGlobalProperty('running', '')
             xbmcgui.Window(10025).setProperty('CinemaExperienceRunning', '')
             self.initSkinVars()
@@ -1091,8 +1108,6 @@ class ExperiencePlayer(xbmc.Player):
         self.window.setTransition('none')
 
         xbmc.enableNavSounds(False)
-        self.screensaver.disable()
-        self.visualization.disable()
 
         self.playMusic(image_queue)
 
@@ -1139,8 +1154,6 @@ class ExperiencePlayer(xbmc.Player):
                 else:
                     return
         finally:
-            self.screensaver.restore()
-            self.visualization.restore()
             kodiutil.setGlobalProperty('paused', '')
             xbmc.enableNavSounds(True)
             self.stopMusic(action != 'BACK' and image_queue or None)
