@@ -446,8 +446,8 @@ class ExperiencePlayer(xbmc.Player):
     PLAYING_DUMMY_PREV = -2
     PLAYING_MUSIC = -10
 
-    DUMMY_FILE_PREV = 'icon.png'
-    DUMMY_FILE_NEXT = 'icon.png'
+    DUMMY_FILE_PREV = 'script.cinemavision.dummy_PREV.mpeg'
+    DUMMY_FILE_NEXT = 'script.cinemavision.dummy_NEXT.mpeg'
 
     def create(self, from_editor=False):
         # xbmc.Player.__init__(self)
@@ -516,14 +516,12 @@ class ExperiencePlayer(xbmc.Player):
             return
 
         self.playStatus = time.time()
-        vtype = self.currentVideoType()
-
-        if vtype == 'PREV':
+        if self.DUMMY_FILE_PREV in self.getPlayingFile():
             self.playStatus = self.PLAYING_DUMMY_PREV
             kodiutil.DEBUG_LOG('Stopping for PREV dummy')
             self.stop()
             return
-        elif vtype == 'NEXT':
+        elif self.DUMMY_FILE_NEXT in self.getPlayingFile():
             self.playStatus = self.PLAYING_DUMMY_NEXT
             kodiutil.DEBUG_LOG('Stopping for NEXT dummy')
             self.stop()
@@ -566,17 +564,6 @@ class ExperiencePlayer(xbmc.Player):
         if self.abortAction:
             DEBUG_LOG('Executing abort action: {0}'.format(self.abortAction))
             self.abortAction.run()
-
-    def currentVideoType(self):
-        # file = self.getPlayingFile()
-        pos = self.playlist.getposition()
-        end = self.playlist.size() - 1
-        if pos == 0:
-            return 'PREV'
-        elif pos == end:
-            return 'NEXT'
-
-        return 'NORMAL'
 
     def getPlayingFile(self):
         if self.isPlaying():
