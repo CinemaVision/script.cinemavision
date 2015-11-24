@@ -701,30 +701,38 @@ class ExperiencePlayer(xbmc.Player):
             else:
                 return False
 
-        if movieid:
-            movieid = kodiutil.intOrZero(movieid)
-            if not movieid:
-                return False
-
-            r = rpc.VideoLibrary.GetMovieDetails(
-                movieid=movieid, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
-            )['moviedetails']
-            r['type'] = 'movie'
-        elif episodeid:
-            episodeid = kodiutil.intOrZero(episodeid)
-            if not episodeid:
-                return False
-
-            r = rpc.VideoLibrary.GetEpisodeDetails(
-                episodeid=episodeid, properties=['file', 'streamdetails', 'title', 'thumbnail', 'runtime']
-            )['episodedetails']
-            r['type'] = 'tvshow'
-        else:
-            return False
-
-        feature = self.featureFromJSON(r)
         self.features = []
-        self.features.append(feature)
+
+        if movieid:
+            for movieid in str(movieid).split('|'):  # ID could be int or \ seperated int string
+                movieid = kodiutil.intOrZero(movieid)
+                if not movieid:
+                    continue
+
+                r = rpc.VideoLibrary.GetMovieDetails(
+                    movieid=movieid,
+                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+                )['moviedetails']
+                r['type'] = 'movie'
+
+                feature = self.featureFromJSON(r)
+                self.features.append(feature)
+        elif episodeid:
+            for episodeid in str(episodeid).split('|'):  # ID could be int or \ seperated int string
+                episodeid = kodiutil.intOrZero(episodeid)
+                if not episodeid:
+                    continue
+
+                r = rpc.VideoLibrary.GetEpisodeDetails(
+                    episodeid=episodeid,
+                    properties=['file', 'streamdetails', 'title', 'thumbnail', 'runtime']
+                )['episodedetails']
+                r['type'] = 'tvshow'
+                feature = self.featureFromJSON(r)
+                self.features.append(feature)
+
+        if not self.features:
+            return False
 
         return True
 

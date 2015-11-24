@@ -1,9 +1,14 @@
 Changelog for CinemaVision
 
+[- 1.0.4 -]
+
+- add:     Ability to pass multiple movie IDs to the addon: movieid=<id>|<id>|<id>|...
+- add:     Ability to pass nodialog to the addon to suppress the playlist editor dialog
+
 [- 1.0.3 -]
 
--fix:      Encoding errors caused by non-ascii characters in genres
--add:      Warning dialog when saving a sequence that does not contain a feature module
+- fix:     Encoding errors caused by non-ascii characters in genres
+- add:     Warning dialog when saving a sequence that does not contain a feature module
 
 [- 1.0.2 -]
 
