@@ -636,8 +636,7 @@ class ExperiencePlayer(xbmc.Player):
         ratingString = cvutil.ratingParser().getActualRatingFromMPAA(r.get('mpaa', ''), debug=True)
         if ratingString:
             feature.rating = ratingString
-
-        feature.ID = kodiutil.intOrZero(r.get('id', 0))
+        feature.ID = kodiutil.intOrZero(r.get('movieid', r.get('episodeid', r.get('id', 0))))
         feature.dbType = r.get('type', '')
         feature.genres = r.get('genre', [])
         feature.thumb = r.get('thumbnail', '')
@@ -838,7 +837,6 @@ class ExperiencePlayer(xbmc.Player):
             item = {'episodeid': feature.ID}
         else:
             item = {'file': feature.path}
-
         rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)
 
     def videoPreDelay(self):

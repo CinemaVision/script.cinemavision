@@ -4,6 +4,7 @@ Changelog for CinemaVision
 
 - add:     Ability to pass multiple movie IDs to the addon: movieid=<id>|<id>|<id>|...
 - add:     Ability to pass nodialog to the addon to suppress the playlist editor dialog
+- fix:     Error caused when when playing movies passed via movieid arg
 
 [- 1.0.3 -]
 
