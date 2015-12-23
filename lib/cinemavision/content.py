@@ -579,7 +579,7 @@ class TriviaDirectoryHandler:
 
             defaults = {
                     'type': ttype,
-                    'TID': '{0}:{1}'.format(prefix, name),
+                    'TID': u'{0}:{1}'.format(prefix, name),
                     'name': name,
                     'rating': rating,
                     'questionPath': questionPath
