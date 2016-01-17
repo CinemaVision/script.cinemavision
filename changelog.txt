@@ -1,5 +1,9 @@
 Changelog for CinemaVision
 
+[- 1.0.10 -]
+
+- fix: Bad default regular expressions for slides causing issues with extensions other than .jpg
+
 [- 1.0.9 -]
 
 - fix:     Trailers with source 'Directory' were not being filtered for video files only
