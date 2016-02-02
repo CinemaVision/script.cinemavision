@@ -1,4 +1,5 @@
 import os
+import sys
 import util
 import threading
 import traceback
@@ -12,13 +13,20 @@ class ActionCommand:
         self.commandData = data
         self.args = []
         self.output = []
+        self.path = None
 
     def _addOutput(self, output):
         self.output += output.splitlines()
+        
+    def _absolutizeCommand(self):
+        return os.path.normpath(os.path.join(os.path.dirname(self.path), self.commandData))
 
     def join(self):
         if self.thread:
             self.thread.join()
+            
+    def setPath(self, path):
+        self.path = path
 
     def addArg(self, arg):
         self.args.append(arg)
@@ -68,7 +76,7 @@ class ModuleCommand(ActionCommand):
 
     def copyModule(self):
         import shutil
-        shutil.copyfile(self.commandData, os.path.join(self.importPath, 'cinema_vision_command_module.py'))
+        shutil.copyfile(self._absolutizeCommand(), os.path.join(self.importPath, 'cinema_vision_command_module.py'))
 
     def execute(self):
         self.checkImportPath()
@@ -85,7 +93,7 @@ class ModuleCommand(ActionCommand):
 class ScriptCommand(ActionCommand):
     type = 'SCRIPT'
 
-    def execute(self):
+    def execute(self):        
         command = ['python', self.commandData]
         command += self.args
 
@@ -100,7 +108,7 @@ class CommandCommand(ActionCommand):
     type = 'COMMAND'
 
     def execute(self):
-        command = [self.commandData]
+        command = [self._absolutizeCommand()]
         command += self.args
 
         import subprocess
@@ -280,6 +288,7 @@ class ActionFileProcessor:
 
                     if name in self.commandClasses:
                         command = self.commandClasses[name](data)
+                        command.setPath(self.path)
                     else:
                         self.parseError(u'Unrecognized command protocol: {0}'.format(repr(name)), line, lineno)
                         return
