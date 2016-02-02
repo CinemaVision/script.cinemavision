@@ -82,7 +82,21 @@ class ModuleCommand(ActionCommand):
         cinema_vision_command_module.main(*self.args)
 
 
-class ScriptCommand(ActionCommand):
+class SubprocessActionCommand(ActionCommand):
+    def getStartupInfo():
+        import subprocess
+        if hasattr(subprocess, 'STARTUPINFO'):  # Windows
+            startupinfo = subprocess.STARTUPINFO()
+            try:
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # Suppress terminal window
+            except:
+                startupinfo.dwFlags |= 1
+            return startupinfo
+
+        return None
+
+
+class ScriptCommand(SubprocessActionCommand):
     type = 'SCRIPT'
 
     def execute(self):
@@ -93,10 +107,10 @@ class ScriptCommand(ActionCommand):
 
         self.log('Action (Script) Command: {0}'.format(repr(' '.join(command)).lstrip('u').strip("'")))
 
-        subprocess.Popen(command)
+        subprocess.Popen(command, startupinfo=self.getStartupInfo())
 
 
-class CommandCommand(ActionCommand):
+class CommandCommand(SubprocessActionCommand):
     type = 'COMMAND'
 
     def execute(self):
@@ -107,7 +121,7 @@ class CommandCommand(ActionCommand):
 
         self.log('Action (Script) Command: {0}'.format(repr(' '.join(command)).lstrip('u').strip("'")))
 
-        subprocess.Popen(command)
+        subprocess.Popen(command, startupinfo=self.getStartupInfo())
 
 
 class AddonCommand(ActionCommand):
