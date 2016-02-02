@@ -94,14 +94,16 @@ class ScriptCommand(ActionCommand):
     type = 'SCRIPT'
 
     def execute(self):        
-        command = ['python', self.commandData]
+        command = [self._absolutizeCommand()]
         command += self.args
-
-        import subprocess
-
-        self.log('Action (Script) Command: {0}'.format(repr(' '.join(command)).lstrip('u').strip("'")))
-
-        subprocess.Popen(command)
+        
+        runscript = 'XBMC.RunScript({0})'.format(','.join(command))
+        
+        import xbmc
+        
+        self.log('Action (Script) Command: {0}'.format(repr(runscript)))
+        
+        xbmc.executebuiltin(runscript)
 
 
 class CommandCommand(ActionCommand):
