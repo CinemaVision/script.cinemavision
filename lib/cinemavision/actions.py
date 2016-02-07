@@ -108,7 +108,7 @@ class ScriptCommand(SubprocessActionCommand):
     type = 'SCRIPT'
 
     def execute(self):        
-        command = [self._absolutizeCommand()]
+        command = ['python', self._absolutizeCommand()]
         command += self.args
         import subprocess
 
