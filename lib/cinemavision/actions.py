@@ -179,11 +179,11 @@ class HTTPCommand(ActionCommand):
                 else:
                     data = arg
                     method = method or requests.post
+
+        if method:
+            resp = method(self.commandData, headers=headers, data=data)
         else:
-            if method:
-                resp = method(self.commandData, headers=headers, data=data)
-            else:
-                resp = requests.get(self.commandData, headers=headers)
+            resp = requests.get(self.commandData, headers=headers)
 
         self.log('Action (HTTP) Response: {0}'.format(repr(resp.text).lstrip('u').strip("'")))
 
