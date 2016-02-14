@@ -17,14 +17,14 @@ class ActionCommand:
 
     def _addOutput(self, output):
         self.output += output.splitlines()
-        
+
     def _absolutizeCommand(self):
         return os.path.normpath(os.path.join(os.path.dirname(self.path), self.commandData))
 
     def join(self):
         if self.thread:
             self.thread.join()
-            
+
     def setPath(self, path):
         self.path = path
 
@@ -70,7 +70,6 @@ class ModuleCommand(ActionCommand):
     importPath = os.path.join(util.STORAGE_PATH, 'import')
 
     def checkImportPath(self):
-        import os
         if not os.path.exists(self.importPath):
             os.makedirs(self.importPath)
 
@@ -82,7 +81,6 @@ class ModuleCommand(ActionCommand):
         self.checkImportPath()
         self.copyModule()
 
-        import sys
         if self.importPath not in sys.path:
             sys.path.append(self.importPath)
 
@@ -107,7 +105,7 @@ class SubprocessActionCommand(ActionCommand):
 class ScriptCommand(SubprocessActionCommand):
     type = 'SCRIPT'
 
-    def execute(self):        
+    def execute(self):
         command = ['python', self._absolutizeCommand()]
         command += self.args
         import subprocess
@@ -181,11 +179,11 @@ class HTTPCommand(ActionCommand):
                 else:
                     data = arg
                     method = method or requests.post
+
+        if method:
+            resp = method(self.commandData, headers=headers, data=data)
         else:
-            if method:
-                resp = method(self.commandData, headers=headers, data=data)
-            else:
-                resp = requests.get(self.commandData, headers=headers)
+            resp = requests.get(self.commandData, headers=headers)
 
         self.log('Action (HTTP) Response: {0}'.format(repr(resp.text).lstrip('u').strip("'")))
 
