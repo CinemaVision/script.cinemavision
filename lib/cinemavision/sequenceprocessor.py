@@ -948,6 +948,11 @@ class VideoBumperHandler:
     def __call__(self, caller, sItem):
         self.caller = caller
         util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, sItem.display()))
+
+        if not sItem.vtype:
+            util.DEBUG_LOG('    - {0}'.format('No bumper type - SKIPPING'))
+            return []
+
         playables = self.handlers[sItem.vtype](sItem)
         if playables:
             if sItem.vtype == 'dir':
