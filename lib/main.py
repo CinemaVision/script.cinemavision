@@ -866,6 +866,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.DEBUG_LOG('Saving to: {0}'.format(full_path))
 
         success = True
+        if cinemavision.util.vfs.exists(full_path):
+            cinemavision.util.vfs.delete(full_path)
+
         with cinemavision.util.vfs.File(full_path, 'w') as f:
             success = f.write(xmlString)
 
@@ -924,6 +927,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         f.close()
         sItems = cinemavision.sequence.getItemsFromString(xmlString)
         if sItems is None:
+            kodiutil.DEBUG_LOG(repr(xmlString))
             sItems = []
             xbmcgui.Dialog().ok(T(32601, 'ERROR'), T(32602, 'Error parsing sequence'))
         self.sequenceControl.reset()
