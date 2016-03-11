@@ -4,7 +4,7 @@ Changelog for CinemaVision
 
 -fix:      Startup error on some devices (Android/Shield?)
 -change:   Greatly decrease content updating time
--add:      Extra logging for sequence saving
+-add:      Extra logging for sequence saving and trivia content updating
 -fix:      Handle trivia with same file name but different extension
 
 [- 1.0.10 -]
