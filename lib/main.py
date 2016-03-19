@@ -414,7 +414,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def checkForContentDB(self):
         if kodiutil.getSetting('content.path'):
             kodiutil.setGlobalProperty('DEMO_MODE', '')
-            return kodiutil.getSetting('content.initialized', False)
+            if kodiutil.getSetting('content.initialized', False) and kodiutil.getSetting('content.path') == kodiutil.getSetting('content.last.path'):
+                return True
+            else:
+                kodiutil.setSetting('content.last.path', kodiutil.getSetting('content.path'))
+                return False
         else:
             kodiutil.setGlobalProperty('DEMO_MODE', '1')
             return True
