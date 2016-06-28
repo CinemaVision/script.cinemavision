@@ -150,7 +150,7 @@ class TrailerScraper(object):
             return
 
         for li in tree.findAll('li', {'class': re.compile('trailer')}):
-            slug = li.find('h3').string.replace(' ', '').replace('-', '').replace(':','').lower()
+            slug = li.find('h3').string.replace(' ', '').replace('-', '').replace(':', '').lower()
             playlist = self.__get_url(self.PLAY_LIST_URL % (location, slug))
             trailer_url = re.search(self.RE_URL, playlist).group(1)
             duration = int(re.search(self.RE_DURATION, playlist).group(1)) / 1000
@@ -174,7 +174,6 @@ class TrailerScraper(object):
         try:
             return urllib2.urlopen(req).read()
         except urllib2.HTTPError, error:
-            print error
             raise NetworkError('HTTPError: %s' % error)
 
 

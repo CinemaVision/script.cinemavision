@@ -827,7 +827,12 @@ class TrailerHandler:
         ]
 
     def updateTrailer(self, t, source, quality):
-        url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
+        try:
+            url = scrapers.getPlayableURL(t.WID.split(':', 1)[-1], quality, source, t.url) or ''
+        except:
+            util.ERROR()
+            url = ''
+
         watched = t.watched
 
         t.watched = True
@@ -1070,7 +1075,7 @@ class AudioFormatHandler:
 
     def _checkFileNameForFormat(self, feature):
         featureFileName = os.path.basename(feature.path)
-        
+
         if feature.audioFormat == 'Dolby TrueHD' and re.search(self._atmosRegex, featureFileName):
             util.DEBUG_LOG('    - Detect: Used file path {0} to determine audio format is {1}'.format(featureFileName, 'Dolby Atmos'))
             return 'Dolby Atmos'
@@ -1080,7 +1085,7 @@ class AudioFormatHandler:
         else:
             util.DEBUG_LOG('    - Detect: Looked at the file path {0} and decided to keep audio format {1}'.format(featureFileName, repr(feature.audioFormat)))
             return feature.audioFormat
-    
+
     @DB.session
     def __call__(self, caller, sItem):
         bumper = None
