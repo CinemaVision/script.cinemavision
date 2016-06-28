@@ -6,6 +6,7 @@ Changelog for CinemaVision
 -fix:      Now cleans items from the database that do not have the content path as their path prefix
 -fix:      Broken iTunes trailers causing error
 -fix:      Content scraper now recognizes files with capitalized extensions
+-add:      Added language string 'CinemaVision' with ID 32000 to help skinners
 
 [- 1.0.11 -]
 
