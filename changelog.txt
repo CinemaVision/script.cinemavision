@@ -2,6 +2,7 @@ Changelog for CinemaVision
 
 [- 1.0.12 -]
 
+-change:   Updated icon
 -change:   Now automatically updates content when the content path is changed
 -fix:      Now cleans items from the database that do not have the content path as their path prefix
 -fix:      Broken iTunes trailers causing error
