@@ -2,19 +2,20 @@ Changelog for CinemaVision
 
 [- 1.0.12 -]
 
--change:   Updated icon
--change:   Now automatically updates content when the content path is changed
--fix:      Now cleans items from the database that do not have the content path as their path prefix
--fix:      Broken iTunes trailers causing error
--fix:      Content scraper now recognizes files with capitalized extensions
--add:      Added language string 'CinemaVision' with ID 32000 to help skinners
+- change:  Updated icon
+- change:  Now automatically updates content when the content path is changed
+- fix:     Now cleans items from the database that do not have the content path as their path prefix
+- fix:     Broken iTunes trailers causing error
+- fix:     Content scraper now recognizes files with capitalized extensions
+- add:     Added language string 'CinemaVision' with ID 32000 to help skinners
+- add:     Portuguese (Brazil) language strings
 
 [- 1.0.11 -]
 
--fix:      Startup error on some devices (Android/Shield?)
--change:   Greatly decrease content updating time
--add:      Extra logging for sequence saving and trivia content updating
--fix:      Handle trivia with same file name but different extension
+- fix:     Startup error on some devices (Android/Shield?)
+- change:  Greatly decrease content updating time
+- add:     Extra logging for sequence saving and trivia content updating
+- fix:     Handle trivia with same file name but different extension
 
 [- 1.0.10 -]
 
