@@ -1077,13 +1077,15 @@ class AudioFormatHandler:
         featureFileName = os.path.basename(feature.path)
 
         if feature.audioFormat == 'Dolby TrueHD' and re.search(self._atmosRegex, featureFileName):
-            util.DEBUG_LOG('    - Detect: Used file path {0} to determine audio format is {1}'.format(featureFileName, 'Dolby Atmos'))
+            util.DEBUG_LOG('    - Detect: Used file path {0} to determine audio format is {1}'.format(repr(featureFileName), 'Dolby Atmos'))
             return 'Dolby Atmos'
         elif feature.audioFormat == 'DTS-HD Master Audio' and re.search(self._dtsxRegex, featureFileName):
-            util.DEBUG_LOG('    - Detect: Used file path {0} to determine audio format is {1}'.format(featureFileName, 'DTS-X'))
+            util.DEBUG_LOG('    - Detect: Used file path {0} to determine audio format is {1}'.format(repr(featureFileName), 'DTS-X'))
             return 'DTS-X'
         else:
-            util.DEBUG_LOG('    - Detect: Looked at the file path {0} and decided to keep audio format {1}'.format(featureFileName, repr(feature.audioFormat)))
+            util.DEBUG_LOG(
+                '    - Detect: Looked at the file path {0} and decided to keep audio format {1}'.format(repr(featureFileName), repr(feature.audioFormat))
+            )
             return feature.audioFormat
 
     @DB.session
@@ -1186,6 +1188,7 @@ class SequenceProcessor:
         self.contentPath = content_path
         self.lastFeature = None
         self._lastAction = None
+        self.end = -1
         self.loadSequence(sequence_path)
         self.createDefaultFeature()
 

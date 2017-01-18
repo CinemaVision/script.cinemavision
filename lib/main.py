@@ -104,7 +104,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         attr = item.dataSource
         limits = self.getLimits(sItem, attr)
         total = limits[1] - limits[0]
-        val = int(round(((pct/100.0) * total) + limits[0]))
+        val = int(round(((pct / 100.0) * total) + limits[0]))
         val = val - (val % limits[2])
         sItem.setSetting(attr, val)
 

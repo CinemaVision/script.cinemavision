@@ -13,22 +13,22 @@ import kodiutil
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
-import cvutil
+import cvutil  # noqa E402
 
-import cinemavision
+import cinemavision  # noqa E402
 
 
 AUDIO_FORMATS = {
-    "dts":       "DTS",
-    "dca":       "DTS",
-    "dtsma":     "DTS-HD Master Audio",
-    "dtshd_ma":  "DTS-HD Master Audio",
+    "dts": "DTS",
+    "dca": "DTS",
+    "dtsma": "DTS-HD Master Audio",
+    "dtshd_ma": "DTS-HD Master Audio",
     "dtshd_hra": "DTS-HD Master Audio",
-    "dtshr":     "DTS-HD Master Audio",
-    "ac3":       "Dolby Digital",
-    "eac3":      "Dolby Digital Plus",
-    "a_truehd":  "Dolby TrueHD",
-    "truehd":    "Dolby TrueHD"
+    "dtshr": "DTS-HD Master Audio",
+    "ac3": "Dolby Digital",
+    "eac3": "Dolby Digital Plus",
+    "a_truehd": "Dolby TrueHD",
+    "truehd": "Dolby TrueHD"
 }
 
 # aac, ac3, cook, dca, dtshd_hra, dtshd_ma, eac3, mp1, mp2, mp3, pcm_s16be, pcm_s16le, pcm_u8, truehd, vorbis, wmapro, wmav2
@@ -691,11 +691,27 @@ class ExperiencePlayer(xbmc.Player):
 
         return True
 
+    def getDBTypeAndID(self, timeout_secs=0):
+        if not timeout_secs:
+            return xbmc.getInfoLabel('ListItem.DBTYPE'), xbmc.getInfoLabel('ListItem.DBID')
+
+        # Wait for info because a window may be closing, etc.
+        timeout = time.time() + timeout_secs
+        while time.time() < timeout:
+            stype = xbmc.getInfoLabel('ListItem.DBTYPE')
+            ID = xbmc.getInfoLabel('ListItem.DBID')
+            if ID:
+                break
+            xbmc.sleep(100)
+        else:
+            return '', ''
+
+        return stype, ID
+
     def addFromID(self, movieid=None, episodeid=None, selection=False):
         DEBUG_LOG('Adding from id: movieid={0} episodeid={1} selection={2}'.format(movieid, episodeid, selection))
         if selection:
-            stype = xbmc.getInfoLabel('ListItem.DBTYPE')
-            ID = xbmc.getInfoLabel('ListItem.DBID')
+            stype, ID = self.getDBTypeAndID(timeout_secs=1)
             if stype == 'movie':
                 movieid = ID
             elif stype == 'tvshow':
