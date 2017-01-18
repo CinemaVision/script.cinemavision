@@ -818,12 +818,12 @@ class TrailerHandler:
 
         return [
             Video(
-                t.url,
-                t.userAgent,
-                title=t.title,
-                thumb=t.thumb,
+                trailer.url,
+                trailer.userAgent,
+                title=trailer.title,
+                thumb=trailer.thumb,
                 volume=self.sItem.getLive('volume')
-            ).fromModule(self.sItem) for t in trailers
+            ).fromModule(self.sItem) for trailer in trailers
         ]
 
     def updateTrailer(self, t, source, quality):
