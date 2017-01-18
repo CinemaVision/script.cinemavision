@@ -91,6 +91,7 @@ def _getSettingDefault(key):
 
     return defaults.get(key)
 
+
 try:
     import xbmcvfs
     import xbmc

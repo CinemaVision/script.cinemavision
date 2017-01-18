@@ -7,7 +7,7 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 
-API_LEVEL = 2
+API_LEVEL = 3
 
 ADDON_ID = 'script.cinemavision'
 ADDON = xbmcaddon.Addon(ADDON_ID)
@@ -15,6 +15,7 @@ ADDON = xbmcaddon.Addon(ADDON_ID)
 
 def translatePath(path):
     return xbmc.translatePath(path).decode('utf-8')
+
 
 PROFILE_PATH = translatePath(ADDON.getAddonInfo('profile'))
 ADDON_PATH = translatePath(ADDON.getAddonInfo('path'))
@@ -62,6 +63,13 @@ def checkAPILevel():
         firstRun()
     elif old == 1:
         setSetting('from.beta', ADDON.getAddonInfo('version'))
+    elif old < 3:
+        LOG('API LEVEL < 3: Clearing trailers and updating DB')
+        os.remove(os.path.join(PROFILE_PATH, 'itunes.last'))
+        os.remove(os.path.join(PROFILE_PATH, 'watched.db'))
+        import cvutil
+        cvutil.loadContent()
+        xbmc.sleep(1000)
 
     if getSetting('from.beta'):
         DEBUG_LOG('UPDATED FROM BETA: {0}'.format(getSetting('from.beta')))
