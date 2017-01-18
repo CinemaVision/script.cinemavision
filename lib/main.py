@@ -10,9 +10,9 @@ from kodiutil import T
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
-import cvutil
+import cvutil  # noqa E402
 
-from lib import cinemavision
+from lib import cinemavision  # noqa E402
 
 
 class ItemSettingsWindow(kodigui.BaseDialog):
@@ -161,7 +161,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
     def updateSlider(self, val, min_val, max_val, step):
         total = max_val - min_val
         val = val - min_val
-        pct = (val/float(total)) * 100
+        pct = (val / float(total)) * 100
         self.sliderControl.setPercent(pct)
 
     def getLimits(self, sItem, attr):

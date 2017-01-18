@@ -10,6 +10,8 @@ import ratings
 import actions
 import util
 
+TRAILER_FAIL_THRESHOLD = 10
+
 
 # Playabe is implemented as a dict to be easily serializable to JSON
 class PlayableBase(dict):
@@ -790,6 +792,7 @@ class TrailerHandler:
         trailers = []
         pool = []
         ct = 0
+        fail = 0
         for t in self._getTrailersFromDBGenre(source, watched=watched):
             pool.append(t)
             ct += 1
@@ -802,10 +805,15 @@ class TrailerHandler:
                         trailers.append(t)
                         if len(trailers) >= count:
                             break
+                    else:
+                        fail += 1
+                        if fail >= TRAILER_FAIL_THRESHOLD:
+                            util.DEBUG_LOG('Exceeded trailer fail threshold - aborting.')
+                            break
                 pool = []
                 ct = 0
 
-            if len(trailers) >= count:
+            if len(trailers) >= count or fail >= TRAILER_FAIL_THRESHOLD:
                 break
         else:
             if pool:
@@ -814,6 +822,11 @@ class TrailerHandler:
                     if t:
                         trailers.append(t)
                         if len(trailers) >= count:
+                            break
+                    else:
+                        fail += 1
+                        if fail >= TRAILER_FAIL_THRESHOLD:
+                            util.DEBUG_LOG('Exceeded trailer fail threshold - aborting.')
                             break
 
         return [

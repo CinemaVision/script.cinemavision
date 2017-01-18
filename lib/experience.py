@@ -691,27 +691,14 @@ class ExperiencePlayer(xbmc.Player):
 
         return True
 
-    def getDBTypeAndID(self, timeout_secs=0):
-        if not timeout_secs:
-            return xbmc.getInfoLabel('ListItem.DBTYPE'), xbmc.getInfoLabel('ListItem.DBID')
-
-        # Wait for info because a window may be closing, etc.
-        timeout = time.time() + timeout_secs
-        while time.time() < timeout:
-            stype = xbmc.getInfoLabel('ListItem.DBTYPE')
-            ID = xbmc.getInfoLabel('ListItem.DBID')
-            if ID:
-                break
-            xbmc.sleep(100)
-        else:
-            return '', ''
-
-        return stype, ID
+    def getDBTypeAndID(self):
+        return xbmc.getInfoLabel('ListItem.DBTYPE'), xbmc.getInfoLabel('ListItem.DBID')
 
     def addFromID(self, movieid=None, episodeid=None, selection=False):
         DEBUG_LOG('Adding from id: movieid={0} episodeid={1} selection={2}'.format(movieid, episodeid, selection))
+
         if selection:
-            stype, ID = self.getDBTypeAndID(timeout_secs=1)
+            stype, ID = self.getDBTypeAndID()
             if stype == 'movie':
                 movieid = ID
             elif stype == 'tvshow':
@@ -1008,14 +995,14 @@ class ExperiencePlayer(xbmc.Player):
         self.play(pl, windowed=True)
 
         self.waitForPlayStart()  # Wait playback so fade will work
-        self.volume.set(image_queue.musicVolume, fade_time=int(image_queue.musicFadeIn*1000), relative=True)
+        self.volume.set(image_queue.musicVolume, fade_time=int(image_queue.musicFadeIn * 1000), relative=True)
 
     def stopMusic(self, image_queue=None):
         try:
             rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_MUSIC)
 
             if image_queue and image_queue.music:
-                self.volume.set(1, fade_time=int(image_queue.musicFadeOut*1000))
+                self.volume.set(1, fade_time=int(image_queue.musicFadeOut * 1000))
                 while self.volume.fading() and not self.abortFlag.isSet() and not kodiutil.wait(0.1):
                     if self.window.hasAction() and self.window.action != 'RESUME':
                         break
@@ -1028,7 +1015,7 @@ class ExperiencePlayer(xbmc.Player):
             self.volume.restore(delay=500)
 
     def waitForPlayStart(self, timeout=10000):
-        giveUpTime = time.time() + timeout/1000.0
+        giveUpTime = time.time() + timeout / 1000.0
         while not xbmc.getCondVisibility('Player.Playing') and time.time() < giveUpTime and not self.abortFlag.isSet():
             xbmc.sleep(100)
 
@@ -1044,7 +1031,7 @@ class ExperiencePlayer(xbmc.Player):
             self.window.setImage(image.path)
 
             stop = time.time() + image.duration
-            fadeStop = image.fade and stop - (image.fade/1000) or 0
+            fadeStop = image.fade and stop - (image.fade / 1000) or 0
 
             while not kodiutil.wait(0.1) and (time.time() < stop or self.window.paused()):
                 if fadeStop and time.time() >= fadeStop and not self.window.paused():
