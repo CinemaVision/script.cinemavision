@@ -27,5 +27,10 @@
         <forum>http://www.cinemavision.tv/forums/</forum>
         <website>http://www.cinemavision.tv/</website>
         <source>https://github.com/CinemaVision/script.cinemavision</source>
+        <assets>
+            <screenshot>resources/screenshots/screenshot1.png</screenshot>
+            <screenshot>resources/screenshots/screenshot2.png</screenshot>
+            <screenshot>resources/screenshots/screenshot3.png</screenshot>
+        </assets>
     </extension>
 </addon>
