@@ -802,6 +802,7 @@ class TrailerHandler:
                 for t in pool:
                     t = self.updateTrailer(t, source, quality)
                     if t:
+                        fail = 0
                         trailers.append(t)
                         if len(trailers) >= count:
                             break
@@ -820,6 +821,7 @@ class TrailerHandler:
                 for t in pool:
                     t = self.updateTrailer(t, source, quality)
                     if t:
+                        fail = 0
                         trailers.append(t)
                         if len(trailers) >= count:
                             break
