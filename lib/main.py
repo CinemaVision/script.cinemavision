@@ -10,6 +10,8 @@ from kodiutil import T
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
+kodiutil.checkAPILevel()
+
 import cvutil  # noqa E402
 
 from lib import cinemavision  # noqa E402
@@ -985,7 +987,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
 
 def main():
-    kodiutil.checkAPILevel()
     kodiutil.setScope()
     kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
     kodiutil.LOG('Sequence editor: OPENING')

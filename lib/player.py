@@ -1,13 +1,14 @@
-import experience
-import kodiutil
-import cvutil
-import kodigui
 import xbmc
 import xbmcgui
-
+import kodigui
+import kodiutil
 from kodiutil import T
 
 kodiutil.checkAPILevel()
+
+import experience  # noqa E402
+import cvutil  # noqa E402
+
 
 CHANNEL_STRINGS = {
     0: '0.0',
