@@ -65,8 +65,12 @@ def checkAPILevel():
         setSetting('from.beta', ADDON.getAddonInfo('version'))
     elif old < 3:
         LOG('API LEVEL < 3: Clearing trailers and updating DB')
-        os.remove(os.path.join(PROFILE_PATH, 'itunes.last'))
-        os.remove(os.path.join(PROFILE_PATH, 'watched.db'))
+        last = os.path.join(PROFILE_PATH, 'itunes.last')
+        watched = os.path.join(PROFILE_PATH, 'watched.db')
+        if os.path.exists(last):
+            os.remove(last)
+        if os.path.exists(watched):
+            os.remove(watched)
         import cvutil
         cvutil.loadContent()
         xbmc.sleep(1000)
