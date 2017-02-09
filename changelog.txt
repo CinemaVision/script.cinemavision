@@ -1,5 +1,9 @@
 Changelog for CinemaVision
 
+[- 1.0.14 -]
+
+- fix:     Issues found with non-english characters in the file names of Action files causing errors
+
 [- 1.0.13 -]
 
 - add:     Now has the ability to accept dbtype and dbid args for skin integration

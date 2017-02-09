@@ -182,7 +182,7 @@ def downloadDemoContent():
         with kodiutil.Progress(T(32506, 'Download'), T(32507, 'Downloading demo content')) as p:
             for block in response.iter_content(blockSize):
                 sofar += blockSize
-                pct = int((sofar/total) * 100)
+                pct = int((sofar / total) * 100)
                 p.update(pct)
                 handle.write(block)
 
@@ -271,13 +271,13 @@ def evalActionFile(paths, test=True):
                 messages.append(u'[COLOR FFFF0000]{0}[/COLOR]'.format('SKIPPED DUE TO ERRORS'))
             else:
                 with kodiutil.Progress('Testing', 'Executing actions...'):
-                    messages += ['[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
+                    messages += [u'[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
                     for line in processor.test():
                         if line.startswith('Action ('):
                             lsplit = line.split(': ', 1)
-                            line = '[COLOR FFAAAAFF]{0}:[/COLOR] {1}'.format(lsplit[0], lsplit[1])
+                            line = u'[COLOR FFAAAAFF]{0}:[/COLOR] {1}'.format(lsplit[0], lsplit[1])
                         elif line.startswith('ERROR:'):
-                            line = '[COLOR FFFF0000]{0}[/COLOR]'.format(line)
+                            line = u'[COLOR FFFF0000]{0}[/COLOR]'.format(line)
                         messages.append(line)
             messages.append('')
 
