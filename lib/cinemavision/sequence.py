@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import util
 from util import T
@@ -88,18 +89,22 @@ def strToBoolWithDefault(val):
 
 
 class SequenceData(object):
-    def __init__(self, data_string=''):
+    def __init__(self, data_string='', name=''):
+        self.name = name
         self._items = []
         self._attrs = {}
-        self._load(data_string)
+        self._process(data_string)
 
     def __nonzero__(self):
         return bool(self._items)
 
+    def __len__(self):
+        return len(self._items)
+
     def __getitem__(self, idx):
         return self._items[idx]
 
-    def _load(self, data_string):
+    def _process(self, data_string):
         if not data_string:
             return
 
@@ -121,15 +126,25 @@ class SequenceData(object):
         except ValueError:
             if dstring and dstring.startswith('{'):
                 util.DEBUG_LOG(repr(dstring))
-                util.ERROR()
+                util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
             else:
                 try:
                     self._items = self._getItemsFromXMLString(dstring)
                 except:
                     util.DEBUG_LOG(repr(dstring[:100]))
-                    util.ERROR()
+                    util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
 
         self._attrs['genres'] = self._attrs.get('genres') or []
+        self._attrs['directors'] = self._attrs.get('directors') or []
+        self._attrs['studios'] = self._attrs.get('studios') or []
+
+    @staticmethod
+    def load(path):
+        import xbmcvfs
+        f = xbmcvfs.File(path, 'r')
+        dstring = f.read().decode('utf-8')
+        f.close()
+        return SequenceData(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
 
     def serialize(self):
         data = []
@@ -141,11 +156,40 @@ class SequenceData(object):
     def setItems(self, items):
         self._items = items
 
-    def get(self, key):
-        return self._attrs.get(key)
+    def get(self, key, default=None):
+        return self._attrs.get(key, default)
 
     def set(self, key, value):
         self._attrs[key] = value
+
+    def matchesFeatureAttr(self, attr, feature):
+        if attr == 'type':
+            if self.get('type') == '3D':
+                if not feature.is3D:
+                    return True
+            elif self.get('type') == '2D':
+                if not feature.is3D:
+                    return True
+        elif attr == 'studio':
+            if feature.studio and feature.studio.lower() in [s.lower() for s in self.get('studios', [])]:
+                return True
+        elif attr == 'director':
+            if feature.director and feature.director.lower() in [s.lower() for s in self.get('directors', [])]:
+                return True
+        elif attr == 'genre':
+            genres = [s.lower() for s in self.get('genres', [])]
+            val = 3
+            ret = 0
+            for g in feature.genres:
+                if g.lower() in genres:
+                    ret += val
+                val -= 1
+                val = max(val, 0)
+
+            if ret:
+                return ret
+
+        return False
 
 
 ################################################################################
@@ -1076,8 +1120,4 @@ def sequenceHasFeature(items):
 
 
 def loadSequence(path):
-    import xbmcvfs
-    f = xbmcvfs.File(path, 'r')
-    dstring = f.read().decode('utf-8')
-    f.close()
-    return SequenceData(dstring)
+    return SequenceData.load(path)

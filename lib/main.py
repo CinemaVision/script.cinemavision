@@ -794,16 +794,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         while True:
             options = []
             options.append(('type', 'type', 'Type: {0}'.format(self.sequenceData.get('type') or None)))
-            options.append(('studio', 'studio', 'Studio: {0}'.format(self.sequenceData.get('studio') or None)))
-            options.append(('director', 'director', 'Director: {0}'.format(self.sequenceData.get('director') or None)))
-            options.append(('genres', 'genres', 'Genres: {0}'.format(','.join(self.sequenceData.get('genres')) or None)))
+            options.append(('studios', 'studios', 'Studio(s): {0}'.format(','.join(self.sequenceData.get('studios')) or None)))
+            options.append(('directors', 'directors', 'Director(s): {0}'.format(','.join(self.sequenceData.get('directors')) or None)))
+            options.append(('genres', 'genres', 'Genre(s): {0}'.format(','.join(self.sequenceData.get('genres')) or None)))
             idx = xbmcgui.Dialog().select('Sequence Attributes', [o[2] for o in options])
             if idx < 0:
                 return
 
             option = options[idx][0]
 
-            if option == 'genres':
+            if option in ('genress', 'studios', 'directors'):
                 val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), ','.join(self.sequenceData.get(option)))
                 val = [v.strip() for v in val.split(',')]
             else:
@@ -957,17 +957,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.saveDefault()
 
     def _load(self, path):
-        f = xbmcvfs.File(path, 'r')
-        xmlString = f.read().decode('utf-8')
-        f.close()
-        sItems = cinemavision.sequence.SequenceData(xmlString)
-        if not sItems:
+        sData = cinemavision.sequence.SequenceData.load(path)
+        if not sData:
             xbmcgui.Dialog().ok(T(32601, 'ERROR'), T(32602, 'Error parsing sequence'))
         self.sequenceControl.reset()
         self.fillSequence()
 
-        self.sequenceData = sItems
-        self.addItems(sItems)
+        self.sequenceData = sData
+        self.addItems(sData)
 
         if self.sequenceControl.positionIsValid(1):
             self.sequenceControl.selectItem(1)

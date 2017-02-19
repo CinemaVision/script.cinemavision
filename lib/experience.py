@@ -642,6 +642,8 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(r.get('movieid', r.get('episodeid', r.get('id', 0))))
         feature.dbType = r.get('type', '')
         feature.genres = r.get('genre', [])
+        feature.studio = r.get('studio', '')
+        feature.director = r.get('director', '')
         feature.thumb = r.get('thumbnail', '')
         feature.runtime = r.get('runtime', 0)
         feature.year = r.get('year', 0)
@@ -679,7 +681,8 @@ class ExperiencePlayer(xbmc.Player):
             for m in details['setdetails']['movies']:
                 try:
                     r = rpc.VideoLibrary.GetMovieDetails(
-                        movieid=m['movieid'], properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+                        movieid=m['movieid'],
+                        properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
                     )['moviedetails']
                     feature = self.featureFromJSON(r)
                     self.features.append(feature)
@@ -772,6 +775,8 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
         feature.dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
         feature.genres = kodiutil.infoLabel('ListItem.Genre').split(' / ')
+        feature.studio = kodiutil.infoLabel('ListItem.Studio')
+        feature.director = kodiutil.infoLabel('ListItem.Director')
         feature.thumb = kodiutil.infoLabel('ListItem.Thumb')
         feature.year = kodiutil.infoLabel('ListItem.Year')
 
