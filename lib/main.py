@@ -312,6 +312,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = False
         self.setName('')
         self.path = ''
+        self.sequenceData = None
 
     def onFirstInit(self):
         self.sequenceControl = kodigui.ManagedControlList(self, self.SEQUENCE_LIST_ID, 22)
@@ -751,6 +752,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         options.append(('load', T(32544, 'Load')))
         options.append(('import', T(32545, 'Import')))
         options.append(('export', T(32546, 'Export')))
+        options.append(('attributes', 'Set attributes'))
         options.append(('test', T(32547, 'Play')))
         idx = xbmcgui.Dialog().select(T(32548, 'Sequence Options'), [o[1] for o in options])
         if idx < 0:
@@ -771,6 +773,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.load(import_=True)
         elif option == 'export':
             self.save(export=True)
+        elif option == 'attributes':
+            self.setAttributes()
         elif option == 'test':
             self.test()
 
@@ -795,6 +799,30 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         e = experience.ExperiencePlayer().create(from_editor=True)
         e.start(savePath)
+
+    def setAttributes(self):
+        while True:
+            options = []
+            options.append(('type', 'type', 'Type: {0}'.format(self.sequenceData.get('type') or None)))
+            options.append(('studio', 'studio', 'Studio: {0}'.format(self.sequenceData.get('studio') or None)))
+            options.append(('director', 'director', 'Director: {0}'.format(self.sequenceData.get('director') or None)))
+            options.append(('genres', 'genres', 'Genres: {0}'.format(','.join(self.sequenceData.get('genres')) or None)))
+            idx = xbmcgui.Dialog().select('Sequence Attributes', [o[2] for o in options])
+            if idx < 0:
+                return
+
+            option = options[idx][0]
+
+            if option == 'genres':
+                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), ','.join(self.sequenceData.get(option)))
+                val = [v.strip() for v in val.split(',')]
+            else:
+                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), self.sequenceData.get(option))
+
+            if not val:
+                continue
+
+            self.sequenceData.set(option, val)
 
     def abortOnModified(self):
         if self.modified:
@@ -877,7 +905,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not yes:
                 return
 
-        xmlString = cinemavision.sequence.getSaveString(items)
+        self.sequenceData.setItems(items)
+        xmlString = self.sequenceData.serialize()
 
         kodiutil.DEBUG_LOG('Saving to: {0}'.format(full_path))
 
@@ -941,13 +970,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         f = xbmcvfs.File(path, 'r')
         xmlString = f.read().decode('utf-8')
         f.close()
-        sItems = cinemavision.sequence.getItemsFromString(xmlString)
-        if sItems is None:
-            sItems = []
+        sItems = cinemavision.sequence.SequenceData(xmlString)
+        if not sItems:
             xbmcgui.Dialog().ok(T(32601, 'ERROR'), T(32602, 'Error parsing sequence'))
         self.sequenceControl.reset()
         self.fillSequence()
 
+        self.sequenceData = sItems
         self.addItems(sItems)
 
         if self.sequenceControl.positionIsValid(1):

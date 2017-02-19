@@ -4,6 +4,8 @@ import os
 import util
 from util import T
 
+SAVE_VERSION = 2
+
 LIMIT_FILE = 0
 LIMIT_FILE_DEFAULT = 1
 LIMIT_DIR = 2
@@ -83,6 +85,67 @@ def strToBoolWithDefault(val):
     if val is None:
         return None
     return bool(val == 'True')
+
+
+class SequenceData(object):
+    def __init__(self, data_string=''):
+        self._items = []
+        self._attrs = {}
+        self._load(data_string)
+
+    def __nonzero__(self):
+        return bool(self._items)
+
+    def __getitem__(self, idx):
+        return self._items[idx]
+
+    def _load(self, data_string):
+        if not data_string:
+            return
+
+        self._getItemsFromString(data_string)
+
+    def _getItemsFromXMLString(self, dstring):
+        from xml.etree import ElementTree as ET
+        e = ET.fromstring(dstring)
+        items = []
+        for node in e.findall('item'):
+            items.append(Item.fromNode(node))
+        return items
+
+    def _getItemsFromString(self, dstring):
+        try:
+            data = json.loads(dstring)
+            self._items = [Item.fromDict(ddict) for ddict in data['items']]
+            self._attrs = data.get('attributes', {})
+        except ValueError:
+            if dstring and dstring.startswith('{'):
+                util.DEBUG_LOG(repr(dstring))
+                util.ERROR()
+            else:
+                try:
+                    self._items = self._getItemsFromXMLString(dstring)
+                except:
+                    util.DEBUG_LOG(repr(dstring[:100]))
+                    util.ERROR()
+
+        self._attrs['genres'] = self._attrs.get('genres') or []
+
+    def serialize(self):
+        data = []
+        for i in self._items:
+            data.append(i.toDict())
+
+        return json.dumps({'version': SAVE_VERSION, 'items': data, 'attributes': self._attrs}, indent=1)
+
+    def setItems(self, items):
+        self._items = items
+
+    def get(self, key):
+        return self._attrs.get(key)
+
+    def set(self, key, value):
+        self._attrs[key] = value
 
 
 ################################################################################
@@ -352,11 +415,11 @@ class Trivia(Item):
             'name': T(32030, 'Format'),
             'default': None
         },
-        {'attr': 'duration',    'type': int, 'limits': (0, 60, 1), 'name': T(32031, 'Duration (minutes)'),          'default': 0},
-        {'attr': 'qDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32032, 'Question Duration (seconds)'), 'default': 0},
-        {'attr': 'cDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32033, 'Clue Duration (seconds)'),     'default': 0},
-        {'attr': 'aDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32034, 'Answer Duration (seconds)'),   'default': 0},
-        {'attr': 'sDuration',   'type': int, 'limits': (0, 60, 1), 'name': T(32035, 'Single Duration (seconds)'),   'default': 0},
+        {'attr': 'duration', 'type': int, 'limits': (0, 60, 1), 'name': T(32031, 'Duration (minutes)'), 'default': 0},
+        {'attr': 'qDuration', 'type': int, 'limits': (0, 60, 1), 'name': T(32032, 'Question Duration (seconds)'), 'default': 0},
+        {'attr': 'cDuration', 'type': int, 'limits': (0, 60, 1), 'name': T(32033, 'Clue Duration (seconds)'), 'default': 0},
+        {'attr': 'aDuration', 'type': int, 'limits': (0, 60, 1), 'name': T(32034, 'Answer Duration (seconds)'), 'default': 0},
+        {'attr': 'sDuration', 'type': int, 'limits': (0, 60, 1), 'name': T(32035, 'Single Duration (seconds)'), 'default': 0},
         {
             'attr': 'transition',
             'type': None,
@@ -617,7 +680,7 @@ class Trailer(Item):
                 if ctype == 'trailers' and c == s[0]:
                     s[2] = s[2] in selected
                     ret.append(s)
-        ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower())+1 or 99)
+        ret.sort(key=lambda i: i[0].lower() in selected and selected.index(i[0].lower()) + 1 or 99)
         return ret
 
     def getLive(self, attr):
@@ -979,13 +1042,13 @@ class Command(Item):
 
 
 CONTENT_CLASSES = {
-    'action':       Action,
-    'audioformat':  AudioFormat,
-    'command':      Command,
-    'feature':      Feature,
-    'trivia':       Trivia,
-    'trailer':      Trailer,
-    'video':        Video
+    'action': Action,
+    'audioformat': AudioFormat,
+    'command': Command,
+    'feature': Feature,
+    'trivia': Trivia,
+    'trailer': Trailer,
+    'video': Video
 }
 
 ITEM_TYPES = [
@@ -1004,29 +1067,6 @@ def getItem(token):
         if i[0] == token:
             return i[3]
 
-# - Old XML save methods
-# def prettify(elem):
-#     from xml.etree import ElementTree as ET
-#     import xml.dom.minidom as minidom
-#     """Return a pretty-printed XML string for the Element.
-#     """
-#     rough_string = ET.tostring(elem)
-#     reparsed = minidom.parseString(rough_string)
-
-#     uglyXml = reparsed.toprettyxml(indent='    ').encode('ascii', 'xmlcharrefreplace')
-#     text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
-#     prettyXml = text_re.sub('>\g<1></', uglyXml)
-#     return prettyXml
-#     # return reparsed.toprettyxml().encode('ascii', 'xmlcharrefreplace')
-
-# def getSaveString(items):
-#     from xml.etree import ElementTree as ET
-#     base = ET.Element('sequence')
-#     for item in items:
-#         base.append(item.toNode())
-
-#     return prettify(base)
-
 
 def sequenceHasFeature(items):
     for i in items:
@@ -1035,46 +1075,9 @@ def sequenceHasFeature(items):
     return False
 
 
-def getItemsFromXMLString(dstring):
-    from xml.etree import ElementTree as ET
-    e = ET.fromstring(dstring)
-    items = []
-    for node in e.findall('item'):
-        items.append(Item.fromNode(node))
-    return items
-
-
-def getSaveString(items):
-    data = []
-    for i in items:
-        data.append(i.toDict())
-
-    ret = json.dumps({'version': 1, 'items': data}, indent=1)
-    util.DEBUG_LOG(repr(ret))
-    return ret
-
-
-def getItemsFromString(dstring):
-    try:
-        data = json.loads(dstring)
-        return [Item.fromDict(ddict) for ddict in data['items']]
-    except ValueError:
-        if dstring and dstring.startswith('{'):
-            util.DEBUG_LOG(repr(dstring))
-            util.ERROR()
-        else:
-            try:
-                return getItemsFromXMLString(dstring)
-            except:
-                util.DEBUG_LOG(repr(dstring[:100]))
-                util.ERROR()
-
-    return None
-
-
 def loadSequence(path):
     import xbmcvfs
     f = xbmcvfs.File(path, 'r')
     dstring = f.read().decode('utf-8')
     f.close()
-    return getItemsFromString(dstring)
+    return SequenceData(dstring)
