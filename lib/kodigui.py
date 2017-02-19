@@ -57,9 +57,11 @@ class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
             self.started = True
             self.onFirstInit()
 
-    def onFirstInit(self): pass
+    def onFirstInit(self):
+        pass
 
-    def onReInit(self): pass
+    def onReInit(self):
+        pass
 
     def setProperty(self, key, value):
         if self._closing:

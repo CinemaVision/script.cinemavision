@@ -372,6 +372,22 @@ class Feature(Video):
         self['genres'] = val
 
     @property
+    def studio(self):
+        return self.get('studio') or ''
+
+    @studio.setter
+    def studio(self, val):
+        self['studio'] = val
+
+    @property
+    def director(self):
+        return self.get('director') or ''
+
+    @director.setter
+    def director(self, val):
+        self['director'] = val
+
+    @property
     def is3D(self):
         return self.get('is3D', False)
 

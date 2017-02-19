@@ -49,6 +49,10 @@ def ERROR(msg=''):
     xbmc.log(traceback.format_exc())
 
 
+def TEST(msg):
+    xbmc.log('-- TEST: {0}'.format(repr(msg)))
+
+
 def firstRun():
     LOG('FIRST RUN')
 

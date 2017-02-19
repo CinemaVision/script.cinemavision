@@ -61,9 +61,8 @@ def selectSequence():
     default2D = 2
     default3D = 3
 
-    contentPath = kodiutil.getSetting('content.path')
+    contentPath = getSequencesContentPath()
     if not contentPath:
-        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
 
     sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
@@ -90,6 +89,51 @@ def selectSequence():
         path = cinemavision.util.pathJoin(sequencesPath, options[idx][0])
 
     return {'path': path, 'name': options[idx][1]}
+
+
+def getSequencesContentPath():
+    import xbmcgui
+    contentPath = kodiutil.getSetting('content.path')
+    if not contentPath:
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
+        return None
+
+    return contentPath
+
+
+def getMatchedSequence(feature):
+    priority = ['type', 'studio', 'director', 'genres']
+
+    contentPath = getSequencesContentPath()
+    if not contentPath:
+        return None
+
+    sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
+    sequencePaths = [cinemavision.util.pathJoin(sequencesPath, p) for p in cinemavision.util.vfs.listdir(sequencesPath)]
+
+    sequences = []
+    for p in sequencePaths:
+        try:
+            s = cinemavision.sequence.SequenceData.load(p)
+            if s:
+                sequences.append(s)
+        except:
+            kodiutil.ERROR()
+
+    if not sequences:
+        return None
+
+    matches = sequences[:]
+    for attr in priority:
+        for seq in sequences:
+            if not seq.matchesFeatureAttr(attr, feature):
+                matches.remove(seq)
+
+        if not matches:
+            matches = sequences[:]
+        else:
+            sequences = matches[:]
+    return matches[0]
 
 
 def getContentPath(from_load=False):
