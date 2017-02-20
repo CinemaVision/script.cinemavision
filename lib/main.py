@@ -803,6 +803,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def setAttributes(self):
         while True:
             options = []
+            options.append(('active', 'active', 'Active: {0}'.format(self.sequenceData.active and 'YES' or 'NO')))
             options.append(('type', 'type', 'Type: {0}'.format(self.sequenceData.get('type') or None)))
             options.append(('studios', 'studios', 'Studio(s): {0}'.format(','.join(self.sequenceData.get('studios')) or None)))
             options.append(('directors', 'directors', 'Director(s): {0}'.format(','.join(self.sequenceData.get('directors')) or None)))
@@ -816,6 +817,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if option in ('genress', 'studios', 'directors'):
                 val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), ','.join(self.sequenceData.get(option)))
                 val = [v.strip() for v in val.split(',')]
+            elif option == 'active':
+                self.sequenceData.active = not self.sequenceData.active
+                kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
+                continue
             else:
                 val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), self.sequenceData.get(option))
 
@@ -839,7 +844,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if self.abortOnModified():
             return
 
+        self.sequenceData = cinemavision.sequence.SequenceData()
         self.setName('')
+        kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
         self.sequenceControl.reset()
         self.fillSequence()
         self.setFocusId(self.ADD_ITEM_LIST_ID)
@@ -929,16 +936,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.modified = False
             self.saveDefault()
 
-            sequence2D = kodiutil.getSetting('sequence.2D')
-            sequence3D = kodiutil.getSetting('sequence.3D')
-            if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
-                yes = xbmcgui.Dialog().yesno(T(32555, 'Set Default'), T(32556, 'Would you like to set this as the default for playback?'))
-                if yes:
-                    as3D = xbmcgui.Dialog().yesno('2D/3D', T(32557, 'For 2D or 3D?'), nolabel='2D', yeslabel='3D')
-                    if as3D:
-                        kodiutil.setSetting('sequence.3D', self.name)
-                    else:
-                        kodiutil.setSetting('sequence.2D', self.name)
+            # sequence2D = kodiutil.getSetting('sequence.2D')
+            # sequence3D = kodiutil.getSetting('sequence.3D')
+            # if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
+            #     yes = xbmcgui.Dialog().yesno(T(32555, 'Set Default'), T(32556, 'Would you like to set this as the default for playback?'))
+            #     if yes:
+            #         as3D = xbmcgui.Dialog().yesno('2D/3D', T(32557, 'For 2D or 3D?'), nolabel='2D', yeslabel='3D')
+            #         if as3D:
+            #             kodiutil.setSetting('sequence.3D', self.name)
+            #         else:
+            #             kodiutil.setSetting('sequence.2D', self.name)
 
     def load(self, import_=False):
         if self.abortOnModified():
@@ -949,7 +956,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not path:
                 return
         else:
-            selection = cvutil.selectSequence()
+            selection = cvutil.selectSequence(active=False)
 
             if not selection:
                 return
@@ -974,6 +981,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.fillSequence()
 
         self.sequenceData = sData
+        kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
         self.addItems(sData)
 
         if self.sequenceControl.positionIsValid(1):

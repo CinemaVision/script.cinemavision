@@ -91,6 +91,7 @@ def strToBoolWithDefault(val):
 class SequenceData(object):
     def __init__(self, data_string='', name=''):
         self.name = name
+        self.active = False
         self._items = []
         self._attrs = {}
         self._process(data_string)
@@ -103,6 +104,9 @@ class SequenceData(object):
 
     def __getitem__(self, idx):
         return self._items[idx]
+
+    def __repr__(self):
+        return 'SequenceData [{0}]({1}): {2}'.format(repr(self.name), len(self._items), repr(self._attrs))
 
     def _process(self, data_string):
         if not data_string:
@@ -123,6 +127,7 @@ class SequenceData(object):
             data = json.loads(dstring)
             self._items = [Item.fromDict(ddict) for ddict in data['items']]
             self._attrs = data.get('attributes', {})
+            self.active = data.get('active', False)
         except ValueError:
             if dstring and dstring.startswith('{'):
                 util.DEBUG_LOG(repr(dstring))
@@ -151,7 +156,7 @@ class SequenceData(object):
         for i in self._items:
             data.append(i.toDict())
 
-        return json.dumps({'version': SAVE_VERSION, 'items': data, 'attributes': self._attrs}, indent=1)
+        return json.dumps({'version': SAVE_VERSION, 'active': self.active, 'items': data, 'attributes': self._attrs}, indent=1)
 
     def setItems(self, items):
         self._items = items
@@ -165,17 +170,21 @@ class SequenceData(object):
     def matchesFeatureAttr(self, attr, feature):
         if attr == 'type':
             if self.get('type') == '3D':
-                if not feature.is3D:
+                if feature.is3D:
                     return True
             elif self.get('type') == '2D':
                 if not feature.is3D:
                     return True
         elif attr == 'studio':
-            if feature.studio and feature.studio.lower() in [s.lower() for s in self.get('studios', [])]:
-                return True
+            sMatch = [s.lower() for s in self.get('studios', [])]
+            for studio in feature.studios:
+                if studio.lower() in sMatch or re.sub(r'\s?studios?(\s?)', r'\1', studio.lower()) in sMatch:
+                    return True
         elif attr == 'director':
-            if feature.director and feature.director.lower() in [s.lower() for s in self.get('directors', [])]:
-                return True
+            dMatch = [s.lower() for s in self.get('directors', [])]
+            for director in feature.directors:
+                if director.lower() in dMatch:
+                    return True
         elif attr == 'genre':
             genres = [s.lower() for s in self.get('genres', [])]
             val = 3

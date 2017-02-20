@@ -324,10 +324,12 @@ class Feature(Video):
     type = 'FEATURE'
 
     def __repr__(self):
-        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Genres: {3}\n    3D: {4}\n    Audio: {5}'.format(
+        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Studio: {3}\n    Director: {4}\n    Genres: {5}\n    3D: {6}\n    Audio: {7}'.format(
             repr(self.title),
             repr(self.path),
             repr(self.rating),
+            repr(self.studios),
+            repr(self.directors),
             repr(self.genres),
             self.is3D and 'Yes' or 'No',
             repr(self.audioFormat)
@@ -372,19 +374,19 @@ class Feature(Video):
         self['genres'] = val
 
     @property
-    def studio(self):
-        return self.get('studio') or ''
+    def studios(self):
+        return self.get('studio', [])
 
-    @studio.setter
-    def studio(self, val):
+    @studios.setter
+    def studios(self, val):
         self['studio'] = val
 
     @property
-    def director(self):
-        return self.get('director') or ''
+    def directors(self):
+        return self.get('director', [])
 
-    @director.setter
-    def director(self, val):
+    @directors.setter
+    def directors(self, val):
         self['director'] = val
 
     @property
@@ -448,7 +450,7 @@ class Feature(Video):
         if not self.runtime:
             return
 
-        return '{0} minutes'.format(self.runtime/60)
+        return '{0} minutes'.format(self.runtime / 60)
 
 
 class Action(dict):
@@ -880,6 +882,12 @@ class TrailerHandler:
         return None
 
     def updateTrailers(self, source):
+        try:
+            self._updateTrailers(source)
+        except:
+            util.ERROR()
+
+    def _updateTrailers(self, source):
         trailers = scrapers.updateTrailers(source)
         if trailers:
             total = len(trailers)

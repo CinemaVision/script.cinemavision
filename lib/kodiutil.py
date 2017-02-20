@@ -33,7 +33,7 @@ def DEBUG():
 
 
 def LOG(msg):
-    xbmc.log('[- CinemaVision -]: {0}'.format(msg))
+    xbmc.log('[- CinemaVision -]: {0}'.format(msg), xbmc.LOGNOTICE)
 
 
 def DEBUG_LOG(msg):
@@ -50,7 +50,7 @@ def ERROR(msg=''):
 
 
 def TEST(msg):
-    xbmc.log('-- TEST: {0}'.format(repr(msg)))
+    xbmc.log('-- TEST: {0}'.format(repr(msg)), xbmc.LOGNOTICE)
 
 
 def firstRun():
