@@ -380,7 +380,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def selectSequenceItem(self, pos):
         self.sequenceControl.selectItem(pos)
-        kodiutil.setGlobalProperty('sequence.item.enabled', self.sequenceControl[pos].dataSource.getProperty('enabled'))
+        kodiutil.setGlobalProperty('sequence.item.enabled', self.sequenceControl[pos].dataSource.enabled and '1' or '')
 
     def handleClose(self):
         yes = True
@@ -949,6 +949,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.selectSequenceItem(1)
             self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
+            self.selectSequenceItem(0)
             self.setFocusId(self.ADD_ITEM_LIST_ID)
 
         self.modified = False
