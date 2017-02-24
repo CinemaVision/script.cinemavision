@@ -3,6 +3,7 @@ Changelog for CinemaVision
 [- 1.0.14 -]
 
 - fix:     Issues found with non-english characters in the file names of Action files causing errors
+- fix:     Issue #6 - With context menu visible the options icon for disabled changes to enabled
 
 [- 1.0.13 -]
 

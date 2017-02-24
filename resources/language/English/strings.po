@@ -1008,3 +1008,18 @@ msgstr ""
 msgctxt "#32607"
 msgid "Kodi may be unable to write to this location."
 msgstr ""
+<<<<<<< Updated upstream
+=======
+
+msgctxt "#32608"
+msgid "Active"
+msgstr ""
+
+msgctxt "#32609"
+msgid "Inactive"
+msgstr ""
+
+msgctxt "#32610"
+msgid "Enable"
+msgstr ""
+>>>>>>> Stashed changes

@@ -337,14 +337,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos2 = self.sequenceControl.getSelectedPosition()
                     pos1 = pos2 - 2
                     if self.sequenceControl.swapItems(pos1, pos2):
-                        self.sequenceControl.selectItem(pos1)
+                        self.selectSequenceItem(pos1)
                     self.updateSpecials()
                     return
                 elif action == xbmcgui.ACTION_MOVE_RIGHT:
                     pos1 = self.sequenceControl.getSelectedPosition()
                     pos2 = pos1 + 2
                     if self.sequenceControl.swapItems(pos1, pos2):
-                        self.sequenceControl.selectItem(pos2)
+                        self.selectSequenceItem(pos2)
                     self.updateSpecials()
                     return
             else:
@@ -355,9 +355,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos -= 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = self.sequenceControl.size() - 1
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                     else:
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                         self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
@@ -366,9 +366,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos += 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = 0
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                     else:
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                         self.updateFocus(pre=True)
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
@@ -377,6 +377,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             kodiutil.ERROR()
 
         kodigui.BaseWindow.onAction(self, action)
+
+    def selectSequenceItem(self, pos):
+        self.sequenceControl.selectItem(pos)
+        kodiutil.setGlobalProperty('sequence.item.enabled', self.sequenceControl[pos].dataSource.getProperty('enabled'))
 
     def handleClose(self):
         yes = True
@@ -455,7 +459,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32535, 'Disable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
+        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
         item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
@@ -627,6 +631,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem = item.dataSource
         sItem.enabled = not sItem.enabled
         item.setProperty('enabled', sItem.enabled and '1' or '')
+        kodiutil.setGlobalProperty('sequence.item.enabled', item.getProperty('enabled'))
         self.updateItemSettings(item)
 
         self.modified = True
@@ -941,7 +946,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.addItems(sItems)
 
         if self.sequenceControl.positionIsValid(1):
-            self.sequenceControl.selectItem(1)
+            self.selectSequenceItem(1)
             self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
             self.setFocusId(self.ADD_ITEM_LIST_ID)
