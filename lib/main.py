@@ -324,7 +324,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.itemOptions()
         else:
             self.addItem()
-            self.updateFocus(pre=True)
+            self.updateFocus()
 
     def onAction(self, action):
         try:
@@ -348,6 +348,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     self.updateSpecials()
                     return
             else:
+                self.updateFocus()
                 if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
@@ -358,7 +359,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                         self.selectSequenceItem(pos)
                     else:
                         self.selectSequenceItem(pos)
-                        self.updateFocus(pre=True)
+                        self.updateFocus(pos=pos)
                 elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
@@ -369,7 +370,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                         self.selectSequenceItem(pos)
                     else:
                         self.selectSequenceItem(pos)
-                        self.updateFocus(pre=True)
+                        self.updateFocus(pos=pos)
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
@@ -380,7 +381,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def selectSequenceItem(self, pos):
         self.sequenceControl.selectItem(pos)
-        kodiutil.setGlobalProperty('sequence.item.enabled', self.sequenceControl[pos].dataSource.enabled and '1' or '')
+        dataSource = self.sequenceControl[pos].dataSource
+        kodiutil.setGlobalProperty('sequence.item.enabled', dataSource and dataSource.enabled and '1' or '')
 
     def handleClose(self):
         yes = True
@@ -399,8 +401,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         return True
 
-    def updateFocus(self, pre=False):
-        if (pre and not self.focusedOnItem()) or (not pre and self.focusedOnItem()):
+    def updateFocus(self, pos=None):
+        if self.focusedOnItem(pos):
             self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
             self.setFocusId(self.ADD_ITEM_LIST_ID)
@@ -733,8 +735,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.modified = True
 
-    def focusedOnItem(self):
-        item = self.sequenceControl.getSelectedItem()
+    def focusedOnItem(self, pos=None):
+        if pos is not None:
+            item = self.sequenceControl[pos]
+        else:
+            item = self.sequenceControl.getSelectedItem()
         return bool(item.dataSource)
 
     def doMenu(self):
