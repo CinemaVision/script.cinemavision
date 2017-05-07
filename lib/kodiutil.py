@@ -46,7 +46,7 @@ def ERROR(msg=''):
     if msg:
         LOG(msg)
     import traceback
-    xbmc.log(traceback.format_exc())
+    xbmc.log(traceback.format_exc(), xbmc.LOGNOTICE)
 
 
 def TEST(msg):

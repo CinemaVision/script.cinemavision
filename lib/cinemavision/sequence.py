@@ -171,22 +171,49 @@ class SequenceData(object):
         if attr == 'type':
             if self.get('type') == '3D':
                 if feature.is3D:
-                    return True
+                    return 1
+                else:
+                    return -1
             elif self.get('type') == '2D':
                 if not feature.is3D:
-                    return True
+                    return 1
+                else:
+                    return -1
         elif attr == 'studio':
-            sMatch = [s.lower() for s in self.get('studios', [])]
+            sMatch = [s.lower() for s in self.get('studios', []) if s]
+            if not sMatch:
+                return 0
             for studio in feature.studios:
                 if studio.lower() in sMatch or re.sub(r'\s?studios?(\s?)', r'\1', studio.lower()) in sMatch:
-                    return True
+                    return 1
+            else:
+                return -1
         elif attr == 'director':
-            dMatch = [s.lower() for s in self.get('directors', [])]
+            dMatch = [s.lower() for s in self.get('directors', []) if s]
+            if not dMatch:
+                return 0
             for director in feature.directors:
                 if director.lower() in dMatch:
-                    return True
+                    return 1
+            else:
+                return -1
+        elif attr == 'year':
+            years = self.get('year', [])
+            if not years:
+                return 0
+            if len(years) > 2 or (len(years) > 1 and years[0] > years[1]):
+                for year in years:
+                    if year == feature.year:
+                        return 1
+            elif len(years) > 1:
+                return years[0] <= feature.year <= years[1] and 1 or 0
+            else:
+                return years[0] == feature.year and 1 or 0
+            return -1
         elif attr == 'genre':
-            genres = [s.lower() for s in self.get('genres', [])]
+            genres = [s.lower() for s in self.get('genres', []) if s]
+            if not genres:
+                return 0
             val = 3
             ret = 0
             for g in feature.genres:
@@ -197,8 +224,10 @@ class SequenceData(object):
 
             if ret:
                 return ret
+            else:
+                return -1
 
-        return False
+        return 0
 
 
 ################################################################################

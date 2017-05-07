@@ -113,32 +113,36 @@ def getActiveSequences(active=True):
             s = cinemavision.sequence.SequenceData.load(p)
             if not active or (s and s.active):
                 sequences.append(s)
-        except:
+        except Exception:
             kodiutil.ERROR()
 
     return sequences
 
 
 def getMatchedSequence(feature):
-    priority = ['type', 'studio', 'director', 'genres']
+    priority = ['type', 'year', 'studio', 'director', 'genres']
 
     sequences = getActiveSequences()
 
     if not sequences:
         return None
 
-    matches = sequences[:]
+    matches = [[s, 0] for s in sequences]
     for attr in priority:
-        for seq in sequences:
-            if not seq.matchesFeatureAttr(attr, feature):
+        for seq in matches[:]:
+            match = seq[0].matchesFeatureAttr(attr, feature)
+            if match >= 0:
+                seq[1] += match
+            else:
                 matches.remove(seq)
 
         if not matches:
-            matches = sequences[:]
-        else:
-            sequences = matches[:]
+            break
 
-    seqData = matches[0]
+    if matches:
+        seqData = max(matches, key=lambda x: x[1])[0]
+    else:
+        seqData = sequences[0]
 
     kodiutil.DEBUG_LOG(feature)
     kodiutil.DEBUG_LOG(seqData)
@@ -156,7 +160,7 @@ def getContentPath(from_load=False):
             try:
                 import shutil
                 shutil.rmtree(demoPath)
-            except:
+            except Exception:
                 kodiutil.ERROR()
 
         return contentPath

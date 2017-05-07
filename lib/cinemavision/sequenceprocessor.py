@@ -324,10 +324,12 @@ class Feature(Video):
     type = 'FEATURE'
 
     def __repr__(self):
-        return 'FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Studio: {3}\n    Director: {4}\n    Genres: {5}\n    3D: {6}\n    Audio: {7}'.format(
+        return ('FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Year: ({3})\n    Studio: {4}\n    ' +
+                'Director: {5}\n    Genres: {6}\n    3D: {7}\n    Audio: {8}').format(
             repr(self.title),
             repr(self.path),
             repr(self.rating),
+            repr(self.year),
             repr(self.studios),
             repr(self.directors),
             repr(self.genres),

@@ -3,6 +3,7 @@ import os
 import xbmcgui
 import xbmcvfs
 
+import seqattreditor
 import kodiutil
 import kodigui
 
@@ -82,7 +83,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             else:
                 self.updateItem()
 
-        except:
+        except Exception:
             kodiutil.ERROR()
             kodigui.BaseDialog.onAction(self, action)
             return
@@ -375,7 +376,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
-        except:
+        except Exception:
             kodiutil.ERROR()
 
         kodigui.BaseWindow.onAction(self, action)
@@ -801,33 +802,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         e.start(savePath)
 
     def setAttributes(self):
-        while True:
-            options = []
-            options.append(('active', 'active', 'Active: {0}'.format(self.sequenceData.active and 'YES' or 'NO')))
-            options.append(('type', 'type', 'Type: {0}'.format(self.sequenceData.get('type') or None)))
-            options.append(('studios', 'studios', 'Studio(s): {0}'.format(','.join(self.sequenceData.get('studios')) or None)))
-            options.append(('directors', 'directors', 'Director(s): {0}'.format(','.join(self.sequenceData.get('directors')) or None)))
-            options.append(('genres', 'genres', 'Genre(s): {0}'.format(','.join(self.sequenceData.get('genres')) or None)))
-            idx = xbmcgui.Dialog().select('Sequence Attributes', [o[2] for o in options])
-            if idx < 0:
-                return
-
-            option = options[idx][0]
-
-            if option in ('genress', 'studios', 'directors'):
-                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), ','.join(self.sequenceData.get(option)))
-                val = [v.strip() for v in val.split(',')]
-            elif option == 'active':
-                self.sequenceData.active = not self.sequenceData.active
-                kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
-                continue
-            else:
-                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), self.sequenceData.get(option))
-
-            if not val:
-                continue
-
-            self.sequenceData.set(option, val)
+        self.modified = self.modified or seqattreditor.setAttributes(self.sequenceData)
 
     def abortOnModified(self):
         if self.modified:
