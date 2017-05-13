@@ -587,7 +587,7 @@ class ExperiencePlayer(xbmc.Player):
         self.features = []
 
         result = rpc.Playlist.GetItems(
-            playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+            playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
         )
         for r in result.get('items', []):
             feature = self.featureFromJSON(r)
@@ -642,8 +642,8 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(r.get('movieid', r.get('episodeid', r.get('id', 0))))
         feature.dbType = r.get('type', '')
         feature.genres = r.get('genre', [])
-        feature.studio = r.get('studio', '')
-        feature.director = r.get('director', '')
+        feature.studios = r.get('studio', '')
+        feature.directors = r.get('director', '')
         feature.thumb = r.get('thumbnail', '')
         feature.runtime = r.get('runtime', 0)
         feature.year = r.get('year', 0)
@@ -726,7 +726,7 @@ class ExperiencePlayer(xbmc.Player):
 
                 r = rpc.VideoLibrary.GetMovieDetails(
                     movieid=movieid,
-                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year']
+                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
                 )['moviedetails']
                 r['type'] = 'movie'
 
@@ -775,8 +775,8 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
         feature.dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
         feature.genres = kodiutil.infoLabel('ListItem.Genre').split(' / ')
-        feature.studio = kodiutil.infoLabel('ListItem.Studio')
-        feature.director = kodiutil.infoLabel('ListItem.Director')
+        feature.studios = kodiutil.infoLabel('ListItem.Studio').split(' / ')
+        feature.directors = kodiutil.infoLabel('ListItem.Director').split(' / ')
         feature.thumb = kodiutil.infoLabel('ListItem.Thumb')
         feature.year = kodiutil.infoLabel('ListItem.Year')
 

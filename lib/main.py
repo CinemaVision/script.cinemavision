@@ -3,6 +3,7 @@ import os
 import xbmcgui
 import xbmcvfs
 
+import seqattreditor
 import kodiutil
 import kodigui
 
@@ -82,7 +83,7 @@ class ItemSettingsWindow(kodigui.BaseDialog):
             else:
                 self.updateItem()
 
-        except:
+        except Exception:
             kodiutil.ERROR()
             kodigui.BaseDialog.onAction(self, action)
             return
@@ -325,7 +326,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.itemOptions()
         else:
             self.addItem()
-            self.updateFocus(pre=True)
+            self.updateFocus()
 
     def onAction(self, action):
         try:
@@ -338,17 +339,18 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos2 = self.sequenceControl.getSelectedPosition()
                     pos1 = pos2 - 2
                     if self.sequenceControl.swapItems(pos1, pos2):
-                        self.sequenceControl.selectItem(pos1)
+                        self.selectSequenceItem(pos1)
                     self.updateSpecials()
                     return
                 elif action == xbmcgui.ACTION_MOVE_RIGHT:
                     pos1 = self.sequenceControl.getSelectedPosition()
                     pos2 = pos1 + 2
                     if self.sequenceControl.swapItems(pos1, pos2):
-                        self.sequenceControl.selectItem(pos2)
+                        self.selectSequenceItem(pos2)
                     self.updateSpecials()
                     return
             else:
+                self.updateFocus()
                 if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
@@ -356,10 +358,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos -= 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = self.sequenceControl.size() - 1
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                     else:
-                        self.sequenceControl.selectItem(pos)
-                        self.updateFocus(pre=True)
+                        self.selectSequenceItem(pos)
+                        self.updateFocus(pos=pos)
                 elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
@@ -367,17 +369,22 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos += 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = 0
-                        self.sequenceControl.selectItem(pos)
+                        self.selectSequenceItem(pos)
                     else:
-                        self.sequenceControl.selectItem(pos)
-                        self.updateFocus(pre=True)
+                        self.selectSequenceItem(pos)
+                        self.updateFocus(pos=pos)
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
-        except:
+        except Exception:
             kodiutil.ERROR()
 
         kodigui.BaseWindow.onAction(self, action)
+
+    def selectSequenceItem(self, pos):
+        self.sequenceControl.selectItem(pos)
+        dataSource = self.sequenceControl[pos].dataSource
+        kodiutil.setGlobalProperty('sequence.item.enabled', dataSource and dataSource.enabled and '1' or '')
 
     def handleClose(self):
         yes = True
@@ -396,8 +403,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         return True
 
-    def updateFocus(self, pre=False):
-        if (pre and not self.focusedOnItem()) or (not pre and self.focusedOnItem()):
+    def updateFocus(self, pos=None):
+        if self.focusedOnItem(pos):
             self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
             self.setFocusId(self.ADD_ITEM_LIST_ID)
@@ -456,7 +463,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32535, 'Disable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
+        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
         item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
         item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
         self.itemOptionsControl.addItem(item)
@@ -628,6 +635,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem = item.dataSource
         sItem.enabled = not sItem.enabled
         item.setProperty('enabled', sItem.enabled and '1' or '')
+        kodiutil.setGlobalProperty('sequence.item.enabled', item.getProperty('enabled'))
         self.updateItemSettings(item)
 
         self.modified = True
@@ -729,8 +737,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.modified = True
 
-    def focusedOnItem(self):
-        item = self.sequenceControl.getSelectedItem()
+    def focusedOnItem(self, pos=None):
+        if pos is not None:
+            item = self.sequenceControl[pos]
+        else:
+            item = self.sequenceControl.getSelectedItem()
         return bool(item.dataSource)
 
     def doMenu(self):
@@ -791,28 +802,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         e.start(savePath)
 
     def setAttributes(self):
-        while True:
-            options = []
-            options.append(('type', 'type', 'Type: {0}'.format(self.sequenceData.get('type') or None)))
-            options.append(('studios', 'studios', 'Studio(s): {0}'.format(','.join(self.sequenceData.get('studios')) or None)))
-            options.append(('directors', 'directors', 'Director(s): {0}'.format(','.join(self.sequenceData.get('directors')) or None)))
-            options.append(('genres', 'genres', 'Genre(s): {0}'.format(','.join(self.sequenceData.get('genres')) or None)))
-            idx = xbmcgui.Dialog().select('Sequence Attributes', [o[2] for o in options])
-            if idx < 0:
-                return
-
-            option = options[idx][0]
-
-            if option in ('genress', 'studios', 'directors'):
-                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), ','.join(self.sequenceData.get(option)))
-                val = [v.strip() for v in val.split(',')]
-            else:
-                val = xbmcgui.Dialog().input(u'Enter {0}'.format(options[idx][1]), self.sequenceData.get(option))
-
-            if not val:
-                continue
-
-            self.sequenceData.set(option, val)
+        self.modified = self.modified or seqattreditor.setAttributes(self.sequenceData)
 
     def abortOnModified(self):
         if self.modified:
@@ -829,7 +819,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if self.abortOnModified():
             return
 
+        self.sequenceData = cinemavision.sequence.SequenceData()
         self.setName('')
+        kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
         self.sequenceControl.reset()
         self.fillSequence()
         self.setFocusId(self.ADD_ITEM_LIST_ID)
@@ -919,16 +911,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.modified = False
             self.saveDefault()
 
-            sequence2D = kodiutil.getSetting('sequence.2D')
-            sequence3D = kodiutil.getSetting('sequence.3D')
-            if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
-                yes = xbmcgui.Dialog().yesno(T(32555, 'Set Default'), T(32556, 'Would you like to set this as the default for playback?'))
-                if yes:
-                    as3D = xbmcgui.Dialog().yesno('2D/3D', T(32557, 'For 2D or 3D?'), nolabel='2D', yeslabel='3D')
-                    if as3D:
-                        kodiutil.setSetting('sequence.3D', self.name)
-                    else:
-                        kodiutil.setSetting('sequence.2D', self.name)
+            # sequence2D = kodiutil.getSetting('sequence.2D')
+            # sequence3D = kodiutil.getSetting('sequence.3D')
+            # if not sequence2D or (self.name != sequence2D and self.name != sequence3D):
+            #     yes = xbmcgui.Dialog().yesno(T(32555, 'Set Default'), T(32556, 'Would you like to set this as the default for playback?'))
+            #     if yes:
+            #         as3D = xbmcgui.Dialog().yesno('2D/3D', T(32557, 'For 2D or 3D?'), nolabel='2D', yeslabel='3D')
+            #         if as3D:
+            #             kodiutil.setSetting('sequence.3D', self.name)
+            #         else:
+            #             kodiutil.setSetting('sequence.2D', self.name)
 
     def load(self, import_=False):
         if self.abortOnModified():
@@ -939,7 +931,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not path:
                 return
         else:
-            selection = cvutil.selectSequence()
+            selection = cvutil.selectSequence(active=False)
 
             if not selection:
                 return
@@ -964,12 +956,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.fillSequence()
 
         self.sequenceData = sData
+        kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
         self.addItems(sData)
 
         if self.sequenceControl.positionIsValid(1):
-            self.sequenceControl.selectItem(1)
+            self.selectSequenceItem(1)
             self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
+            self.selectSequenceItem(0)
             self.setFocusId(self.ADD_ITEM_LIST_ID)
 
         self.modified = False
