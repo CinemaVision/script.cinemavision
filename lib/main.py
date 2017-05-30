@@ -682,11 +682,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not item:
             return
         isw = ItemSettingsWindow.open(main=self, item=item)
+        self.modified = self.modified or isw.modified
+        del isw
 
         self.updateItemSettings(item)
-
-        if not self.modified:
-            self.modified = isw.modified
 
     def updateItemSettings(self, item):
         sItem = item.dataSource
@@ -1010,5 +1009,6 @@ def main():
     kodiutil.setScope()
     kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
     kodiutil.LOG('Sequence editor: OPENING')
-    SequenceEditorWindow.open()
+    w = SequenceEditorWindow.open()
+    del w
     kodiutil.LOG('Sequence editor: CLOSED')

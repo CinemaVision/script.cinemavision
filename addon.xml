@@ -33,5 +33,11 @@
             <screenshot>resources/screenshots/screenshot2.png</screenshot>
             <screenshot>resources/screenshots/screenshot3.png</screenshot>
         </assets>
+        <news>
+add: Ability to define sequence attributes for conditional sequence selection
+fix: Issues found with non-english characters in the file names of Action files causing errors
+fix: Issue #6 - With context menu visible the options icon for disabled changes to enabled
+fix: Issue #70 - Up/Down nav on options occasionally fails
+        </news>
     </extension>
 </addon>

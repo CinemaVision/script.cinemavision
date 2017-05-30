@@ -325,13 +325,14 @@ class Feature(Video):
 
     def __repr__(self):
         return ('FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Year: ({3})\n    Studio: {4}\n    ' +
-                'Director: {5}\n    Genres: {6}\n    3D: {7}\n    Audio: {8}').format(
+                'Director: {5}\n    Cast: {6}\n Genres: {7}\n    3D: {8}\n    Audio: {9}').format(
             repr(self.title),
             repr(self.path),
             repr(self.rating),
             repr(self.year),
             repr(self.studios),
             repr(self.directors),
+            repr([c['name'] for c in self.cast]),
             repr(self.genres),
             self.is3D and 'Yes' or 'No',
             repr(self.audioFormat)
@@ -390,6 +391,14 @@ class Feature(Video):
     @directors.setter
     def directors(self, val):
         self['director'] = val
+
+    @property
+    def cast(self):
+        return self.get('cast', [])
+
+    @cast.setter
+    def cast(self, val):
+        self['cast'] = val
 
     @property
     def is3D(self):

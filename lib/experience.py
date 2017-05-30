@@ -587,7 +587,8 @@ class ExperiencePlayer(xbmc.Player):
         self.features = []
 
         result = rpc.Playlist.GetItems(
-            playlistid=xbmc.PLAYLIST_VIDEO, properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
+            playlistid=xbmc.PLAYLIST_VIDEO,
+            properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
         )
         for r in result.get('items', []):
             feature = self.featureFromJSON(r)
@@ -644,6 +645,7 @@ class ExperiencePlayer(xbmc.Player):
         feature.genres = r.get('genre', [])
         feature.studios = r.get('studio', '')
         feature.directors = r.get('director', '')
+        feature.cast = r.get('cast', '')
         feature.thumb = r.get('thumbnail', '')
         feature.runtime = r.get('runtime', 0)
         feature.year = r.get('year', 0)
@@ -682,7 +684,7 @@ class ExperiencePlayer(xbmc.Player):
                 try:
                     r = rpc.VideoLibrary.GetMovieDetails(
                         movieid=m['movieid'],
-                        properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
+                        properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
                     )['moviedetails']
                     feature = self.featureFromJSON(r)
                     self.features.append(feature)
@@ -726,7 +728,7 @@ class ExperiencePlayer(xbmc.Player):
 
                 r = rpc.VideoLibrary.GetMovieDetails(
                     movieid=movieid,
-                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director']
+                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
                 )['moviedetails']
                 r['type'] = 'movie'
 
@@ -777,6 +779,7 @@ class ExperiencePlayer(xbmc.Player):
         feature.genres = kodiutil.infoLabel('ListItem.Genre').split(' / ')
         feature.studios = kodiutil.infoLabel('ListItem.Studio').split(' / ')
         feature.directors = kodiutil.infoLabel('ListItem.Director').split(' / ')
+        feature.cast = [{'name': a} for a in kodiutil.infoLabel('ListItem.Cast').split(' / ')]
         feature.thumb = kodiutil.infoLabel('ListItem.Thumb')
         feature.year = kodiutil.infoLabel('ListItem.Year')
 

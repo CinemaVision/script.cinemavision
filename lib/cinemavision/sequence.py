@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import datetime
 
 import util
 from util import T
@@ -142,6 +143,9 @@ class SequenceData(object):
         self._attrs['genres'] = self._attrs.get('genres') or []
         self._attrs['directors'] = self._attrs.get('directors') or []
         self._attrs['studios'] = self._attrs.get('studios') or []
+        self._attrs['actors'] = self._attrs.get('actors') or []
+        self._attrs['dates'] = self._attrs.get('dates') or []
+        self._attrs['times'] = self._attrs.get('times') or []
 
     @staticmethod
     def load(path):
@@ -168,64 +172,122 @@ class SequenceData(object):
         self._attrs[key] = value
 
     def matchesFeatureAttr(self, attr, feature):
-        if attr == 'type':
-            if self.get('type') == '3D':
-                if feature.is3D:
-                    return 1
+        try:
+            if attr == 'type':
+                if self.get('type') == '3D':
+                    if feature.is3D:
+                        return 5
+                    else:
+                        return -1
+                elif self.get('type') == '2D':
+                    if not feature.is3D:
+                        return 5
+                    else:
+                        return -1
+            elif attr == 'studio':
+                sMatch = [s.lower() for s in self.get('studios', []) if s]
+                if not sMatch:
+                    return 0
+                for studio in feature.studios:
+                    if studio.lower() in sMatch or re.sub(r'\s?studios?(\s?)', r'\1', studio.lower()) in sMatch:
+                        return 5
                 else:
                     return -1
-            elif self.get('type') == '2D':
-                if not feature.is3D:
-                    return 1
+            elif attr == 'director':
+                dMatch = [s.lower() for s in self.get('directors', []) if s]
+                if not dMatch:
+                    return 0
+                for director in feature.directors:
+                    if director.lower() in dMatch:
+                        return 5
                 else:
                     return -1
-        elif attr == 'studio':
-            sMatch = [s.lower() for s in self.get('studios', []) if s]
-            if not sMatch:
-                return 0
-            for studio in feature.studios:
-                if studio.lower() in sMatch or re.sub(r'\s?studios?(\s?)', r'\1', studio.lower()) in sMatch:
-                    return 1
-            else:
-                return -1
-        elif attr == 'director':
-            dMatch = [s.lower() for s in self.get('directors', []) if s]
-            if not dMatch:
-                return 0
-            for director in feature.directors:
-                if director.lower() in dMatch:
-                    return 1
-            else:
-                return -1
-        elif attr == 'year':
-            years = self.get('year', [])
-            if not years:
-                return 0
-            if len(years) > 2 or (len(years) > 1 and years[0] > years[1]):
-                for year in years:
-                    if year == feature.year:
-                        return 1
-            elif len(years) > 1:
-                return years[0] <= feature.year <= years[1] and 1 or 0
-            else:
-                return years[0] == feature.year and 1 or 0
-            return -1
-        elif attr == 'genre':
-            genres = [s.lower() for s in self.get('genres', []) if s]
-            if not genres:
-                return 0
-            val = 3
-            ret = 0
-            for g in feature.genres:
-                if g.lower() in genres:
-                    ret += val
-                val -= 1
-                val = max(val, 0)
+            elif attr == 'actor':
+                aMatch = [a.lower() for a in self.get('actors', []) if a]
+                if not aMatch:
+                    return 0
+                for role in feature.cast:
+                    if role['name'].lower() in aMatch:
+                        return 5
+                else:
+                    return -1
+            elif attr == 'year':
+                years = self.get('year', [])
 
-            if ret:
+                if not years:
+                    return 0
+
+                ret = 0
+                for year in years:
+                    ret = -1
+                    if len(year) > 1:
+                        if not year[1]:
+                            if year[0] <= feature.year:
+                                return 5
+                        else:
+                            if year[1] <= feature.year <= year[2]:
+                                return 5
+                    else:
+                        if year[0] == feature.year:
+                            return 5
                 return ret
-            else:
-                return -1
+            elif attr == 'dates':
+                dates = self.get('dates', [])
+
+                if not dates:
+                    return 0
+
+                now = datetime.datetime.now()
+
+                ret = 0
+                for date in dates:
+                    ret = -1
+                    if len(date) > 1:
+                        if datetime.date(now.year, date[0][0], date[0][1]) <= now <= datetime.date(now.year, date[1][0], date[1][1]):
+                            return 5
+                    else:
+                        if date[0][0] == now.month and date[0][1] == now.day:
+                            return 5
+                return ret
+            elif attr == 'times':
+                times = self.get('times', [])
+
+                if not times:
+                    return 0
+
+                now = datetime.datetime.now()
+
+                ret = 0
+                for tm in times:
+                    ret = -1
+                    if len(tm) > 1:
+                        if datetime.time(tm[0][0], tm[0][1]) <= datetime.time(now.hour, now.minute) <= datetime.time(tm[1][0], tm[1][1]):
+                            return 5
+                    else:
+                        if tm[0][0] == now.hour:
+                            return 5
+                return ret
+            elif attr == 'genre':
+                genres = [s.lower() for s in self.get('genres', []) if s]
+                if not genres:
+                    return 0
+                val = 5
+                ret = 0
+                for g in feature.genres:
+                    if g.lower() in genres:
+                        ret += val
+                    val -= 2
+                    if val < 1:
+                        break
+
+                if ret:
+                    return ret
+                else:
+                    return -1
+
+            return 0
+        except Exception:
+            util.ERROR()
 
         return 0
 

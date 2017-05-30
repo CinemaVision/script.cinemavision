@@ -121,7 +121,7 @@ def getActiveSequences(active=True):
 
 
 def getMatchedSequence(feature):
-    priority = ['type', 'year', 'studio', 'director', 'genres']
+    priority = ['type', 'year', 'studio', 'director', 'actor', 'genres', 'dates', 'times']
 
     sequences = getActiveSequences()
 
