@@ -1,4 +1,5 @@
 import time
+import calendar
 
 import xbmcgui
 import kodigui
@@ -74,11 +75,11 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         elif option == 'genres':
             val = self.getDBEntry(self.getGenreList, 'genre', 'Genre', self.sequenceData.get('genres'))
         elif option == 'year':
-            val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'))
+            val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'), prefixFormat='{0} [COLOR FF80D0FF]thru[/COLOR] ')
         elif option == 'dates':
-            val = self.getRangedEntry(self.getDate, 'dates', self.sequenceData.get('dates'))
+            val = self.getRangedEntry(self.getDate, 'dates', self.sequenceData.get('dates'), prefixFormat='{0}/{1} [COLOR FF80D0FF]thru[/COLOR] ')
         elif option == 'times':
-            val = self.getRangedEntry(self.getTime, 'times', self.sequenceData.get('times'))
+            val = self.getRangedEntry(self.getTime, 'times', self.sequenceData.get('times'), prefixFormat='{0}:{1:02d} [COLOR FF80D0FF]thru[/COLOR] ')
         elif option == 'active':
             val = not self.sequenceData.active
             self.sequenceData.active = val
@@ -148,7 +149,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
         return val
 
-    def getRangedEntry(self, func, itype, ret=None):
+    def getRangedEntry(self, func, itype, ret=None, prefixFormat=''):
         ret = ret or []
 
         while True:
@@ -176,7 +177,11 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                 yStart = func(remove=ret, disp='Start')
                 if yStart is None:
                     continue
-                yEnd = func(yStart, remove=ret, disp='End')
+                try:
+                    prefix=prefixFormat.format(*yStart)
+                except TypeError:
+                    prefix=prefixFormat.format(yStart)
+                yEnd = func(yStart, remove=ret, disp='End', prefix=prefix)
                 if yEnd is None:
                     continue
                 ret.append([yStart, yEnd])
@@ -186,14 +191,16 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                     continue
                 ret.append([year])
 
-    def chooseFromList(self, ilist, disp, mod):
+    def chooseFromList(self, ilist, disp, mod, dlist=None):
+        if dlist is None:
+            dlist = ilist
         mod = ' ({0})'.format(mod) if mod else ''
-        idx = xbmcgui.Dialog().select('Select {0}{1}'.format(disp, mod), [str(i) for i in ilist])
+        idx = xbmcgui.Dialog().select('Select {0}{1}'.format(disp, mod), [str(i) for i in dlist])
         if idx < 0:
             return None
         return ilist[idx]
 
-    def getYear(self, start=None, remove=None, single=False, disp=''):
+    def getYear(self, start=None, remove=None, single=False, disp='', prefix=''):
         if start is not None:
             years = [[0, 'Now']]
         else:
@@ -215,14 +222,14 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                         break
             else:
                 years.append((y, str(y)))
-        idx = xbmcgui.Dialog().select('Select Year{0}'.format(mod), [y[1] for y in years])
+        idx = xbmcgui.Dialog().select('Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
         if idx < 0:
             return None
 
         return years[idx][0]
 
-    def getDate(self, start=None, remove=None, single=False, disp=''):
-        month = self.chooseFromList(range(1, 13), 'Month', disp)
+    def getDate(self, start=None, remove=None, single=False, disp='', prefix=''):
+        month = self.chooseFromList(range(1, 13), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_name[m]) for m in range(1,13)])
         if month is None:
             return None
 
@@ -233,26 +240,27 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         else:
             dlist = range(1, 32)
 
-        day = self.chooseFromList(dlist, 'Day', disp)
+        monthName = calendar.month_name[month]
+        day = self.chooseFromList(dlist, 'Day', disp, ['{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
         if day is None:
             return None
 
         return [month, day]
 
-    def getTime(self, start=None, remove=None, single=False, disp=''):
+    def getTime(self, start=None, remove=None, single=False, disp='', prefix=''):
         hours = []
         if single and remove:
             hours = [h for h in range(24) if [[h, None]] not in remove]
         else:
             hours = range(24)
-        hour = self.chooseFromList(hours, 'Hour', disp)
+        hour = self.chooseFromList(hours, 'Hour', disp, ['{0}{1}'.format(prefix, h) for h in hours])
         if hour is None:
             return None
 
         if single:
             return [hour, None]
 
-        minute = self.chooseFromList(range(60), 'Minute', disp)
+        minute = self.chooseFromList(range(60), 'Minute', disp, ['{0}{1}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
         if minute is None:
             return None
 
