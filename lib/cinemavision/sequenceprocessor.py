@@ -55,7 +55,7 @@ class Image(Playable):
         self['fade'] = fade
 
     def __repr__(self):
-        return 'IMAGE ({0}s): {1}'.format(self.duration, self.path)
+        return 'IMAGE ({0}s): {1}'.format(self.duration, repr(self.path))
 
     @property
     def setID(self):
@@ -473,7 +473,7 @@ class Action(dict):
         self['path'] = processor.path
 
     def __repr__(self):
-        return '{0}: {1} - {2}'.format(self.type, self['path'], self.processor)
+        return '{0}: {1} - {2}'.format(self.type, repr(self['path']), self.processor)
 
     def run(self):
         self.processor.run()
@@ -1003,7 +1003,7 @@ class VideoBumperHandler:
 
     def __call__(self, caller, sItem):
         self.caller = caller
-        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, sItem.display()))
+        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, repr(sItem.display())))
 
         if not sItem.vtype:
             util.DEBUG_LOG('    - {0}'.format('No bumper type - SKIPPING'))
@@ -1221,7 +1221,7 @@ class ActionHandler:
             util.DEBUG_LOG('[{0}] NO PATH SET'.format(sItem.typeChar))
             return []
 
-        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, sItem.file))
+        util.DEBUG_LOG('[{0}] {1}'.format(sItem.typeChar, repr(sItem.file)))
         processor = actions.ActionFileProcessor(sItem.file)
         return [Action(processor)]
 
@@ -1312,7 +1312,7 @@ class SequenceProcessor:
             sItem = self.sequence[pos]
 
             if not sItem.enabled:
-                util.DEBUG_LOG('[{0}] ({1}) DISABLED'.format(sItem.typeChar, sItem.display()))
+                util.DEBUG_LOG('[{0}] ({1}) DISABLED'.format(sItem.typeChar, repr(sItem.display())))
                 pos += 1
                 continue
 
