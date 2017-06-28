@@ -53,10 +53,6 @@ def TEST(msg):
     xbmc.log('-- TEST: {0}'.format(repr(msg)), xbmc.LOGNOTICE)
 
 
-def TEST(msg):
-    xbmc.log('-- TEST: {0}'.format(repr(msg)))
-
-
 def firstRun():
     LOG('FIRST RUN')
 

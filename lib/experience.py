@@ -443,6 +443,16 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.skipNotice.setAnimations([('Conditional', 'effect=fade start=100 end=0 time=500 delay=1000 condition=true')])
 
 
+def requiresStart(func):
+    def wrapper(self, *args, **kwargs):
+        if hasattr(self, 'processor'):
+            return func(self, *args, **kwargs)
+        else:
+            return None
+
+    return wrapper
+
+
 class ExperiencePlayer(xbmc.Player):
     NOT_PLAYING = 0
     PLAYING_DUMMY_NEXT = -1
@@ -477,6 +487,7 @@ class ExperiencePlayer(xbmc.Player):
         self.play(item)
 
     # PLAYER EVENTS
+    @requiresStart
     def onPlayBackEnded(self):
         if self.playStatus != self.PLAYING_MUSIC:
             self.volume.restore()
@@ -496,12 +507,14 @@ class ExperiencePlayer(xbmc.Player):
 
         self.next()
 
+    @requiresStart
     def onPlayBackPaused(self):
         DEBUG_LOG('PLAYBACK PAUSED')
         if self.pauseAction:
             DEBUG_LOG('Executing pause action: {0}'.format(self.pauseAction))
             self.pauseAction.run()
 
+    @requiresStart
     def onPlayBackResumed(self):
         DEBUG_LOG('PLAYBACK RESUMED')
         if self.resumeAction is True:
@@ -513,6 +526,7 @@ class ExperiencePlayer(xbmc.Player):
             DEBUG_LOG('Executing resume action: {0}'.format(self.resumeAction))
             self.resumeAction.run()
 
+    @requiresStart
     def onPlayBackStarted(self):
         if self.playStatus == self.PLAYING_MUSIC:
             DEBUG_LOG('MUSIC STARTED')
@@ -534,6 +548,7 @@ class ExperiencePlayer(xbmc.Player):
 
         DEBUG_LOG('PLAYBACK STARTED')
 
+    @requiresStart
     def onPlayBackStopped(self):
         if self.playStatus != self.PLAYING_MUSIC:
             self.volume.restore()
@@ -558,11 +573,13 @@ class ExperiencePlayer(xbmc.Player):
         DEBUG_LOG('PLAYBACK STOPPED')
         self.abort()
 
+    @requiresStart
     def onPlayBackFailed(self):
         self.playStatus = self.NOT_PLAYING
         DEBUG_LOG('PLAYBACK FAILED')
         self.next()
 
+    @requiresStart
     def onAbort(self):
         if self.abortAction:
             DEBUG_LOG('Executing abort action: {0}'.format(self.abortAction))
