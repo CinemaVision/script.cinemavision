@@ -21,6 +21,8 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
         self.sequenceData = kwargs['sequence_data']
         self.modified = False
+        self.attributeList = None
+        self.options = []
 
     def onFirstInit(self):
         self.attributeList = kodigui.ManagedControlList(self, self.ATTRIBUTE_LIST_ID, 10)
@@ -75,11 +77,11 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         elif option == 'genres':
             val = self.getDBEntry(self.getGenreList, 'genre', 'Genre', self.sequenceData.get('genres'))
         elif option == 'year':
-            val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'), prefixFormat='{0} [COLOR FF80D0FF]thru[/COLOR] ')
+            val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'))
         elif option == 'dates':
-            val = self.getRangedEntry(self.getDate, 'dates', self.sequenceData.get('dates'), prefixFormat='{0}/{1} [COLOR FF80D0FF]thru[/COLOR] ')
+            val = self.getRangedEntry(self.getDate, 'dates', self.sequenceData.get('dates'))
         elif option == 'times':
-            val = self.getRangedEntry(self.getTime, 'times', self.sequenceData.get('times'), prefixFormat='{0}:{1:02d} [COLOR FF80D0FF]thru[/COLOR] ')
+            val = self.getRangedEntry(self.getTime, 'times', self.sequenceData.get('times'))
         elif option == 'active':
             val = not self.sequenceData.active
             self.sequenceData.active = val
@@ -136,9 +138,9 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                     return '{0}'.format(val[0])
             elif itype == 'dates':
                 if len(val) > 1:
-                    return '{0}/{1} - {2}/{3}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
+                    return '{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
                 else:
-                    return '{0}/{1}'.format(val[0][0], val[0][1])
+                    return '{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
             elif itype == 'times':
                 if len(val) > 1:
                     return '{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
@@ -149,7 +151,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
         return val
 
-    def getRangedEntry(self, func, itype, ret=None, prefixFormat=''):
+    def getRangedEntry(self, func, itype, ret=None):
         ret = ret or []
 
         while True:
@@ -177,10 +179,14 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                 yStart = func(remove=ret, disp='Start')
                 if yStart is None:
                     continue
-                try:
-                    prefix=prefixFormat.format(*yStart)
-                except TypeError:
-                    prefix=prefixFormat.format(yStart)
+
+                if itype == 'year':
+                    prefix = '{0} [COLOR FF80D0FF]thru[/COLOR] '.format(yStart)
+                elif itype == 'dates':
+                    prefix = '{0} {1} [COLOR FF80D0FF]thru[/COLOR] '.format(calendar.month_abbr[yStart[0]], yStart[1])
+                elif itype == 'times':
+                    prefix = '{0:02d}:{1:02d} [COLOR FF80D0FF]thru[/COLOR] '.format(*yStart)
+
                 yEnd = func(yStart, remove=ret, disp='End', prefix=prefix)
                 if yEnd is None:
                     continue
@@ -200,7 +206,8 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             return None
         return ilist[idx]
 
-    def getYear(self, start=None, remove=None, single=False, disp='', prefix=''):
+    @staticmethod
+    def getYear(start=None, remove=None, single=False, disp='', prefix=''):
         if start is not None:
             years = [[0, 'Now']]
         else:
@@ -229,7 +236,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         return years[idx][0]
 
     def getDate(self, start=None, remove=None, single=False, disp='', prefix=''):
-        month = self.chooseFromList(range(1, 13), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_name[m]) for m in range(1,13)])
+        month = self.chooseFromList(range(1, 13), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
         if month is None:
             return None
 
@@ -240,7 +247,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         else:
             dlist = range(1, 32)
 
-        monthName = calendar.month_name[month]
+        monthName = calendar.month_abbr[month]
         day = self.chooseFromList(dlist, 'Day', disp, ['{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
         if day is None:
             return None
@@ -253,14 +260,14 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             hours = [h for h in range(24) if [[h, None]] not in remove]
         else:
             hours = range(24)
-        hour = self.chooseFromList(hours, 'Hour', disp, ['{0}{1}'.format(prefix, h) for h in hours])
+        hour = self.chooseFromList(hours, 'Hour', disp, ['{0}{1:02d}'.format(prefix, h) for h in hours])
         if hour is None:
             return None
 
         if single:
             return [hour, None]
 
-        minute = self.chooseFromList(range(60), 'Minute', disp, ['{0}{1}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
+        minute = self.chooseFromList(range(60), 'Minute', disp, ['{0}{1:02d}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
         if minute is None:
             return None
 

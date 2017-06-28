@@ -295,7 +295,7 @@ class SequenceData(object):
 ################################################################################
 # BASE class for all content items
 ################################################################################
-class Item:
+class Item(object):
     _tag = 'item'   # XML tag when serialized
     _type = 'BASE'  # Name of the type of content. Equal to the xml tag type attribute when serialized
     _elements = ()  # Tuple of attributes to serialize
