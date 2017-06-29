@@ -224,7 +224,7 @@ def downloadDemoContent():
     import xbmc
     import requests
     import zipfile
-    url = 'http://cinemavision.tv/cvdemo/Demo.zip'
+    url = 'http://demo.cinemavision.tv/Demo.zip'
     output = os.path.join(kodiutil.PROFILE_PATH, 'demo.zip')
     target = os.path.join(kodiutil.PROFILE_PATH, 'demo', 'Trivia Slides')
     # if not os.path.exists(target):
