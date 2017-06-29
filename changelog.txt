@@ -10,6 +10,7 @@ Changelog for CinemaVision
 - fix:     Issue #78 - AttributeError: 'ExperiencePlayer' object has no attribute 'processor'
 - change:  Issue #33 - Change demo content location
 - fix:     Issue #10 - When adding module sometimes jumps to the start
+- fix:     Issue #73 - iTunes scraper picking up clips
 
 [- 1.0.13 -]
 
