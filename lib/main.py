@@ -499,8 +499,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if not self.updateItemSettings(mli):
             mli.setProperty('error', '1')
 
-        self.sequenceControl.insertItem(pos, mli)
-        self.sequenceControl.insertItem(pos, kodigui.ManagedListItem())
+        self.sequenceControl.insertItems(pos, [kodigui.ManagedListItem(), mli])
 
         self.updateFirstLast()
 

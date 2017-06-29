@@ -375,6 +375,24 @@ class ManagedControlList(object):
         if self.positionIsValid(pos):
             self.selectItem(pos)
 
+    def insertItems(self, index, managed_items):
+        pos = self.getSelectedPosition() + 1
+
+        incIndex = index
+        for managed_item in managed_items:
+            if incIndex >= self.size() or incIndex < 0:
+                self.addItem(managed_item)
+            else:
+                self.items.insert(incIndex, managed_item)
+                self.control.addItem(managed_item._takeListItem(self, self._nextID()))
+
+            incIndex += 1
+
+        self._updateItems(index, self.size())
+
+        if self.positionIsValid(pos):
+            self.selectItem(pos)
+
     def moveItem(self, mli, dest_idx):
         source_idx = mli.pos()
         if source_idx < dest_idx:
