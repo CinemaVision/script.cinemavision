@@ -1020,3 +1020,7 @@ msgstr ""
 msgctxt "#32610"
 msgid "Enable"
 msgstr ""
+
+msgctxt "#32611"
+msgid "Reset module to defaults"
+msgstr ""

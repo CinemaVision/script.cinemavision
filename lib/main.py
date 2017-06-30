@@ -63,6 +63,8 @@ class ItemSettingsWindow(kodigui.BaseDialog):
                 mli.setProperty('type', 'integer')
             items.append(mli)
 
+        items.append(kodigui.ManagedListItem(u'[B]{0}[/B]'.format(T(32611)), data_source='@RESET@'))
+
         if update:
             self.settingsList.replaceItems(items)
         else:
@@ -177,6 +179,12 @@ class ItemSettingsWindow(kodigui.BaseDialog):
 
         return limits
 
+    def resetToDefaults(self):
+        sItem = self.item.dataSource
+        sItem.resetToDefaults()
+        self.modified = True
+        self.main.updateItemSettings(self.item)
+
     def editItemSetting(self):
         self._editItemSetting()
         self.fillSettingsList(update=True)
@@ -189,6 +197,9 @@ class ItemSettingsWindow(kodigui.BaseDialog):
         sItem = self.item.dataSource
 
         attr = item.dataSource
+
+        if attr == '@RESET@':
+            return self.resetToDefaults()
 
         options = sItem.getSettingOptions(attr)
 

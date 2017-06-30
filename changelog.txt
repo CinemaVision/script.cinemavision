@@ -12,6 +12,7 @@ Changelog for CinemaVision
 - fix:     Issue #10 - When adding module sometimes jumps to the start
 - fix:     Issue #73 - iTunes scraper picking up clips
 - change:  Issue #74 - Remove 'Enabled: YES/NO' from settings display
+- add:     Issue #50 - Add 'Reset module to defaults'
 - fix:     Update demo music to point to a working stream
 
 [- 1.0.13 -]

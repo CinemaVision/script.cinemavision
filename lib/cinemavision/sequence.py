@@ -396,6 +396,10 @@ class Item(object):
             setattr(new, attr, data['settings'][attr])
         return new
 
+    def resetToDefaults(self):
+        for e in self._elements:
+            setattr(self, e['attr'], e.get('default', ''))
+
     def elementData(self, element_name):
         for e in self._elements:
             if element_name == e['attr']:
@@ -881,7 +885,8 @@ class Video(Item):
             'attr': 'random',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': T(32057, 'Random')
+            'name': T(32057, 'Random'),
+            'default': True
         },
         {
             'attr': 'source',
@@ -906,13 +911,14 @@ class Video(Item):
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': T(32048, 'File')
+            'name': T(32048, 'File'),
         },
         {
             'attr': 'play3D',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': T(32328, 'Play 3D If 3D Feature')
+            'name': T(32328, 'Play 3D If 3D Feature'),
+            'default': True
         },
         {
             'attr': 'volume',
@@ -1020,7 +1026,8 @@ class AudioFormat(Item):
             'attr': 'play3D',
             'type': strToBool,
             'limits': LIMIT_BOOL,
-            'name': T(32328, 'Play 3D if 3D feature')
+            'name': T(32328, 'Play 3D if 3D feature'),
+            'default': True
         },
         {
             'attr': 'volume',
