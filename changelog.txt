@@ -2,7 +2,9 @@ Changelog for CinemaVision
 
 [- 1.0.14 -]
 
-- add:     Ability to define sequence attributes for conditional sequence selection
+- add:     Added 'Sequence settings' option to context menu
+- add:     Sequence settings: Conditions - Attributes for automatic sequence selection
+- add:     Sequence settings: Show in selection dialog - Toggle
 - fix:     Issues found with non-english characters in the file names of Action files causing errors
 - fix:     Issue #6 - With context menu visible the options icon for disabled changes to enabled
 - fix:     Issue #70 - Up/Down nav on options occasionally fails

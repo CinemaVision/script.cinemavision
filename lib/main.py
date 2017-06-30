@@ -756,13 +756,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def doMenu(self):
         options = []
         options.append(('settings', T(32540, 'Add-on settings')))
+        options.append(('attributes', T(32612, 'Sequence settings')))
         options.append(('new', T(32541, 'New')))
         options.append(('save', T(32542, 'Save')))
         options.append(('saveas', T(32543, 'Save as...')))
         options.append(('load', T(32544, 'Load')))
         options.append(('import', T(32545, 'Import')))
         options.append(('export', T(32546, 'Export')))
-        options.append(('attributes', 'Set attributes'))
         options.append(('test', T(32547, 'Play')))
         idx = xbmcgui.Dialog().select(T(32548, 'Sequence Options'), [o[1] for o in options])
         if idx < 0:
@@ -784,7 +784,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif option == 'export':
             self.save(export=True)
         elif option == 'attributes':
-            self.setAttributes()
+            self.sequenceOptions()
         elif option == 'test':
             self.test()
 
@@ -810,8 +810,31 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         e = experience.ExperiencePlayer().create(from_editor=True)
         e.start(savePath)
 
+    def sequenceOptions(self):
+        while True:
+            options = []
+            options.append(('conditions', 'Conditions: [B]{0}[/B]'.format(self.sequenceData._attrs.get('active') and 'ACTIVE' or 'INACTIVE')))
+            options.append((
+                'show_in_dialog',
+                'Show in selection dialog: [B]{0}[/B]'.format(self.sequenceData._settings.get('show_in_dialog') == False and 'NO' or 'YES')
+            ))
+            options.append(('close', '[B]Close[/B]'))
+
+            idx = xbmcgui.Dialog().select(T(32612, 'Sequence settings'), [o[1] for o in options])
+            if idx < 0:
+                return
+            option = options[idx][0]
+
+            if option == 'close':
+                return
+            elif option == 'conditions':
+                self.setAttributes()
+            elif option == 'show_in_dialog':
+                self.sequenceData.visibleInDialog(not self.sequenceData.visibleInDialog())
+                self.modified = True
+
     def setAttributes(self):
-        self.modified = self.modified or seqattreditor.setAttributes(self.sequenceData)
+        self.modified = seqattreditor.setAttributes(self.sequenceData) or self.modified
 
     def abortOnModified(self):
         if self.modified:

@@ -47,7 +47,7 @@ def getSequencePath(for_3D=False, with_name=False):
     return path
 
 
-def selectSequence(active=True):
+def selectSequence(active=True, for_dialog=False):
     import xbmcgui
 
     contentPath = getSequencesContentPath()
@@ -64,7 +64,7 @@ def selectSequence(active=True):
         xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
 
-    sequences = getActiveSequences(active=active)
+    sequences = getActiveSequences(active=active, for_dialog=for_dialog)
 
     options = [('{0}.cvseq'.format(s.name), s.name) for s in sequences]
     options.append((default2D, u'[ {0} ]'.format(T(32599, 'Default 2D'))))
@@ -100,7 +100,7 @@ def getSequencesContentPath():
     return contentPath
 
 
-def getActiveSequences(active=True):
+def getActiveSequences(active=True, for_dialog=False):
     contentPath = getSequencesContentPath()
     if not contentPath:
         return None
@@ -113,7 +113,8 @@ def getActiveSequences(active=True):
         try:
             s = cinemavision.sequence.SequenceData.load(p)
             if not active or (s and s.active):
-                sequences.append(s)
+                if not for_dialog or s.visibleInDialog():
+                    sequences.append(s)
         except Exception:
             kodiutil.ERROR()
 

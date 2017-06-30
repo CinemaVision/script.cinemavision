@@ -95,6 +95,7 @@ class SequenceData(object):
         self.active = False
         self._items = []
         self._attrs = {}
+        self._settings = {}
         self._process(data_string)
 
     def __nonzero__(self):
@@ -128,6 +129,7 @@ class SequenceData(object):
             data = json.loads(dstring)
             self._items = [Item.fromDict(ddict) for ddict in data['items']]
             self._attrs = data.get('attributes', {})
+            self._settings = data.get('settings', {})
             self.active = data.get('active', False)
         except ValueError:
             if dstring and dstring.startswith('{'):
@@ -160,7 +162,16 @@ class SequenceData(object):
         for i in self._items:
             data.append(i.toDict())
 
-        return json.dumps({'version': SAVE_VERSION, 'active': self.active, 'items': data, 'attributes': self._attrs}, indent=1)
+        return json.dumps(
+            {
+                'version': SAVE_VERSION,
+                'active': self.active,
+                'items': data,
+                'attributes': self._attrs,
+                'settings': self._settings
+            },
+            indent=1
+        )
 
     def setItems(self, items):
         self._items = items
@@ -170,6 +181,14 @@ class SequenceData(object):
 
     def set(self, key, value):
         self._attrs[key] = value
+
+    def visibleInDialog(self, val=None):
+        if val is None:
+            val = True if self._settings.get('show_in_dialog') is None else self._settings.get('show_in_dialog')
+        else:
+            self._settings['show_in_dialog'] = val
+
+        return val
 
     def matchesFeatureAttr(self, attr, feature):
         try:

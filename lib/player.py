@@ -225,7 +225,7 @@ class PlaylistDialog(kodigui.BaseDialog):
             rpc.Playlist.Add(playlistid=xbmc.PLAYLIST_VIDEO, item=item)
 
     def selectSequence(self):
-        selection = cvutil.selectSequence()
+        selection = cvutil.selectSequence(active=False, for_dialog=True)
         if not selection:
             return
 

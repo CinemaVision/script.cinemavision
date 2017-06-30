@@ -1024,3 +1024,7 @@ msgstr ""
 msgctxt "#32611"
 msgid "Reset module to defaults"
 msgstr ""
+
+msgctxt "#32612"
+msgid "Sequence settings"
+msgstr ""

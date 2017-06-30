@@ -161,6 +161,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             if len(ret) > 1:
                 options.append(('remove', 'Remove Entry'))
             options.append(('clear', 'Clear'))
+            options.append(('done', 'Done'))
 
             idx = xbmcgui.Dialog().select("Options", [o[1] for o in options])
             if idx < 0:
@@ -168,7 +169,9 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
             choice = options[idx][0]
 
-            if choice == 'clear':
+            if choice == 'done':
+                return ret
+            elif choice == 'clear':
                 return []
             elif choice == 'remove':
                 idx = xbmcgui.Dialog().select("Options", [self.getEntryDisplay(itype, v) for v in ret])
@@ -303,6 +306,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             if len(ret) > 1:
                 options.append(('remove', 'Remove Entry'))
             options.append(('clear', 'Clear'))
+            options.append(('done', 'Done'))
 
             idx = xbmcgui.Dialog().select("Options", [o[1] for o in options])
             if idx < 0:
@@ -310,7 +314,9 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
             choice = options[idx][0]
 
-            if choice == 'clear':
+            if choice == 'done':
+                return ret
+            elif choice == 'clear':
                 return []
             elif choice == 'remove':
                 idx = xbmcgui.Dialog().select("Options", [self.getEntryDisplay(itype, v) for v in ret])
