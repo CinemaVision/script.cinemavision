@@ -476,15 +476,15 @@
 
                     <control type="list" id="203">
                         <posx>0</posx>
-                            <posy>172</posy>
-                            <width>800</width>
-                            <height>538</height>
-                            <scrolltime>200</scrolltime>
-                            <orientation>vertical</orientation>
-                            <!-- <onleft>201</onleft>
-                            <onright>201</onright>
-                            <ondown>200</ondown>
-                            <onup>201</onup> -->
+                        <posy>172</posy>
+                        <width>800</width>
+                        <height>538</height>
+                        <scrolltime>200</scrolltime>
+                        <orientation>vertical</orientation>
+                        <!-- <onleft>201</onleft>
+                        <onright>201</onright>
+                        <ondown>200</ondown>
+                        <onup>201</onup> -->
 
                         <itemlayout height="80">
                             <control type="group">

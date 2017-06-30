@@ -690,9 +690,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         sItem = item.dataSource
 
         ct = 0
-        item.setProperty('setting{0}'.format(ct), sItem.enabled and T(32320, 'Yes') or T(32321, 'No'))
-        item.setProperty('setting{0}_name'.format(ct), T(32538, 'Enabled'))
-        ct += 1
+        # item.setProperty('setting{0}'.format(ct), sItem.enabled and T(32320, 'Yes') or T(32321, 'No'))
+        # item.setProperty('setting{0}_name'.format(ct), T(32538, 'Enabled'))
+        # ct += 1
 
         error = False
         for e in sItem._elements:
