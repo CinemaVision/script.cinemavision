@@ -6,13 +6,15 @@ Create a completely customizable sequence of trivia slides, video bumpers, trail
 ## Getting Started
 
 ## Prerequisites
+You must have a working install of [Kodi](http://kodi.tv/) to use this add-on.
 
 ## Installing
 
 ## Contributing
 
-## Authors
-
 ## License
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License
 
 ## Acknowledgments
+@Nuka1195 (Home Theatre Experience), @giftie (Cinema Experience) for writing and maintaining the predecessors that inspired CinemaVision.
+@mcorcoran for his help scraping all of the trivia and contributing code and ideas to CinemaVision.
