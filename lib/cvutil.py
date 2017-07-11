@@ -85,7 +85,7 @@ def selectSequence(active=True, for_dialog=False):
     elif result == default3D:
         path = defaultSavePath(for_3D=True)
     else:
-        path = cinemavision.util.pathJoin(sequencesPath, options[idx][0])
+        path = cinemavision.util.pathJoin(sequencesPath, result)
 
     return {'path': path, 'name': options[idx][1]}
 
@@ -124,6 +124,12 @@ def getActiveSequences(active=True, for_dialog=False):
 def getMatchedSequence(feature):
     priority = ['type', 'year', 'studio', 'director', 'actor', 'genres', 'dates', 'times']
 
+    contentPath = getSequencesContentPath()
+    if not contentPath:
+        return None
+
+    sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
+
     sequences = getActiveSequences()
 
     if not sequences:
@@ -149,7 +155,8 @@ def getMatchedSequence(feature):
     kodiutil.DEBUG_LOG(feature)
     kodiutil.DEBUG_LOG(seqData)
 
-    return seqData
+    path = cinemavision.util.pathJoin(sequencesPath, '{0}.cvseq'.format(seqData.name))
+    return {'path': path, 'sequence': seqData}
 
 
 def getContentPath(from_load=False):

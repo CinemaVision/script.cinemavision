@@ -174,7 +174,8 @@ class PlaylistDialog(kodigui.BaseDialog):
         if not seqData:
             return
 
-        self.getControl(self.SEQUENCE_SELECT_ID).setLabel(seqData.name)
+        self.sequencePath = seqData['path']
+        self.getControl(self.SEQUENCE_SELECT_ID).setLabel(seqData['sequence'].name)
 
     def delete(self):
         item = self.videoListControl.getSelectedItem()
