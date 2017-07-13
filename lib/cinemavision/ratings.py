@@ -43,6 +43,9 @@ class RatingSystem:
     def __str__(self):
         return self.__repr__()
 
+    def __getitem__(self, idx):
+        return self.ratings[idx]
+
     def getRatingByName(self, name):
         name = name.upper()
         for r in self.ratings:
@@ -216,6 +219,10 @@ def setDefaultRatingSystem(system):
     global DEFAULT_RATING_SYSTEM
     DEFAULT_RATING_SYSTEM = system
     util.DEBUG_LOG('Default rating system: {0}'.format(DEFAULT_RATING_SYSTEM))
+
+
+def defaultRatingsSystem():
+    return getRatingsSystem(DEFAULT_RATING_SYSTEM)
 
 
 def loadFromXML():

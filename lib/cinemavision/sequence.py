@@ -3,6 +3,7 @@ import os
 import re
 import datetime
 
+import ratings
 import util
 from util import T
 
@@ -88,6 +89,23 @@ def strToBoolWithDefault(val):
         return None
     return bool(val == 'True')
 
+def parseRatingsList(rlist):
+    for x in range(len(rlist)):
+        r = rlist[x]
+        if isinstance(r, list):
+            parseRatingsList(r)
+        elif r:
+            rlist[x] = ratings.getRating(r)
+    return rlist
+
+def unParseRatingsList(rlist):
+    for x in range(len(rlist)):
+        r = rlist[x]
+        if isinstance(r, list):
+            unParseRatingsList(r)
+        elif r:
+            rlist[x] = str(r)
+    return rlist
 
 class SequenceData(object):
     def __init__(self, data_string='', name=''):
@@ -148,6 +166,8 @@ class SequenceData(object):
         self._attrs['actors'] = self._attrs.get('actors') or []
         self._attrs['dates'] = self._attrs.get('dates') or []
         self._attrs['times'] = self._attrs.get('times') or []
+        self._attrs['year'] = self._attrs.get('year') or []
+        self._attrs['ratings'] = parseRatingsList(self._attrs.get('ratings') or [])
 
     @staticmethod
     def load(path):
@@ -162,12 +182,15 @@ class SequenceData(object):
         for i in self._items:
             data.append(i.toDict())
 
+        attrs = self._attrs.copy()
+        attrs['ratings'] = unParseRatingsList(self._attrs['ratings'])
+
         return json.dumps(
             {
                 'version': SAVE_VERSION,
                 'active': self.active,
                 'items': data,
-                'attributes': self._attrs,
+                'attributes': attrs,
                 'settings': self._settings
             },
             indent=1
@@ -303,6 +326,26 @@ class SequenceData(object):
                     return ret
                 else:
                     return -1
+            elif attr == 'ratings':
+                ratingsList = self.get('ratings', [])
+
+                if not ratingsList:
+                    return 0
+
+                ret = 0
+                for rating in ratingsList:
+                    ret = -1
+                    if len(rating) > 1:
+                        if not rating[1]:
+                            if rating[0] <= feature.rating:
+                                return 5
+                        else:
+                            if rating[0] <= feature.rating <= rating[1]:
+                                return 5
+                    else:
+                        if rating[0] == feature.rating:
+                            return 5
+                return ret
 
             return 0
         except Exception:

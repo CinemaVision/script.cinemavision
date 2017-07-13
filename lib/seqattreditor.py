@@ -4,8 +4,12 @@ import calendar
 import xbmcgui
 import kodigui
 import kodiutil
+import cvutil
+import cinemavision
 
 from kodijsonrpc import rpc
+
+cvutil.ratingParser()
 
 
 class SeqAttrEditorDialog(kodigui.BaseDialog):
@@ -33,6 +37,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         self.options = []
         self.options.append(('active', 'Active'))
         self.options.append(('type', 'Type'))
+        self.options.append(('ratings', 'Rating(s)'))
         self.options.append(('year', 'Year(s)'))
         self.options.append(('studios', 'Studio(s)'))
         self.options.append(('directors', 'Director(s)'))
@@ -78,6 +83,8 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             val = self.getDBEntry(self.getGenreList, 'genre', 'Genre', self.sequenceData.get('genres'))
         elif option == 'year':
             val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'))
+        elif option == 'ratings':
+            val = self.getRangedEntry(self.getRating, 'ratings', self.sequenceData.get('ratings'))
         elif option == 'dates':
             val = self.getRangedEntry(self.getDate, 'dates', self.sequenceData.get('dates'))
         elif option == 'times':
@@ -111,7 +118,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             elif o[0] == 'type':
                 if self.sequenceData.get('type'):
                     label2 = self.sequenceData.get('type') == '3D' and '3D' or '2D'
-            elif o[0] in ['year', 'dates', 'times']:
+            elif o[0] in ['year', 'dates', 'times', 'ratings']:
                 data = self.sequenceData.get(o[0], [])
                 if data:
                     parts = []
@@ -134,6 +141,11 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             if itype == 'year':
                 if len(val) > 1:
                     return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
+                else:
+                    return '{0}'.format(val[0])
+            elif itype == 'ratings':
+                if len(val) > 1:
+                    return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Any')
                 else:
                     return '{0}'.format(val[0])
             elif itype == 'dates':
@@ -185,6 +197,8 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
                 if itype == 'year':
                     prefix = '{0} [COLOR FF80D0FF]thru[/COLOR] '.format(yStart)
+                elif itype == 'ratings':
+                    prefix = '{0} [COLOR FF80D0FF]-[/COLOR] '.format(yStart)
                 elif itype == 'dates':
                     prefix = '{0} {1} [COLOR FF80D0FF]thru[/COLOR] '.format(calendar.month_abbr[yStart[0]], yStart[1])
                 elif itype == 'times':
@@ -231,12 +245,20 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                     if y == r[0]:
                         break
             else:
-                years.append((y, str(y)))
+                years.append([y, str(y)])
         idx = xbmcgui.Dialog().select('Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
         if idx < 0:
             return None
 
         return years[idx][0]
+
+    def getRating(self, start=None, remove=None, single=False, disp='', prefix=''):
+        ratingsList = [str(r) for r in cinemavision.ratings.defaultRatingsSystem()]
+        rating = self.chooseFromList(ratingsList, 'Rating', disp, ['{0}{1}'.format(prefix, r) for r in ratingsList])
+        if rating is None:
+            return None
+
+        return rating
 
     def getDate(self, start=None, remove=None, single=False, disp='', prefix=''):
         month = self.chooseFromList(range(1, 13), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
