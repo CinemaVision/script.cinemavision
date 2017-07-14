@@ -43,6 +43,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         self.options.append(('directors', 'Director(s)'))
         self.options.append(('actors', 'Actor(s)'))
         self.options.append(('genres', 'Genre(s)'))
+        self.options.append(('tags', 'Tag(s)'))
         self.options.append(('dates', 'Date(s)'))
         self.options.append(('times', 'Time(s)'))
 
@@ -81,6 +82,8 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             val = self.getDBEntry(self.getStudioList, 'studio', 'Studio', self.sequenceData.get('studios'))
         elif option == 'genres':
             val = self.getDBEntry(self.getGenreList, 'genre', 'Genre', self.sequenceData.get('genres'))
+        elif option == 'tags':
+            val = self.getDBEntry(self.getTagList, 'tag', 'Tag', self.sequenceData.get('tags'))
         elif option == 'year':
             val = self.getRangedEntry(self.getYear, 'year', self.sequenceData.get('year'))
         elif option == 'ratings':
@@ -125,7 +128,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                     for d in data:
                         parts.append(self.getEntryDisplay(o[0], d))
                     label2 = '[COLOR FF80D0FF],[/COLOR] '.join(parts)
-            elif o[0] in ('genres', 'studios', 'directors', 'actors'):
+            elif o[0] in ('genres', 'studios', 'directors', 'actors', 'tags'):
                 items = self.sequenceData.get(o[0], [])
                 if items:
                     label2 = '[COLOR FF80D0FF],[/COLOR] '.join(items)
@@ -140,24 +143,24 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         try:
             if itype == 'year':
                 if len(val) > 1:
-                    return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
+                    return u'{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
                 else:
-                    return '{0}'.format(val[0])
+                    return u'{0}'.format(val[0])
             elif itype == 'ratings':
                 if len(val) > 1:
-                    return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Any')
+                    return u'{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
                 else:
-                    return '{0}'.format(val[0])
+                    return u'{0}'.format(val[0])
             elif itype == 'dates':
                 if len(val) > 1:
-                    return '{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
+                    return u'{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
                 else:
-                    return '{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
+                    return u'{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
             elif itype == 'times':
                 if len(val) > 1:
-                    return '{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
+                    return u'{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
                 else:
-                    return '{0:02d}'.format(val[0][0])
+                    return u'{0:02d}'.format(val[0][0])
         except Exception:
             kodiutil.ERROR()
 
@@ -195,19 +198,22 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                 if yStart is None:
                     continue
 
+                yStart = yStart or None
+
                 if itype == 'year':
-                    prefix = '{0} [COLOR FF80D0FF]thru[/COLOR] '.format(yStart)
+                    prefix = u'{0} [COLOR FF80D0FF]thru[/COLOR] '.format(yStart)
                 elif itype == 'ratings':
-                    prefix = '{0} [COLOR FF80D0FF]-[/COLOR] '.format(yStart)
+                    prefix = u'{0} [COLOR FF80D0FF]-[/COLOR] '.format(yStart)
                 elif itype == 'dates':
-                    prefix = '{0} {1} [COLOR FF80D0FF]thru[/COLOR] '.format(calendar.month_abbr[yStart[0]], yStart[1])
+                    prefix = u'{0} {1} [COLOR FF80D0FF]thru[/COLOR] '.format(calendar.month_abbr[yStart[0]], yStart[1])
                 elif itype == 'times':
-                    prefix = '{0:02d}:{1:02d} [COLOR FF80D0FF]thru[/COLOR] '.format(*yStart)
+                    prefix = u'{0:02d}:{1:02d} [COLOR FF80D0FF]thru[/COLOR] '.format(*yStart)
 
                 yEnd = func(yStart, remove=ret, disp='End', prefix=prefix)
                 if yEnd is None:
                     continue
-                ret.append([yStart, yEnd])
+
+                ret.append([yStart, yEnd or None])
             elif choice == 'single':
                 year = func(remove=ret, single=True)
                 if year is None:
@@ -218,7 +224,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         if dlist is None:
             dlist = ilist
         mod = ' ({0})'.format(mod) if mod else ''
-        idx = xbmcgui.Dialog().select('Select {0}{1}'.format(disp, mod), [str(i) for i in dlist])
+        idx = xbmcgui.Dialog().select(u'Select {0}{1}'.format(disp, mod), [str(i) for i in dlist])
         if idx < 0:
             return None
         return ilist[idx]
@@ -246,22 +252,26 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                         break
             else:
                 years.append([y, str(y)])
-        idx = xbmcgui.Dialog().select('Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
+        idx = xbmcgui.Dialog().select(u'Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
         if idx < 0:
             return None
 
         return years[idx][0]
 
     def getRating(self, start=None, remove=None, single=False, disp='', prefix=''):
-        ratingsList = [str(r) for r in cinemavision.ratings.defaultRatingsSystem()]
-        rating = self.chooseFromList(ratingsList, 'Rating', disp, ['{0}{1}'.format(prefix, r) for r in ratingsList])
+        ratingsList = [r for r in cinemavision.ratings.defaultRatingsSystem() if start is None or r > start]
+        if prefix:
+            ratingsList.append(False)
+        else:
+            ratingsList.insert(0, False)
+        rating = self.chooseFromList(ratingsList, 'Rating', disp, ['{0}{1}'.format(prefix, r if r else 'Any') for r in ratingsList])
         if rating is None:
             return None
 
         return rating
 
     def getDate(self, start=None, remove=None, single=False, disp='', prefix=''):
-        month = self.chooseFromList(range(1, 13), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
+        month = self.chooseFromList(range(1, 13), 'Month', disp, [u'{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
         if month is None:
             return None
 
@@ -273,7 +283,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             dlist = range(1, 32)
 
         monthName = calendar.month_abbr[month]
-        day = self.chooseFromList(dlist, 'Day', disp, ['{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
+        day = self.chooseFromList(dlist, 'Day', disp, [u'{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
         if day is None:
             return None
 
@@ -285,44 +295,58 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             hours = [h for h in range(24) if [[h, None]] not in remove]
         else:
             hours = range(24)
-        hour = self.chooseFromList(hours, 'Hour', disp, ['{0}{1:02d}'.format(prefix, h) for h in hours])
+        hour = self.chooseFromList(hours, 'Hour', disp, [u'{0}{1:02d}'.format(prefix, h) for h in hours])
         if hour is None:
             return None
 
         if single:
             return [hour, None]
 
-        minute = self.chooseFromList(range(60), 'Minute', disp, ['{0}{1:02d}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
+        minute = self.chooseFromList(range(60), 'Minute', disp, [u'{0}{1:02d}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
         if minute is None:
             return None
 
         return [hour, minute]
 
-    def getGenreList(self):
-        return [g.get('title') for g in rpc.VideoLibrary.GetGenres(type='movie', properties=['title']).get('genres', []) if g.get('title')]
+    def getGenreList(self, remove):
+        return [g.get('title') for g in rpc.VideoLibrary.GetGenres(
+            type='movie',
+            properties=['title']
+        ).get('genres', []) if g.get('title') and (not remove or not g.get('title') in remove)]
 
-    def getStudioList(self):
+    def getTagList(self, remove):
+        kodiutil.LOG(repr(remove))
+        return [t.get('title') for t in rpc.VideoLibrary.GetTags(
+            type='movie',
+            properties=['title']
+        ).get('tags', []) if t.get('title') and (not remove or not t.get('title') in remove)]
+
+    def getStudioList(self, remove):
         # TODO: Get all studios?
         movies = rpc.VideoLibrary.GetMovies(properties=['studio'], limits={'start': 0, 'end': 100000}).get('movies', [])
+        movies = [m for m in movies if not remove or not m in remove]
         return sorted(list(set([y for z in movies for y in z['studio']])))
 
-    def getDirectorList(self):
+    def getDirectorList(self, remove):
         # TODO: Get all directors?
         movies = rpc.VideoLibrary.GetMovies(properties=['director'], limits={'start': 0, 'end': 100000}).get('movies', [])
+        movies = [m for m in movies if not remove or not m in remove]
         return sorted(list(set([y for z in movies for y in z['director']])))
 
-    def getActorList(self):
+    def getActorList(self, remove):
         # TODO: Get all directors?
         movies = rpc.VideoLibrary.GetMovies(properties=['cast'], limits={'start': 0, 'end': 100000}).get('movies', [])
+        movies = [m for m in movies if not remove or not m in remove]
         return sorted(list(set([y['name'] for z in movies for y in z['cast']])))
 
     def getDBEntry(self, func, itype, disp, ret=None):
-        allitems = func()
+        allitems = func(ret)
         ret = ret or []
 
         while True:
             options = []
-            options.append(('list', 'Add From List'))
+            if allitems:
+                options.append(('list', 'Add From List'))
             if itype != 'genre':
                 options.append(('manual', 'Add Manually'))
             if len(ret) > 1:
@@ -353,7 +377,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                 if val in allitems:
                     allitems.remove(val)
             else:
-                idx = xbmcgui.Dialog().select('Choose {0} {1}'.format(disp, len(ret) + 1), allitems)
+                idx = xbmcgui.Dialog().select(u'Choose {0} {1}'.format(disp, len(ret) + 1), allitems)
                 if idx < 0:
                     continue
                 val = allitems[idx]

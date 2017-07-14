@@ -121,15 +121,15 @@ class MPAA(RatingSystem):
     class MPAARating(Rating):
         system = 'MPAA'
 
+    NR = MPAARating('NR', 1000)
     NC_17 = MPAARating('NC-17', 170)
     R = MPAARating('R', 160)
     PG_13 = MPAARating('PG-13', 130)
     PG = MPAARating('PG', 120)
     G = MPAARating('G', 0)
-    NR = MPAARating('NR', 1000)
 
     name = 'MPAA'
-    ratings = [NR, G, PG, PG_13, R, NC_17]
+    ratings = [G, PG, PG_13, R, NC_17, NR]
     regions = ['US']
 
 

@@ -605,7 +605,7 @@ class ExperiencePlayer(xbmc.Player):
 
         result = rpc.Playlist.GetItems(
             playlistid=xbmc.PLAYLIST_VIDEO,
-            properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
+            properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast', 'tag']
         )
         for r in result.get('items', []):
             feature = self.featureFromJSON(r)
@@ -660,9 +660,10 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(r.get('movieid', r.get('episodeid', r.get('id', 0))))
         feature.dbType = r.get('type', '')
         feature.genres = r.get('genre', [])
-        feature.studios = r.get('studio', '')
-        feature.directors = r.get('director', '')
-        feature.cast = r.get('cast', '')
+        feature.tags = r.get('tag', [])
+        feature.studios = r.get('studio', [])
+        feature.directors = r.get('director', [])
+        feature.cast = r.get('cast', [])
         feature.thumb = r.get('thumbnail', '')
         feature.runtime = r.get('runtime', 0)
         feature.year = r.get('year', 0)
@@ -701,7 +702,7 @@ class ExperiencePlayer(xbmc.Player):
                 try:
                     r = rpc.VideoLibrary.GetMovieDetails(
                         movieid=m['movieid'],
-                        properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
+                        properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
                     )['moviedetails']
                     feature = self.featureFromJSON(r)
                     self.features.append(feature)
@@ -745,7 +746,7 @@ class ExperiencePlayer(xbmc.Player):
 
                 r = rpc.VideoLibrary.GetMovieDetails(
                     movieid=movieid,
-                    properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
+                    properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
                 )['moviedetails']
                 r['type'] = 'movie'
 
@@ -794,6 +795,7 @@ class ExperiencePlayer(xbmc.Player):
         feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
         feature.dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
         feature.genres = kodiutil.infoLabel('ListItem.Genre').split(' / ')
+        feature.tags = kodiutil.infoLabel('ListItem.Tag').split(' / ')
         feature.studios = kodiutil.infoLabel('ListItem.Studio').split(' / ')
         feature.directors = kodiutil.infoLabel('ListItem.Director').split(' / ')
         feature.cast = [{'name': a} for a in kodiutil.infoLabel('ListItem.Cast').split(' / ')]

@@ -164,6 +164,7 @@ class SequenceData(object):
         self._attrs['directors'] = self._attrs.get('directors') or []
         self._attrs['studios'] = self._attrs.get('studios') or []
         self._attrs['actors'] = self._attrs.get('actors') or []
+        self._attrs['tags'] = self._attrs.get('tags') or []
         self._attrs['dates'] = self._attrs.get('dates') or []
         self._attrs['times'] = self._attrs.get('times') or []
         self._attrs['year'] = self._attrs.get('year') or []
@@ -253,6 +254,15 @@ class SequenceData(object):
                         return 5
                 else:
                     return -1
+            elif attr == 'tags':
+                tMatch = [t.lower() for t in self.get('tags', []) if t]
+                if not tMatch:
+                    return 0
+                for tag in feature.tags:
+                    if tag.lower() in tMatch:
+                        return 5
+                else:
+                    return -1
             elif attr == 'year':
                 years = self.get('year', [])
 
@@ -338,6 +348,9 @@ class SequenceData(object):
                     if len(rating) > 1:
                         if not rating[1]:
                             if rating[0] <= feature.rating:
+                                return 5
+                        elif not rating[0]:
+                            if rating[1] >= feature.rating:
                                 return 5
                         else:
                             if rating[0] <= feature.rating <= rating[1]:

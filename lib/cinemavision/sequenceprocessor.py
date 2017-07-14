@@ -325,7 +325,7 @@ class Feature(Video):
 
     def __repr__(self):
         return ('FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Year: ({3})\n    Studio: {4}\n    ' +
-                'Director: {5}\n    Cast: {6}\n Genres: {7}\n    3D: {8}\n    Audio: {9}').format(
+                'Director: {5}\n    Cast: {6}\n    Genres: {7}\n    Tags: {8}\n    3D: {9}\n    Audio: {10}').format(
             repr(self.title),
             repr(self.path),
             repr(self.rating),
@@ -334,6 +334,7 @@ class Feature(Video):
             repr(self.directors),
             repr([c['name'] for c in self.cast]),
             repr(self.genres),
+            repr(self.tags),
             self.is3D and 'Yes' or 'No',
             repr(self.audioFormat)
         )
@@ -375,6 +376,14 @@ class Feature(Video):
     @genres.setter
     def genres(self, val):
         self['genres'] = val
+
+    @property
+    def tags(self):
+        return self.get('tags', [])
+
+    @tags.setter
+    def tags(self, val):
+        self['tags'] = val
 
     @property
     def studios(self):
