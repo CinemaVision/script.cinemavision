@@ -9,8 +9,10 @@ Create a completely customizable sequence of trivia slides, video bumpers, trail
 You must have a working install of [Kodi](http://kodi.tv/) to use this add-on.
 
 ## Installing
+All of the CinemaVision add-ons are available for download via the official Kodi repository. Development releases can be downloaded from the [CinemaVision.tv](http://cinemavision.tv/) website, which contain work-in-progress features and fixes.
 
 ## Contributing
+If you'd like to contribute code, just submit a Pull Request for us to review and merge. If you'd like to contribute creative content, visit the [CinemaVision.tv](http://cinemavision.tv/) website today!
 
 ## License
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License
