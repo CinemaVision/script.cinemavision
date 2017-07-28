@@ -69,8 +69,10 @@ def begin(movieid=None, episodeid=None, dbtype=None, selection=False, args=None)
     if seqPath:
         kodiutil.DEBUG_LOG('Loading selected sequence: {0}'.format(repr(seqPath)))
     else:
-        seqPath = cvutil.getSequencePath(for_3D=e.has3D)
-        kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(e.has3D and '3D' or '2D', repr(seqPath)))
+        feature = e.features[0]
+        seqData = cvutil.getMatchedSequence(feature)
+        seqPath = seqData['path']
+        kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(feature.is3D and '3D' or '2D', repr(seqPath)))
 
     if xbmc.getCondVisibility('Window.IsVisible(MovieInformation)'):
         xbmc.executebuiltin('Dialog.Close(MovieInformation)')

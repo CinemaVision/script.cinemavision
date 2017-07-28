@@ -150,13 +150,19 @@ def getMatchedSequence(feature):
     if matches:
         seqData = max(matches, key=lambda x: x[1])[0]
     else:
-        seqData = sequences[0]
+        seqData = None
 
     kodiutil.DEBUG_LOG(feature)
     kodiutil.DEBUG_LOG(seqData)
 
-    path = cinemavision.util.pathJoin(sequencesPath, '{0}.cvseq'.format(seqData.name))
+    if not seqData:
+        path = defaultSavePath(for_3D=feature.is3D)
+        seqData = cinemavision.sequence.SequenceData.load(path)
+        seqData.name = u'[ {0} ]'.format(T(32600, 'Default 3D') if feature.is3D else T(32599, 'Default 2D'))
+    else:
+        path = cinemavision.util.pathJoin(sequencesPath, '{0}.cvseq'.format(seqData.name))
     return {'path': path, 'sequence': seqData}
+
 
 
 def getContentPath(from_load=False):
