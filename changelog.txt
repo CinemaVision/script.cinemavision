@@ -16,6 +16,7 @@ Changelog for CinemaVision
 - change:  Issue #74 - Remove 'Enabled: YES/NO' from settings display
 - add:     Issue #50 - Add 'Reset module to defaults'
 - fix:     Update demo music to point to a working stream
+- change:  Make various logging cleaner and more human readable
 
 [- 1.0.13 -]
 
