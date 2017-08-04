@@ -324,19 +324,19 @@ class Feature(Video):
     type = 'FEATURE'
 
     def __repr__(self):
-        return ('FEATURE [ {0} ]:\n    Path: {1}\n    Rating: ({2})\n    Year: ({3})\n    Studio: {4}\n    ' +
-                'Director: {5}\n    Cast: {6}\n    Genres: {7}\n    Tags: {8}\n    3D: {9}\n    Audio: {10}').format(
-            repr(self.title),
-            repr(self.path),
-            repr(self.rating),
-            repr(self.year),
-            repr(self.studios),
-            repr(self.directors),
-            repr([c['name'] for c in self.cast]),
-            repr(self.genres),
-            repr(self.tags),
+        return ('FEATURE [ {0} ]:\n    Path: {1}\n    Rating: {2}\n    Year: {3}\n    Studios: {4}\n    ' +
+                'Directors: {5}\n    Cast: {6}\n    Genres: {7}\n    Tags: {8}\n    3D: {9}\n    Audio: {10}').format(
+            util.strRepr(self.title),
+            util.strRepr(self.path),
+            util.strRepr(self.rating),
+            util.strRepr(self.year),
+            ', '.join([util.strRepr(s) for s in self.studios]),
+            ', '.join([util.strRepr(d) for d in self.directors]),
+            ', '.join([util.strRepr(c['name']) for c in self.cast]),
+            ', '.join([util.strRepr(g) for g in self.genres]),
+            ', '.join([util.strRepr(t) for t in self.tags]),
             self.is3D and 'Yes' or 'No',
-            repr(self.audioFormat)
+            util.strRepr(self.audioFormat)
         )
 
     @property

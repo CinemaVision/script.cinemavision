@@ -135,6 +135,12 @@ def getMatchedSequence(feature):
     if not sequences:
         return None
 
+    out = 'Active sequences:\n'
+    for seq in sequences:
+        out += '{0}\n'.format(seq.conditionsStr())
+
+    kodiutil.DEBUG_LOG(out)
+
     matches = [[s, 0] for s in sequences]
     for attr in priority:
         for seq in matches[:]:
@@ -148,12 +154,17 @@ def getMatchedSequence(feature):
             break
 
     if matches:
+        out = 'MATCHES: '
+        out += ', '.join(['{0}({1})'.format(kodiutil.strRepr(m[0].name), m[1]) for m in matches])
+        kodiutil.DEBUG_LOG(out)
         seqData = max(matches, key=lambda x: x[1])[0]
     else:
         seqData = None
 
+    kodiutil.DEBUG_LOG('.')
+    kodiutil.DEBUG_LOG('CHOICE: {0}'.format(seqData.name))
+    kodiutil.DEBUG_LOG('.')
     kodiutil.DEBUG_LOG(feature)
-    kodiutil.DEBUG_LOG(seqData)
 
     if not seqData:
         path = defaultSavePath(for_3D=feature.is3D)

@@ -2,7 +2,7 @@ import json
 import os
 import re
 import datetime
-
+import calendar
 import ratings
 import util
 from util import T
@@ -107,6 +107,36 @@ def unParseRatingsList(rlist):
             rlist[x] = str(r)
     return rlist
 
+def getConditionValueString(itype, val):
+    return util.strRepr(_getConditionValueString(itype, val))
+
+def _getConditionValueString(itype, val):
+    try:
+        if itype == 'year':
+            if len(val) > 1:
+                return u'{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
+            else:
+                return u'{0}'.format(val[0])
+        elif itype == 'ratings':
+            if len(val) > 1:
+                return u'{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
+            else:
+                return u'{0}'.format(val[0])
+        elif itype == 'dates':
+            if len(val) > 1:
+                return u'{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
+            else:
+                return u'{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
+        elif itype == 'times':
+            if len(val) > 1:
+                return u'{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
+            else:
+                return u'{0:02d}'.format(val[0][0])
+    except Exception:
+        util.ERROR()
+
+    return util.strRepr(val)
+
 class SequenceData(object):
     def __init__(self, data_string='', name=''):
         self.name = name
@@ -160,6 +190,7 @@ class SequenceData(object):
                     util.DEBUG_LOG(repr(dstring[:100]))
                     util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
 
+        self._attrs['type'] = self._attrs.get('type')
         self._attrs['genres'] = self._attrs.get('genres') or []
         self._attrs['directors'] = self._attrs.get('directors') or []
         self._attrs['studios'] = self._attrs.get('studios') or []
@@ -169,6 +200,16 @@ class SequenceData(object):
         self._attrs['times'] = self._attrs.get('times') or []
         self._attrs['year'] = self._attrs.get('year') or []
         self._attrs['ratings'] = parseRatingsList(self._attrs.get('ratings') or [])
+
+    def conditionsStr(self):
+        ret = 'Sequence [{0}]:\n'.format(util.strRepr(self.name))
+        for key, val in self._attrs.items():
+            if val:
+                if isinstance(val, list):
+                    ret += '    {0} = {1}\n'.format(key, ', '.join([getConditionValueString(key, v) for v in val]))
+                else:
+                    ret += '    {0} = {1}\n'.format(key, val)
+        return ret
 
     @staticmethod
     def load(path):

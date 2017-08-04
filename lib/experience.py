@@ -2,6 +2,7 @@ import os
 import re
 import time
 import threading
+import json
 
 import xbmc
 import xbmcgui
@@ -638,6 +639,11 @@ class ExperiencePlayer(xbmc.Player):
             actionFile = kodiutil.getSetting('action.onAbort.file')
             self.abortAction = actionFile and cinemavision.actions.ActionFileProcessor(actionFile) or None
 
+    def formatStreamDetails(self, jsonstring):
+        lines = json.dumps(jsonstring, indent=4, sort_keys=True).splitlines()
+        lines = [l.replace('"', '').rstrip('[]{, ') for l in lines]
+        return '\n'.join([l if not l.endswith('}') else ' ' for l in lines if l])
+
     def getCodecAndChannelsFromStreamDetails(self, details):
         try:
             streams = sorted(details['audio'], key=lambda x: x['channels'], reverse=True)
@@ -680,14 +686,14 @@ class ExperiencePlayer(xbmc.Player):
 
         try:
             codec, channels = self.getCodecAndChannelsFromStreamDetails(r['streamdetails'])
-
             DEBUG_LOG('CODEC ({0}): {1} ({2} channels)'.format(kodiutil.strRepr(feature.title), codec, channels or '?'))
-            DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
+            DEBUG_LOG('STREAMDETAILS: \n{0}'.format(self.formatStreamDetails(r.get('streamdetails'))))
 
             feature.audioFormat = AUDIO_FORMATS.get(codec)
             feature.codec = codec
             feature.channels = channels
         except:
+            kodiutil.ERROR()
             DEBUG_LOG('CODEC ({0}): NOT DETECTED'.format(kodiutil.strRepr(feature.title)))
             DEBUG_LOG('STREAMDETAILS: {0}'.format(repr(r.get('streamdetails'))))
 
@@ -782,6 +788,13 @@ class ExperiencePlayer(xbmc.Player):
             kodiutil.DEBUG_LOG('Selection is a collection')
             return self.addCollectionMovies()
 
+        dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
+        dbID = kodiutil.infoLabel('ListItem.DBID')
+        if dbType == 'movie':
+            return self.addFromID(dbID, episodeid, selection)
+        elif dbType == 'episode':
+            return self.addFromID(movieid, dbID, selection)
+
         title = kodiutil.infoLabel('ListItem.Title')
         if not title:
             return False
@@ -792,8 +805,8 @@ class ExperiencePlayer(xbmc.Player):
         if ratingString:
             feature.rating = ratingString
 
-        feature.ID = kodiutil.intOrZero(xbmc.getInfoLabel('ListItem.DBID'))
-        feature.dbType = xbmc.getInfoLabel('ListItem.DBTYPE')
+        feature.ID = kodiutil.intOrZero(dbID)
+        feature.dbType = dbType
         feature.genres = kodiutil.infoLabel('ListItem.Genre').split(' / ')
         feature.tags = kodiutil.infoLabel('ListItem.Tag').split(' / ')
         feature.studios = kodiutil.infoLabel('ListItem.Studio').split(' / ')
