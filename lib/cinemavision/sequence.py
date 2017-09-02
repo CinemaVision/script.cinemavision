@@ -225,7 +225,7 @@ class SequenceData(object):
             data.append(i.toDict())
 
         attrs = self._attrs.copy()
-        attrs['ratings'] = unParseRatingsList(self._attrs['ratings'])
+        attrs['ratings'] = unParseRatingsList(self._attrs.get('ratings') or [])
 
         return json.dumps(
             {
