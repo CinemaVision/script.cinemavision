@@ -920,22 +920,37 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 return
 
         self.sequenceData.setItems(items)
-        xmlString = self.sequenceData.serialize()
 
         kodiutil.DEBUG_LOG('Saving to: {0}'.format(full_path))
 
-        success = True
-        if cinemavision.util.vfs.exists(full_path):
-            cinemavision.util.vfs.delete(full_path)
-
-        with cinemavision.util.vfs.File(full_path, 'w') as f:
-            success = f.write(xmlString)
-
+        try:
+            success = self.sequenceData.save(full_path)
+        except cinemavision.exceptions.SequenceWriteReadEmptyException:
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Failed to verify sequence file after write!',
+                'Kodi may be unable to save to this location.'
+            )
+            return
+        except cinemavision.exceptions.SequenceWriteReadBadException:
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Bad sequence file verification after write!',
+                'The sequence file seems to have been corrupted when saving.'
+            )
+            return
+        except cinemavision.exceptions.SequenceWriteReadUnknownException:
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Unknown error when verifying sequence file after write!',
+                'The sequence file may not have been saved.'
+            )
+            return
         if not success:
             xbmcgui.Dialog().ok(
                 T(32573, 'Failed'),
                 T(32606, 'Failed to write sequence file!'),
-                T(32607, 'Kodi may be unable to write to this location.')
+                T(32607, 'Kodi may be unable to save to this location.')
             )
             return
 
@@ -981,9 +996,35 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.saveDefault()
 
     def _load(self, path):
-        sData = cinemavision.sequence.SequenceData.load(path)
+        try:
+            sData = cinemavision.sequence.SequenceData.load(path)
+        except cinemavision.exceptions.EmptySequenceFileException:
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Failed to read sequence file!',
+                'Kodi may be unable to read from this location.'
+            )
+            return
+        except cinemavision.exceptions.BadSequenceFileException:
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Failed to read sequence file!',
+                'The sequence file may have been corrupted.'
+            )
+            return
+        except:
+            kodiutil.ERROR()
+            xbmcgui.Dialog().ok(
+                T(32573, 'Failed'),
+                'Failed to read sequence file!',
+                'There was an unknown error. See kodi.log for details.'
+            )
+            return
+
         if not sData:
             xbmcgui.Dialog().ok(T(32601, 'ERROR'), T(32602, 'Error parsing sequence'))
+            return
+
         self.sequenceControl.reset()
         self.fillSequence()
 

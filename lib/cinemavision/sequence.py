@@ -4,6 +4,7 @@ import re
 import datetime
 import calendar
 import ratings
+import exceptions
 import util
 from util import T
 
@@ -179,16 +180,18 @@ class SequenceData(object):
             self._attrs = data.get('attributes', {})
             self._settings = data.get('settings', {})
             self.active = data.get('active', False)
-        except ValueError:
-            if dstring and dstring.startswith('{'):
+        except (ValueError, TypeError):
+            if dstring.startswith('{'):
                 util.DEBUG_LOG(repr(dstring))
                 util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
+                raise exceptions.BadSequenceFileException()
             else:
                 try:
                     self._items = self._getItemsFromXMLString(dstring)
                 except:
                     util.DEBUG_LOG(repr(dstring[:100]))
                     util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
+                    raise exceptions.BadSequenceFileException()
 
         self._attrs['type'] = self._attrs.get('type')
         self._attrs['genres'] = self._attrs.get('genres') or []
@@ -211,13 +214,37 @@ class SequenceData(object):
                     ret += '    {0} = {1}\n'.format(key, val)
         return ret
 
-    @staticmethod
-    def load(path):
-        import xbmcvfs
-        f = xbmcvfs.File(path, 'r')
-        dstring = f.read().decode('utf-8')
-        f.close()
-        return SequenceData(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
+    @classmethod
+    def load(cls, path):
+        with util.vfs.File(path, 'r') as f:
+            dstring = f.read().decode('utf-8')
+
+        if not dstring:
+            raise exceptions.EmptySequenceFileException()
+
+        return cls(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
+
+    def save(self, path):
+        if util.vfs.exists(path):
+            util.vfs.delete(path)
+
+        with util.vfs.File(path, 'w') as f:
+            success = f.write(self.serialize())
+
+        if not success:
+            return False
+
+        # Make sure we can read the written file
+        try:
+            self.load(path)
+        except exceptions.EmptySequenceFileException:
+            raise exceptions.SequenceWriteReadEmptyException()
+        except exceptions.BadSequenceFileException:
+            raise exceptions.SequenceWriteReadEmptyException()
+        except:
+            raise exceptions.SequenceWriteReadUnknownException()
+
+        return success
 
     def serialize(self):
         data = []

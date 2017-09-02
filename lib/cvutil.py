@@ -116,7 +116,7 @@ def getActiveSequences(active=True, for_dialog=False):
                 if not for_dialog or s.visibleInDialog():
                     sequences.append(s)
         except Exception:
-            kodiutil.ERROR()
+            kodiutil.ERROR('Failed to load: {0}'.format(kodiutil.strRepr(p)))
 
     return sequences
 
