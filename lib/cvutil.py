@@ -202,7 +202,7 @@ def getContentPath(from_load=False):
         return demoPath
 
 
-def loadContent(from_settings=False):
+def loadContent(from_settings=False, bg=False):
     import xbmcgui
 
     if from_settings and not kodiutil.getSetting('content.path'):
@@ -213,7 +213,7 @@ def loadContent(from_settings=False):
 
     kodiutil.DEBUG_LOG('Loading content...')
 
-    with kodiutil.Progress(T(32505, 'Loading Content')) as p:
+    with kodiutil.Progress(T(32505, 'Loading Content'), bg=bg) as p:
         cinemavision.content.UserContent(contentPath, callback=p.msg, trailer_sources=kodiutil.getSetting('trailer.scrapers', '').split(','))
 
     createSettingsRSDirs()

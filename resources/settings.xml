@@ -13,7 +13,7 @@
 
     <category label="32007">
         <setting id="content.path"        label="32008" type="folder" sources="auto" option="writeable" value="" />
-        <setting id="database.update"     label="32009" type="action" action="RunScript(script.cinemavision,update.database)" option="close" />
+        <setting id="database.update"     label="32009" type="action" action="RunScript(script.cinemavision,update.database,from.settings)" option="close" />
         <setting id="database.autoUpdate" label="32010" type="bool" default="false" subsetting="true" />
         <setting label="32011" type="lsep"/>
         <setting id="scraper.trailers.Content"            label="32012" type="bool" default="true" />

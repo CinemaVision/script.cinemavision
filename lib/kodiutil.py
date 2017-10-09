@@ -167,8 +167,15 @@ def getPeanutButter():
 
 
 class Progress(object):
-    def __init__(self, heading, line1='', line2='', line3=''):
-        self.dialog = xbmcgui.DialogProgress()
+    def __init__(self, heading, line1='', line2='', line3='', bg=False):
+        self.isBackground = bg
+        if bg:
+            self.dialog = xbmcgui.DialogProgressBG()
+            self.iscanceled = self.iscanceledBG
+            self._update = self._updateBG
+        else:
+            self.dialog = xbmcgui.DialogProgress()
+
         self.heading = heading
         self.line1 = line1
         self.line2 = line2
@@ -177,7 +184,12 @@ class Progress(object):
         self.message = ''
 
     def __enter__(self):
-        self.dialog.create(self.heading, self.line1, self.line2, self.line3)
+        if self.isBackground:
+            heading = '{0} - {1}'.format(self.heading, self.line1)
+            msg = '{0} - {1}'.format(self.line2, self.line3)
+            self.dialog.create(heading, msg)
+        else:
+            self.dialog.create(self.heading, self.line1, self.line2, self.line3)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -192,15 +204,25 @@ class Progress(object):
         if line3 is not None:
             self.line3 = line3
 
+        self._update()
+
+    def _update(self):
         self.dialog.update(self.pct, self.line1, self.line2, self.line3)
+
+    def _updateBG(self):
+        heading = '{0} - {1}'.format(self.heading, self.line1)
+        msg = '{0} - {1}'.format(self.line2, self.line3)
+        self.dialog.update(self.pct, heading, msg)
 
     def msg(self, msg=None, heading=None, pct=None):
         if pct is not None:
             self.pct = pct
-        self.heading = heading is not None and heading or self.heading
         self.message = msg is not None and msg or self.message
-        self.update(self.pct, self.heading, self.message)
-        return not self.dialog.iscanceled()
+        self.update(self.pct, heading, self.message)
+        return not self.iscanceled()
 
     def iscanceled(self):
         return self.dialog.iscanceled()
+
+    def iscanceledBG(self):
+        return False
