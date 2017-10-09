@@ -17,9 +17,10 @@ Changelog for CinemaVision
 - add:     Issue #50 - Add 'Reset module to defaults'
 - fix:     Update demo music to point to a working stream
 - change:  Make various logging cleaner and more human readable
-- fix:     Issue #115 Error caused when playing a movie with no active sequences
-- fix:     Issue #116 Error when saving a sequence
+- fix:     Issue #115 - Error caused when playing a movie with no active sequences
+- fix:     Issue #116 - Error when saving a sequence
 - change:  Better handling of read/write falures and errors to help troubleshooting - Issue #95
+- fix:     Issue #117 - Conditional sequences failing to match genre
 
 [- 1.0.13 -]
 

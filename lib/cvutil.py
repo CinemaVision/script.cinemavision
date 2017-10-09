@@ -122,7 +122,7 @@ def getActiveSequences(active=True, for_dialog=False):
 
 
 def getMatchedSequence(feature):
-    priority = ['type', 'ratings', 'year', 'studio', 'director', 'actor', 'genres', 'tags', 'dates', 'times']
+    priority = ['type', 'ratings', 'year', 'studio', 'director', 'actor', 'genre', 'tags', 'dates', 'times']
 
     contentPath = getSequencesContentPath()
     if not contentPath:
