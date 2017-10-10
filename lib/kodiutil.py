@@ -185,8 +185,8 @@ class Progress(object):
 
     def __enter__(self):
         if self.isBackground:
-            heading = '{0} - {1}'.format(self.heading, self.line1)
-            msg = '{0} - {1}'.format(self.line2, self.line3)
+            heading = u'{0} - {1}'.format(self.heading, self.line1)
+            msg = u'{0} - {1}'.format(self.line2, self.line3)
             self.dialog.create(heading, msg)
         else:
             self.dialog.create(self.heading, self.line1, self.line2, self.line3)
@@ -210,8 +210,8 @@ class Progress(object):
         self.dialog.update(self.pct, self.line1, self.line2, self.line3)
 
     def _updateBG(self):
-        heading = '{0} - {1}'.format(self.heading, self.line1)
-        msg = '{0} - {1}'.format(self.line2, self.line3)
+        heading = u'{0} - {1}'.format(self.heading, self.line1)
+        msg = u'{0} - {1}'.format(self.line2, self.line3)
         self.dialog.update(self.pct, heading, msg)
 
     def msg(self, msg=None, heading=None, pct=None):
