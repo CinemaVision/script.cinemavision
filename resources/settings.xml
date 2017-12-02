@@ -19,9 +19,7 @@
         <setting id="service.database.update.kodiStartup" label="32105" type="bool" default="false" visible="System.HasAddon(service.cinemavision)" />
         <setting id="service.database.update.scanFinished" label="32106" type="bool" default="0" visible="System.HasAddon(service.cinemavision)" />
         <setting id="service.database.update.interval" label="32107" type="labelenum" values="Disabled|1|6|12|24|48" default="0" visible="System.HasAddon(service.cinemavision)" />
-        <setting id="dummy.service.database.update.kodiStartup" label="32108" type="bool" default="false" visible="!System.HasAddon(service.cinemavision)" enable="false" />
-        <setting id="dummy.service.database.update.scanFinished" label="32109" type="bool" default="false" visible="!System.HasAddon(service.cinemavision)" enable="false" />
-        <setting id="dummy.service.database.update.interval" label="32110" type="text" default="" visible="!System.HasAddon(service.cinemavision)" enable="false" />
+        <setting id="dummy.service.database.update.auto" label="Background updating: Requires service add-on (Beta)" type="text" default="" visible="!System.HasAddon(service.cinemavision)" enable="false" />
         <setting label="32011" type="lsep"/>
         <setting id="scraper.trailers.Content"            label="32012" type="bool" default="true" />
         <setting id="scraper.trailers.KodiDB"             label="32013" type="bool" default="true" />
