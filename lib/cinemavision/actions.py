@@ -147,6 +147,7 @@ class AddonCommand(ActionCommand):
 
 class HTTPCommand(ActionCommand):
     type = 'HTTP'
+    commandID = 0
 
     def __init__(self, data):
         data = 'http://' + data
@@ -161,7 +162,10 @@ class HTTPCommand(ActionCommand):
         data = None
         args = list(self.args)
 
-        self.log('Action (HTTP) URL: {0}'.format(self.commandData))
+        HTTPCommand.commandID += 1
+        commandID = self.commandID
+
+        self.log('Action [{0}] (HTTP) URL: {1}'.format(commandID, self.commandData))
 
         while args:
             arg = args.pop()
@@ -185,7 +189,7 @@ class HTTPCommand(ActionCommand):
         else:
             resp = requests.get(self.commandData, headers=headers)
 
-        self.log('Action (HTTP) Response: {0}'.format(repr(resp.text).lstrip('u').strip("'")))
+        self.log('Action [{0}] (HTTP) Response: {1}'.format(commandID, repr(resp.text).lstrip('u').strip("'")))
 
 
 class HTTPSCommand(HTTPCommand):

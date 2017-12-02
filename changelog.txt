@@ -1,5 +1,10 @@
 Changelog for CinemaVision
 
+[- 1.1.1 -]
+
+- add:     Actions: Added ID to http requests to help match request to response
+- fix:     Compatibility fixes for Kodi v18
+
 [- 1.1.0 -]
 
 - add:     Added 'Sequence settings' option to context menu
