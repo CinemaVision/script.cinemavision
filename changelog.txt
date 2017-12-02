@@ -1,6 +1,6 @@
 Changelog for CinemaVision
 
-[- 1.0.14 -]
+[- 1.1.0 -]
 
 - add:     Added 'Sequence settings' option to context menu
 - add:     Sequence settings: Conditions - Attributes for automatic sequence selection
