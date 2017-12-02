@@ -6,8 +6,8 @@
         <posx>0</posx>
         <posy>0</posy>
     </coordinates>
-    <animation effect="zoom" end="74.074074074,74.074074074" center="960,540" time="0" condition="!IsEmpty(Window(10000).Property(script.cinemavision.scope.2.40:1))">Conditional</animation>
-    <animation effect="zoom" end="75.925925926,75.925925926" center="960,540" time="0" condition="!IsEmpty(Window(10000).Property(script.cinemavision.scope.2.35:1))">Conditional</animation>
+    <animation effect="zoom" end="74.074074074,74.074074074" center="960,540" time="0" condition="!String.IsEmpty(Window(10000).Property(script.cinemavision.scope.2.40:1))">Conditional</animation>
+    <animation effect="zoom" end="75.925925926,75.925925926" center="960,540" time="0" condition="!String.IsEmpty(Window(10000).Property(script.cinemavision.scope.2.35:1))">Conditional</animation>
     <controls>
 
         <control type="image">
@@ -33,7 +33,7 @@
         <control type="group">
             <posx>1890</posx>
             <posy>20</posy>
-            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.EDITING))</visible>
+            <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.EDITING))</visible>
             <control type="label">
                 <posx>0</posx>
                 <posy>0</posy>
@@ -68,7 +68,7 @@
         </control>
 
         <control type="group">
-            <visible>!IsEmpty(Container(201).ListItem.Label)</visible>
+            <visible>!String.IsEmpty(Container(201).ListItem.Label)</visible>
             <posx>60</posx>
             <posy>555</posy>
             <width>840</width>
@@ -181,12 +181,12 @@
                 <posy>300</posy>
 
                 <control type="group">
-                    <visible>IsEmpty(Container(201).ListItem.property(type))</visible>
+                    <visible>String.IsEmpty(Container(201).ListItem.property(type))</visible>
                     <posx>40</posx>
                     <posy>68</posy>
 
                     <control type="image">
-                        <visible>!IsEmpty(Container(201).ListItem.property(last))</visible>
+                        <visible>!String.IsEmpty(Container(201).ListItem.property(last))</visible>
                         <posx>-60</posx>
                         <posy>0</posy>
                         <width>60</width>
@@ -195,7 +195,7 @@
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="image">
-                        <visible>!IsEmpty(Container(201).ListItem.property(first))</visible>
+                        <visible>!String.IsEmpty(Container(201).ListItem.property(first))</visible>
                         <posx>0</posx>
                         <posy>0</posy>
                         <width>60</width>
@@ -205,7 +205,7 @@
                     </control>
 
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,0)</visible>
+                        <visible>String.IsEqual(Container(202).Position,0)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>205</height>
@@ -221,7 +221,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,1)</visible>
+                        <visible>String.IsEqual(Container(202).Position,1)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>285</height>
@@ -237,7 +237,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,2)</visible>
+                        <visible>String.IsEqual(Container(202).Position,2)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>365</height>
@@ -253,7 +253,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,3)</visible>
+                        <visible>String.IsEqual(Container(202).Position,3)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>445</height>
@@ -269,7 +269,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,4)</visible>
+                        <visible>String.IsEqual(Container(202).Position,4)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>525</height>
@@ -285,7 +285,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(202).Position,5)</visible>
+                        <visible>String.IsEqual(Container(202).Position,5)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>605</height>
@@ -374,11 +374,11 @@
                 </control>
 
                 <control type="group">
-                    <visible>!IsEmpty(Container(201).ListItem.property(type))</visible>
+                    <visible>!String.IsEmpty(Container(201).ListItem.property(type))</visible>
                     <posx>40</posx>
                     <posy>68</posy>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,0)</visible>
+                        <visible>String.IsEqual(Container(203).Position,0)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>205</height>
@@ -394,7 +394,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,1)</visible>
+                        <visible>String.IsEqual(Container(203).Position,1)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>285</height>
@@ -410,7 +410,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,2)</visible>
+                        <visible>String.IsEqual(Container(203).Position,2)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>365</height>
@@ -426,7 +426,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,3)</visible>
+                        <visible>String.IsEqual(Container(203).Position,3)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>445</height>
@@ -442,7 +442,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,4)</visible>
+                        <visible>String.IsEqual(Container(203).Position,4)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>525</height>
@@ -458,7 +458,7 @@
                         </control>
                     </control>
                     <control type="group">
-                        <visible>StringCompare(Container(203).Position,5)</visible>
+                        <visible>String.IsEqual(Container(203).Position,5)</visible>
                         <control type="image">
                             <width>4</width>
                             <height>605</height>
@@ -488,7 +488,7 @@
 
                         <itemlayout height="80">
                             <control type="group">
-                                <visible>!IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
+                                <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                 <control type="image">
                                     <posx>25</posx>
                                     <posy>5</posy>
@@ -510,7 +510,7 @@
                                 </control>
                             </control>
                             <control type="group">
-                                <visible>IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
+                                <visible>String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                 <control type="image">
                                     <posx>25</posx>
                                     <posy>5</posy>
@@ -539,7 +539,7 @@
                                 <posy>0</posy>
 
                                 <control type="image">
-                                    <visible>IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                                    <visible>String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
                                     <posx>-2.5</posx>
                                     <posy>-2.5</posy>
                                     <width>75</width>
@@ -548,7 +548,7 @@
                                     <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="image">
-                                    <visible>!IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                                    <visible>!String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
                                     <posx>-2.5</posx>
                                     <posy>-2.5</posy>
                                     <width>75</width>
@@ -559,7 +559,7 @@
                                 </control>
 
                                 <control type="group">
-                                    <visible>!IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
+                                    <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                     <control type="image">
                                         <posx>5</posx>
                                         <posy>5</posy>
@@ -581,7 +581,7 @@
                                     </control>
                                 </control>
                                 <control type="group">
-                                    <visible>IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
+                                    <visible>String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                     <control type="image">
                                         <posx>5</posx>
                                         <posy>5</posy>
@@ -625,11 +625,11 @@
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout width="80">
                     <control type="group">
-                        <visible>!IsEmpty(ListItem.Property(enabled))</visible>
+                        <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <control type="label">
-                            <visible>!IsEmpty(ListItem.Property(error))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(error))</visible>
                             <left>0</left>
                             <top>0</top>
                             <width>400</width>
@@ -642,7 +642,7 @@
                             <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                         </control>
                         <control type="label">
-                            <visible>IsEmpty(ListItem.Property(error))</visible>
+                            <visible>String.IsEmpty(ListItem.Property(error))</visible>
                             <left>0</left>
                             <top>0</top>
                             <width>400</width>
@@ -656,7 +656,7 @@
                         </control>
                     </control>
                     <control type="label">
-                        <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                        <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <width>400</width>
@@ -673,7 +673,7 @@
                         <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.start)) | !String.IsEmpty(ListItem.Property(connect.end))</visible>
                             <posx>35</posx>
                             <posy>35</posy>
                             <width>4</width>
@@ -683,7 +683,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.start))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.start))</visible>
                             <posx>35</posx>
                             <posy>85</posy>
                             <width>125</width>
@@ -693,7 +693,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.end))</visible>
                             <posx>0</posx>
                             <posy>85</posy>
                             <width>39</width>
@@ -703,7 +703,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.join))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.join))</visible>
                             <posx>0</posx>
                             <posy>85</posy>
                             <width>160</width>
@@ -718,7 +718,7 @@
                         <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.start)) | !IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.start)) | !String.IsEmpty(ListItem.Property(connect.skip.end))</visible>
                             <posx>35</posx>
                             <posy>35</posy>
                             <width>4</width>
@@ -728,7 +728,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.start))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.start))</visible>
                             <posx>35</posx>
                             <posy>105</posy>
                             <width>125</width>
@@ -738,7 +738,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.end))</visible>
                             <posx>0</posx>
                             <posy>105</posy>
                             <width>39</width>
@@ -748,7 +748,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.join))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.join))</visible>
                             <posx>0</posx>
                             <posy>105</posy>
                             <width>160</width>
@@ -764,9 +764,9 @@
                         <posx>-30</posx>
                         <posy>300</posy>
                         <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(almost.last)) + IsEmpty(ListItem.Property(second))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(almost.last)) + String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>0</posx>
                                 <posy>68</posy>
                                 <width>130</width>
@@ -775,7 +775,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(almost.last))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(almost.last))</visible>
                                 <posx>0</posx>
                                 <posy>68</posy>
                                 <width>65</width>
@@ -784,7 +784,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(second))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>65</posx>
                                 <posy>68</posy>
                                 <width>65</width>
@@ -794,7 +794,7 @@
                             </control>
 
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(enabled))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
                                 <posx>10</posx>
                                 <posy>10</posy>
                                 <width>120</width>
@@ -803,7 +803,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
                                 <posx>10</posx>
                                 <posy>10</posy>
                                 <width>120</width>
@@ -816,7 +816,7 @@
                         </control>
 
                         <control type="image">
-                            <visible>IsEmpty(ListItem.Property(type)) + IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
+                            <visible>String.IsEmpty(ListItem.Property(type)) + String.IsEmpty(ListItem.Property(first)) + String.IsEmpty(ListItem.Property(last))</visible>
                             <posx>46</posx>
                             <posy>68</posy>
                             <width>48</width>
@@ -830,11 +830,11 @@
                 <!-- FOCUSED LAYOUT ####################################### -->
                 <focusedlayout width="80">
                     <control type="group">
-                        <visible>!IsEmpty(ListItem.Property(enabled))</visible>
+                        <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <control type="label">
-                            <visible>!IsEmpty(ListItem.Property(error))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(error))</visible>
                             <left>0</left>
                             <top>0</top>
                             <width>400</width>
@@ -847,7 +847,7 @@
                             <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                         </control>
                         <control type="label">
-                            <visible>IsEmpty(ListItem.Property(error))</visible>
+                            <visible>String.IsEmpty(ListItem.Property(error))</visible>
                             <left>0</left>
                             <top>0</top>
                             <width>400</width>
@@ -861,7 +861,7 @@
                         </control>
                     </control>
                     <control type="label">
-                        <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                        <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
                         <left>40</left>
                         <top>130</top>
                         <width>400</width>
@@ -878,7 +878,7 @@
                         <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.start)) | !IsEmpty(ListItem.Property(connect.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.start)) | !String.IsEmpty(ListItem.Property(connect.end))</visible>
                             <posx>35</posx>
                             <posy>35</posy>
                             <width>4</width>
@@ -888,7 +888,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.start))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.start))</visible>
                             <posx>35</posx>
                             <posy>85</posy>
                             <width>125</width>
@@ -898,7 +898,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.end))</visible>
                             <posx>0</posx>
                             <posy>85</posy>
                             <width>39</width>
@@ -908,7 +908,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.join))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.join))</visible>
                             <posx>0</posx>
                             <posy>85</posy>
                             <width>160</width>
@@ -923,7 +923,7 @@
                         <posx>3</posx>
                         <posy>380</posy>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.start)) | !IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.start)) | !String.IsEmpty(ListItem.Property(connect.skip.end))</visible>
                             <posx>35</posx>
                             <posy>35</posy>
                             <width>4</width>
@@ -933,7 +933,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.start))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.start))</visible>
                             <posx>35</posx>
                             <posy>105</posy>
                             <width>125</width>
@@ -943,7 +943,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.end))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.end))</visible>
                             <posx>0</posx>
                             <posy>105</posy>
                             <width>39</width>
@@ -953,7 +953,7 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="image">
-                            <visible>!IsEmpty(ListItem.Property(connect.skip.join))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(connect.skip.join))</visible>
                             <posx>0</posx>
                             <posy>105</posy>
                             <width>160</width>
@@ -969,9 +969,9 @@
                         <posy>300</posy>
 
                         <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(almost.last)) + IsEmpty(ListItem.Property(second))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(almost.last)) + String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>0</posx>
                                 <posy>68</posy>
                                 <width>130</width>
@@ -980,7 +980,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(almost.last))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(almost.last))</visible>
                                 <posx>0</posx>
                                 <posy>68</posy>
                                 <width>65</width>
@@ -989,7 +989,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(second))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>65</posx>
                                 <posy>68</posy>
                                 <width>65</width>
@@ -1000,11 +1000,11 @@
                         </control>
 
                         <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <posx>-5</posx>
                             <posy>-5</posy>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(moving))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(moving))</visible>
                                 <posx>0</posx>
                                 <posy>0</posy>
                                 <width>150</width>
@@ -1013,7 +1013,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(moving))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(moving))</visible>
                                 <posx>0</posx>
                                 <posy>0</posy>
                                 <width>150</width>
@@ -1025,9 +1025,9 @@
                         </control>
 
                         <control type="group">
-                            <visible>!IsEmpty(ListItem.Property(type))</visible>
+                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
-                                <visible>!IsEmpty(ListItem.Property(enabled))</visible>
+                                <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
                                 <posx>10</posx>
                                 <posy>10</posy>
                                 <width>120</width>
@@ -1036,7 +1036,7 @@
                                 <aspectratio>stretch</aspectratio>
                             </control>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(enabled))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
                                 <posx>10</posx>
                                 <posy>10</posy>
                                 <width>120</width>
@@ -1048,9 +1048,9 @@
                         </control>
 
                         <control type="group">
-                            <visible>IsEmpty(ListItem.Property(type))</visible>
+                            <visible>String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
-                                <visible>IsEmpty(ListItem.Property(first)) + IsEmpty(ListItem.Property(last))</visible>
+                                <visible>String.IsEmpty(ListItem.Property(first)) + String.IsEmpty(ListItem.Property(last))</visible>
                                 <posx>46</posx>
                                 <posy>68</posy>
                                 <width>48</width>
@@ -1067,11 +1067,11 @@
         </control>
 
         <control type="group">
-            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.ACTIVE))</visible>
+            <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.ACTIVE))</visible>
             <posx>1460</posx>
             <posy>540</posy>
             <control type="textbox">
-                <visible>StringCompare(Window(10000).Property(script.cinemavision.ACTIVE),1)</visible>
+                <visible>String.IsEqual(Window(10000).Property(script.cinemavision.ACTIVE),1)</visible>
                 <left>0</left>
                 <top>0</top>
                 <width>420</width>
@@ -1083,7 +1083,7 @@
                 <label>[B][UPPERCASE]$ADDON[script.cinemavision 32608][/UPPERCASE][/B]</label>
             </control>
             <control type="textbox">
-                <visible>StringCompare(Window(10000).Property(script.cinemavision.ACTIVE),0)</visible>
+                <visible>String.IsEqual(Window(10000).Property(script.cinemavision.ACTIVE),0)</visible>
                 <left>0</left>
                 <top>0</top>
                 <width>420</width>
@@ -1099,7 +1099,7 @@
         <control type="group">
             <posx>1420</posx>
             <posy>920</posy>
-            <visible>!IsEmpty(Window(10000).Property(script.cinemavision.DEMO_MODE))</visible>
+            <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.DEMO_MODE))</visible>
             <control type="image">
                 <posx>0</posx>
                 <posy>0</posy>
