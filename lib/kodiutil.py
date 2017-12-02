@@ -7,7 +7,7 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 
-API_LEVEL = 3
+API_LEVEL = 4
 
 ADDON_ID = 'script.cinemavision'
 ADDON = xbmcaddon.Addon(ADDON_ID)
@@ -78,6 +78,26 @@ def checkAPILevel():
         import cvutil
         cvutil.loadContent()
         xbmc.sleep(1000)
+
+    if old < 4:
+        LOG('API LEVEL < 4: Migrating default sequences')
+
+        contentPath = getSetting('content.path')
+        if contentPath:
+            from lib import cinemavision
+
+            sequencesPath = cinemavision.util.pathJoin(contentPath, 'Sequences')
+
+            for stereoType in ['2D', '3D']:
+                default = getSetting('sequence.{0}'.format(stereoType))
+                if default:
+                    path = cinemavision.util.pathJoin(sequencesPath, '{0}.cvseq'.format(default))
+                    if cinemavision.util.vfs.exists(path):
+                        LOG('API Migration: Activating sequence for {0}: {1}'.format(stereoType, default))
+                        seqData = cinemavision.sequence.SequenceData.load(path)
+                        seqData.active = True
+                        seqData.set('type', stereoType)
+                        seqData.save()
 
     if getSetting('from.beta'):
         DEBUG_LOG('UPDATED FROM BETA: {0}'.format(getSetting('from.beta')))

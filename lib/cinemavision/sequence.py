@@ -145,6 +145,7 @@ class SequenceData(object):
         self._items = []
         self._attrs = {}
         self._settings = {}
+        self._loadPath = ''
         self._process(data_string)
 
     def __nonzero__(self):
@@ -222,9 +223,13 @@ class SequenceData(object):
         if not dstring:
             raise exceptions.EmptySequenceFileException()
 
-        return cls(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
+        obj = cls(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
+        obj._loadPath = path
+        return obj
 
-    def save(self, path):
+    def save(self, path=None):
+        path = path or self._loadPath
+
         if util.vfs.exists(path):
             util.vfs.delete(path)
 
