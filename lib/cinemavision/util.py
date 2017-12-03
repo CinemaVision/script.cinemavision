@@ -258,7 +258,7 @@ except:
     raise
     import zipfile
 
-    STORAGE_PATH = '/home/ruuk/tmp/content'
+    STORAGE_PATH = '~'
 
     def T(ID, eng=''):
         return eng

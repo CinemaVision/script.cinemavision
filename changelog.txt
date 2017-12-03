@@ -2,8 +2,12 @@ Changelog for CinemaVision
 
 [- 1.1.1 -]
 
-- add:     Actions: Added ID to http requests to help match request to response
 - fix:     Compatibility fixes for Kodi v18
+- add:     Actions: Added ID to http requests to help match request to response
+- add:     Actions: Improve sleep:// handling
+- add:     Actions: Improve testing
+- add:     Actions: Add rawpython:// allowing inline python statements
+- add:     Trailers: Content scraper will now read genre and rating from .nfo files
 
 [- 1.1.0 -]
 

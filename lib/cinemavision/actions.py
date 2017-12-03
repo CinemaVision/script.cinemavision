@@ -45,6 +45,9 @@ class ActionCommand:
     def execute(self):
         return False
 
+    def _test(self):
+        self._threadedExecute()
+
     def log(self, msg):
         util.DEBUG_LOG(msg)
         self._addOutput(msg)
@@ -57,12 +60,38 @@ class SleepCommand(ActionCommand):
         import time
 
         try:
-            ms = int(self.commandData)
+            totalMS = int(self.commandData)
         except:
             util.ERROR()
             self._addOutput(traceback.format_exc())
 
-        time.sleep(ms / 1000.0)
+        import xbmc
+        import time
+
+        now = time.time()
+        end = now + (totalMS / 1000.0)
+        ms = min(totalMS, 200)
+
+        self.log('Action (Sleep) Start: {0} ({1})'.format(self.commandData, now))
+
+        while not xbmc.abortRequested and now < end and xbmc.getInfoLabel('Window(10000).Property(script.cinemavision.running)'):
+            xbmc.sleep(ms)
+            now = time.time()
+            ms = min(int((end - now) * 1000), 200)
+
+        self.log('Action (Sleep) End: {0} ({1})'.format(self.commandData, now))
+
+    def _test(self):
+        try:
+            totalMS = int(self.commandData)
+            testMS = min(totalMS, 1000)
+            self.commandData = str(testMS)
+            if testMS != totalMS:
+                 self.log('Action (Sleep) Changed for test: {0} to {1}'.format(totalMS, testMS))
+        except:
+            pass
+
+        self._threadedExecute()
 
 
 class ModuleCommand(ActionCommand):
@@ -81,11 +110,19 @@ class ModuleCommand(ActionCommand):
         self.checkImportPath()
         self.copyModule()
 
-        if self.importPath not in sys.path:
-            sys.path.append(self.importPath)
+        try:
+            self.log('Action (Module) Executing: {0} ({1})'.format(self.commandData, ', '.join(self.args)))
+            if self.importPath not in sys.path:
+                sys.path.append(self.importPath)
 
-        import cinema_vision_command_module
-        cinema_vision_command_module.main(*self.args)
+            import cinema_vision_command_module
+            reload(cinema_vision_command_module)
+
+            result = cinema_vision_command_module.main(*self.args)
+            self.log('Action (Module) Succeded: {0} ({1}) - Result: {2}'.format(self.commandData, ', '.join(self.args), result))
+        except:
+            util.ERROR()
+            self._addOutput(traceback.format_exc())
 
 
 class SubprocessActionCommand(ActionCommand):
@@ -144,6 +181,23 @@ class AddonCommand(ActionCommand):
 
         return True
 
+class RawPythonCommand(ActionCommand):
+    type = 'RAWPYTHON'
+
+    def execute(self):
+        try:
+            import xbmc
+            import xbmcgui
+            import xbmcvfs
+            import xbmcaddon
+        except:
+            return False
+
+        for arg in self.args:
+            self.log('Action (RawPython) Executed: {0} Result: {1}'.format(arg, eval(arg)))
+
+        return True
+
 
 class HTTPCommand(ActionCommand):
     type = 'HTTP'
@@ -165,7 +219,7 @@ class HTTPCommand(ActionCommand):
         HTTPCommand.commandID += 1
         commandID = self.commandID
 
-        self.log('Action [{0}] (HTTP) URL: {1}'.format(commandID, self.commandData))
+        self.log('Action (HTTP) [{0}] URL: {1}'.format(commandID, self.commandData))
 
         while args:
             arg = args.pop()
@@ -189,7 +243,7 @@ class HTTPCommand(ActionCommand):
         else:
             resp = requests.get(self.commandData, headers=headers)
 
-        self.log('Action [{0}] (HTTP) Response: {1}'.format(commandID, repr(resp.text).lstrip('u').strip("'")))
+        self.log('Action (HTTP) [{0}] Response: {1}'.format(commandID, repr(resp.text).lstrip('u').strip("'")))
 
 
 class HTTPSCommand(HTTPCommand):
@@ -204,6 +258,7 @@ class ActionFileProcessor:
         'https': HTTPSCommand,
         'script': ScriptCommand,
         'python': ScriptCommand,
+        'rawpython': RawPythonCommand,
         'addon': AddonCommand,
         'module': ModuleCommand,
         'command': CommandCommand,
@@ -220,6 +275,13 @@ class ActionFileProcessor:
 
     def __repr__(self):
         return 'AFP ({0})'.format(','.join([a.type for a in self.commands]))
+
+    def setCVRunning(self, running=True):
+        try:
+            from lib import kodiutil
+            kodiutil.setGlobalProperty('running', running and '1' or '')
+        except:
+            util.ERROR()
 
     def logParseErrorLine(self, msg, type_):
         if not self._test:
@@ -253,8 +315,17 @@ class ActionFileProcessor:
         for c in self.commands:
             c._threadedExecute()
 
+    def _testRun(self):
+        self.setCVRunning()
+
+        try:
+            for c in self.commands:
+                c._test()
+        finally:
+            self.setCVRunning(False)
+
     def test(self):
-        self._run()
+        self._testRun()
         output = []
         for c in self.commands:
             c.join()
