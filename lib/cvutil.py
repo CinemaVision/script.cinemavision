@@ -22,7 +22,7 @@ def lastSavePath():
 
 
 def getSavePath(name):
-    contentPath = kodiutil.getSetting('content.path')
+    contentPath = kodiutil.getPathSetting('content.path')
     if not name or not contentPath:
         return
 
@@ -92,7 +92,7 @@ def selectSequence(active=True, for_dialog=False):
 
 def getSequencesContentPath():
     import xbmcgui
-    contentPath = kodiutil.getSetting('content.path')
+    contentPath = kodiutil.getPathSetting('content.path')
     if not contentPath:
         xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
         return None
@@ -180,7 +180,7 @@ def getDefaultSequenceData(feature):
     return {'path': path, 'sequence': seqData}
 
 def getContentPath(from_load=False):
-    contentPath = kodiutil.getSetting('content.path')
+    contentPath = kodiutil.getPathSetting('content.path')
     demoPath = os.path.join(kodiutil.PROFILE_PATH, 'demo')
 
     if contentPath:
@@ -205,7 +205,7 @@ def getContentPath(from_load=False):
 def loadContent(from_settings=False, bg=False):
     import xbmcgui
 
-    if from_settings and not kodiutil.getSetting('content.path'):
+    if from_settings and not kodiutil.getPathSetting('content.path'):
         xbmcgui.Dialog().ok(T(32503, 'No Content Path'), ' ', T(32504, 'Content path not set or not applied'))
         return
 

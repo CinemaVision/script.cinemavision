@@ -173,6 +173,12 @@ try:
         vstat = xbmcvfs.Stat(path)
         return stat.S_ISDIR(vstat.st_mode())
 
+    def translatePath(path):
+        if path.startswith('special://'):
+            return xbmc.translatePath(path)
+
+        return path
+
     def LOG(msg):
         xbmc.log('[- CinemaVision -] (API): {0}'.format(msg), xbmc.LOGNOTICE)
 
@@ -324,6 +330,9 @@ except:
 
     def isDir(path):
         return os.path.isdir(path)
+
+    def translatePath(path):
+        return path
 
     def LOG(msg):
         print '[- CinemaVison -] (API): {0}'.format(msg)

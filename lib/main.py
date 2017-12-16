@@ -433,12 +433,12 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         cvutil.loadContent()
 
     def checkForContentDB(self):
-        if kodiutil.getSetting('content.path'):
+        if kodiutil.getPathSetting('content.path'):
             kodiutil.setGlobalProperty('DEMO_MODE', '')
-            if kodiutil.getSetting('content.initialized', False) and kodiutil.getSetting('content.path') == kodiutil.getSetting('content.last.path'):
+            if kodiutil.getSetting('content.initialized', False) and kodiutil.getPathSetting('content.path') == kodiutil.getSetting('content.last.path'):
                 return True
             else:
-                kodiutil.setSetting('content.last.path', kodiutil.getSetting('content.path'))
+                kodiutil.setSetting('content.last.path', kodiutil.getPathSetting('content.path'))
                 return False
         else:
             kodiutil.setGlobalProperty('DEMO_MODE', '1')
@@ -861,7 +861,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def savePath(self, path=None, name=None):
         name = name or self.name
         if not path:
-            contentPath = kodiutil.getSetting('content.path')
+            contentPath = kodiutil.getPathSetting('content.path')
             if not contentPath:
                 return
 
@@ -886,7 +886,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             if not path:
                 return
         else:
-            contentPath = kodiutil.getSetting('content.path')
+            contentPath = kodiutil.getPathSetting('content.path')
             if not contentPath:
                 xbmcgui.Dialog().ok(T(32503, 'No Content Path'), ' ', T(32553, 'Please set the content path in addon settings.'))
                 return
