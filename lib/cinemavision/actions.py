@@ -181,10 +181,11 @@ class AddonCommand(ActionCommand):
 
         return True
 
-class RawPythonCommand(ActionCommand):
-    type = 'RAWPYTHON'
+class PythonCommand(ActionCommand):
+    type = 'PYTHON'
 
     def execute(self):
+
         try:
             import xbmc
             import xbmcgui
@@ -193,8 +194,21 @@ class RawPythonCommand(ActionCommand):
         except:
             return False
 
-        for arg in self.args:
-            self.log('Action (RawPython) Executed: {0} Result: {1}'.format(arg, eval(arg)))
+        _CV_COMMAND_RESULT_ = None
+
+        if self.commandData:
+            with open(self._absolutizeCommand(), 'r') as f:
+                exec(f)
+            self.log('Action (Python) Executed: {0} Result: {1}'.format(self.commandData, _CV_COMMAND_RESULT_))
+            return True
+
+        if len(self.args) == 1:
+            arg = self.args[0]
+            self.log('Action (Python) Executed: {0} Result: {1}'.format(arg, eval(arg)))
+        else:
+            code = '\n'.join(self.args)
+            exec(code)
+            self.log('Action (Python) Executed: {0} Lines - Result: {1}'.format(len(self.args), _CV_COMMAND_RESULT_))
 
         return True
 
@@ -257,8 +271,7 @@ class ActionFileProcessor:
         'http': HTTPCommand,
         'https': HTTPSCommand,
         'script': ScriptCommand,
-        'python': ScriptCommand,
-        'rawpython': RawPythonCommand,
+        'python': PythonCommand,
         'addon': AddonCommand,
         'module': ModuleCommand,
         'command': CommandCommand,
