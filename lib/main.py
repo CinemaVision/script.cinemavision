@@ -522,7 +522,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.insertItem(sItem, pos)
 
-    def insertItem(self, sItem, pos):
+    def insertItem(self, sItem, pos, modify=True):
         mli = kodigui.ManagedListItem(sItem.display(), data_source=sItem)
         mli.setProperty('type', sItem.fileChar)
         mli.setProperty('type.name', sItem.displayName)
@@ -535,7 +535,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.updateFirstLast()
 
-        self.modified = True
+        self.modified = modify
         self.updateSpecials()
 
     def addItems(self, items):
@@ -725,11 +725,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if oldPos > -1 and oldPos != pos:
             if oldPos < pos:
-                self.insertItem(self.move.dataSource, oldPos - 1)
+                self.insertItem(self.move.dataSource, oldPos - 1, modify=False)
                 self.sequenceControl.removeItem(pos + 1)
                 self.sequenceControl.removeItem(pos + 1)
             elif oldPos > pos:
-                self.insertItem(self.move.dataSource, oldPos + 1)
+                self.insertItem(self.move.dataSource, oldPos + 1, modify=False)
                 self.sequenceControl.removeItem(pos - 1)
                 self.sequenceControl.removeItem(pos - 1)
 
