@@ -657,7 +657,7 @@ class Feature(Item):
         }
     )
     displayName = T(32073, 'Features')
-    typeChar = 'F'
+    typeChar = 'Feature'
 
     def __init__(self):
         Item.__init__(self)
@@ -753,7 +753,7 @@ class Trivia(Item):
         }
     )
     displayName = T(32026, 'Trivia Slides')
-    typeChar = 'Q'
+    typeChar = 'Trivia'
 
     def __init__(self):
         Item.__init__(self)
@@ -892,7 +892,7 @@ class Trailer(Item):
         }
     )
     displayName = T(32049, 'Trailers')
-    typeChar = 'T'
+    typeChar = 'Trailer'
 
     _scrapers = [
         ['Content', T(32326, 'Trailers Folder'), 'content'],
@@ -1077,7 +1077,7 @@ class Video(Item):
         }
     )
     displayName = T(32023, 'Video')
-    typeChar = 'V'
+    typeChar = 'VideoBumper'
 
     def __init__(self):
         Item.__init__(self)
@@ -1186,7 +1186,7 @@ class AudioFormat(Item):
         }
     )
     displayName = T(32329, 'Audio Format Bumper')
-    typeChar = 'A'
+    typeChar = 'AudioFormatBumper'
 
     def __init__(self):
         Item.__init__(self)
@@ -1233,8 +1233,7 @@ class Action(Item):
         }
     )
     displayName = T(32083, 'Actions')
-    typeChar = '!'
-    fileChar = '_'
+    typeChar = 'Action'
 
     def __init__(self):
         Item.__init__(self)
@@ -1275,7 +1274,7 @@ class Command(Item):
         }
     )
     displayName = T(32331, 'Command')
-    typeChar = 'C'
+    typeChar = 'Command'
 
     def _set(self, attr, value):
         if self.command in ('back', 'skip'):
@@ -1351,13 +1350,13 @@ CONTENT_CLASSES = {
 }
 
 ITEM_TYPES = [
-    ('V', T(32334, 'Video Bumper'), 'V', Video),
-    ('Q', T(32026, 'Trivia'), 'Q', Trivia),
-    ('T', T(32049, 'Trailers'), 'T', Trailer),
-    ('A', T(32329, 'Audio Format Bumper'), 'A', AudioFormat),
-    ('F', T(32073, 'Features'), 'F', Feature),
-    ('C', T(32331, 'Command'), 'C', Command),
-    ('!', T(32083, 'Actions'), '_', Action)
+    ('VideoBumper', T(32334, 'Video Bumper'), 'VideoBumper', Video),
+    ('Trivia', T(32026, 'Trivia'), 'Trivia', Trivia),
+    ('Trailer', T(32049, 'Trailers'), 'Trailer', Trailer),
+    ('AudioFormatBumper', T(32329, 'Audio Format Bumper'), 'AudioFormatBumper', AudioFormat),
+    ('Feature', T(32073, 'Features'), 'Feature', Feature),
+    ('Command', T(32331, 'Command'), 'Command', Command),
+    ('Action', T(32083, 'Actions'), 'Action', Action)
 ]
 
 

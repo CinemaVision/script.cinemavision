@@ -91,7 +91,7 @@
                         <width>840</width>
                         <height>60</height>
                         <font>font20</font>
-                        <textcolor>FFAAAAFF</textcolor>
+                        <textcolor>$INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]</textcolor>
                         <align>left</align>
                         <aligny>center</aligny>
                         <label>$INFO[ListItem.Label2]</label>
@@ -136,7 +136,7 @@
                             <width>840</width>
                             <height>60</height>
                             <font>font20</font>
-                            <textcolor>FFAAAAFF</textcolor>
+                            <textcolor>$INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]</textcolor>
                             <align>left</align>
                             <aligny>center</aligny>
                             <label>$INFO[ListItem.Label2]</label>
@@ -177,8 +177,8 @@
                         <onleft>100</onleft>
                         <onright>100</onright>
                         <texturesliderbar colordiffuse="FF101010">script.cinemavision-white_square.png</texturesliderbar>
-                        <textureslidernib colordiffuse="FFAAAAFF">script.cinemavision-slider_nib.png</textureslidernib>
-                        <textureslidernibfocus colordiffuse="FFAAAAFF">script.cinemavision-slider_nib.png</textureslidernibfocus>
+                        <textureslidernib colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]">script.cinemavision-slider_nib.png</textureslidernib>
+                        <textureslidernibfocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]">script.cinemavision-slider_nib.png</textureslidernibfocus>
                     </control>
                 </control>
             </control>

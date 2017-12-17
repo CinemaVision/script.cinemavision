@@ -94,7 +94,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting0_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting0)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting0_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting0)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -103,7 +103,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting1_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting1)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting1_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting1)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -112,7 +112,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting2_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting2)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting2_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting2)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -121,7 +121,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting3_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting3)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting3_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting3)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -130,7 +130,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting4_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting4)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting4_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting4)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -139,7 +139,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting5_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting5)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting5_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting5)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -148,7 +148,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting6_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting6)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting6_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting6)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -157,7 +157,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting7_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting7)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting7_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting7)][/COLOR]</label>
                 </control>
                 <control type="label">
                     <width>840</width>
@@ -166,7 +166,7 @@
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>$INFO[Container(201).ListItem.Property(setting8_name),,: ][COLOR FFAAAAFF]$INFO[Container(201).ListItem.Property(setting8)][/COLOR]</label>
+                    <label>$INFO[Container(201).ListItem.Property(setting8_name),,: ][COLOR $INFO[Window(10000).Property(script.cinemavision.theme.color.setting)]]$INFO[Container(201).ListItem.Property(setting8)][/COLOR]</label>
                 </control>
             </control>
 
@@ -198,7 +198,7 @@
                         <visible>!String.IsEmpty(Container(201).ListItem.property(first))</visible>
                         <posx>0</posx>
                         <posy>0</posy>
-                        <width>60</width>
+                        <width>70</width>
                         <height>4</height>
                         <texture>script.cinemavision-white_square.png</texture>
                         <aspectratio>stretch</aspectratio>
@@ -315,10 +315,18 @@
 
                         <itemlayout height="80">
                             <control type="image">
-                                <posx>25</posx>
-                                <posy>7</posy>
-                                <width>60</width>
-                                <height>60</height>
+                                <posx>20</posx>
+                                <posy>2</posy>
+                                <width>75</width>
+                                <height>75</height>
+                                <texture colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.icon)]">$INFO[ListItem.Property(thumb.fill)]</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <posx>20</posx>
+                                <posy>2</posy>
+                                <width>75</width>
+                                <height>75</height>
                                 <texture>$INFO[ListItem.Thumb]</texture>
                                 <aspectratio>stretch</aspectratio>
                             </control>
@@ -340,18 +348,26 @@
                                 <posx>20</posx>
                                 <posy>2</posy>
                                 <control type="image">
-                                    <posx>-2.5</posx>
-                                    <posy>-2.5</posy>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
                                     <width>75</width>
                                     <height>75</height>
                                     <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
                                 <control type="image">
-                                    <posx>5</posx>
-                                    <posy>5</posy>
-                                    <width>60</width>
-                                    <height>60</height>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>75</width>
+                                    <height>75</height>
+                                    <texture colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.icon)]">$INFO[ListItem.Property(thumb.fill)]</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>75</width>
+                                    <height>75</height>
                                     <texture>$INFO[ListItem.Thumb]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
@@ -427,18 +443,39 @@
                     </control>
                     <control type="group">
                         <visible>String.IsEqual(Container(203).Position,3)</visible>
-                        <control type="image">
-                            <width>4</width>
-                            <height>445</height>
-                            <texture>script.cinemavision-white_square.png</texture>
-                            <aspectratio>stretch</aspectratio>
+                        <control type="group">
+                            <visible>String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                            <control type="image">
+                                <width>4</width>
+                                <height>445</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="image">
+                                <posy>445</posy>
+                                <width>40</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
                         </control>
-                        <control type="image">
-                            <posy>445</posy>
-                            <width>20</width>
-                            <height>4</height>
-                            <texture>script.cinemavision-white_square.png</texture>
-                            <aspectratio>stretch</aspectratio>
+                        <control type="group">
+                            <visible>!String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
+                            <control type="image">
+                                <width>4</width>
+                                <height>445</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                                <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.move)]</colordiffuse>
+                            </control>
+                            <control type="image">
+                                <posy>445</posy>
+                                <width>40</width>
+                                <height>4</height>
+                                <texture>script.cinemavision-white_square.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                                <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.move)]</colordiffuse>
+                            </control>
                         </control>
                     </control>
                     <control type="group">
@@ -490,10 +527,10 @@
                             <control type="group">
                                 <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                 <control type="image">
-                                    <posx>25</posx>
-                                    <posy>5</posy>
-                                    <width>60</width>
-                                    <height>60</height>
+                                    <posx>20</posx>
+                                    <posy>0</posy>
+                                    <width>75</width>
+                                    <height>75</height>
                                     <texture>$INFO[ListItem.Thumb]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
@@ -512,10 +549,10 @@
                             <control type="group">
                                 <visible>String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                 <control type="image">
-                                    <posx>25</posx>
-                                    <posy>5</posy>
-                                    <width>60</width>
-                                    <height>60</height>
+                                    <posx>20</posx>
+                                    <posy>0</posy>
+                                    <width>75</width>
+                                    <height>75</height>
                                     <texture>$INFO[ListItem.Property(alt.thumb)]</texture>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
@@ -540,8 +577,8 @@
 
                                 <control type="image">
                                     <visible>String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
-                                    <posx>-2.5</posx>
-                                    <posy>-2.5</posy>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
                                     <width>75</width>
                                     <height>75</height>
                                     <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
@@ -549,22 +586,22 @@
                                 </control>
                                 <control type="image">
                                     <visible>!String.IsEmpty(Container(201).ListItem.Property(moving))</visible>
-                                    <posx>-2.5</posx>
-                                    <posy>-2.5</posy>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
                                     <width>75</width>
                                     <height>75</height>
                                     <texture>$INFO[ListItem.Property(thumb.focus)]</texture>
-                                    <colordiffuse>FF00FF00</colordiffuse>
+                                    <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.move)]</colordiffuse>
                                     <aspectratio>stretch</aspectratio>
                                 </control>
 
                                 <control type="group">
                                     <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                     <control type="image">
-                                        <posx>5</posx>
-                                        <posy>5</posy>
-                                        <width>60</width>
-                                        <height>60</height>
+                                        <posx>0</posx>
+                                        <posy>0</posy>
+                                        <width>75</width>
+                                        <height>75</height>
                                         <texture>$INFO[ListItem.Thumb]</texture>
                                         <aspectratio>stretch</aspectratio>
                                     </control>
@@ -583,10 +620,10 @@
                                 <control type="group">
                                     <visible>String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.item.enabled))</visible>
                                     <control type="image">
-                                        <posx>5</posx>
-                                        <posy>5</posy>
-                                        <width>60</width>
-                                        <height>60</height>
+                                        <posx>0</posx>
+                                        <posy>0</posy>
+                                        <width>75</width>
+                                        <height>75</height>
                                         <texture>$INFO[ListItem.Property(alt.thumb)]</texture>
                                         <aspectratio>stretch</aspectratio>
                                     </control>
@@ -609,6 +646,21 @@
                 </control>
             </control>
 
+            <control type="button" id="900">
+                <posx>-800</posx>
+                <posy>540</posy>
+                <width>10</width>
+                <height>10</height>
+                <label> </label>
+                <font>font13</font>
+                <texturefocus>-</texturefocus>
+                <texturenofocus>-</texturenofocus>
+                <onleft>900</onleft>
+                <onright>900</onright>
+                <onup>900</onup>
+                <ondown>900</ondown>
+            </control>
+
             <control type="fixedlist" id="201">
                 <focusposition>17</focusposition>
                 <posx>-400</posx>
@@ -625,48 +677,51 @@
                 <!-- ITEM LAYOUT ########################################## -->
                 <itemlayout width="80">
                     <control type="group">
-                        <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
-                        <left>40</left>
-                        <top>130</top>
+                        <animation effect="slide" start="[0,-10]" end="[0,0]" time="200" reversible="false" condition="String.IsEqual(ListItem.Property(selected),0)">Conditional</animation>
+                        <control type="group">
+                            <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
+                            <left>40</left>
+                            <top>130</top>
+                            <control type="label">
+                                <visible>!String.IsEmpty(ListItem.Property(error))</visible>
+                                <left>0</left>
+                                <top>0</top>
+                                <width>400</width>
+                                <height>300</height>
+                                <angle>45</angle>
+                                <font>font20</font>
+                                <textcolor>FFFF0000</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                            </control>
+                            <control type="label">
+                                <visible>String.IsEmpty(ListItem.Property(error))</visible>
+                                <left>0</left>
+                                <top>0</top>
+                                <width>400</width>
+                                <height>300</height>
+                                <angle>45</angle>
+                                <font>font20</font>
+                                <textcolor>C0FFFFFF</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                            </control>
+                        </control>
                         <control type="label">
-                            <visible>!String.IsEmpty(ListItem.Property(error))</visible>
-                            <left>0</left>
-                            <top>0</top>
+                            <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
+                            <left>40</left>
+                            <top>130</top>
                             <width>400</width>
                             <height>300</height>
                             <angle>45</angle>
                             <font>font20</font>
-                            <textcolor>FFFF0000</textcolor>
+                            <textcolor>FF606060</textcolor>
                             <align>left</align>
                             <aligny>center</aligny>
                             <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                         </control>
-                        <control type="label">
-                            <visible>String.IsEmpty(ListItem.Property(error))</visible>
-                            <left>0</left>
-                            <top>0</top>
-                            <width>400</width>
-                            <height>300</height>
-                            <angle>45</angle>
-                            <font>font20</font>
-                            <textcolor>FFFFFFFF</textcolor>
-                            <align>left</align>
-                            <aligny>center</aligny>
-                            <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
-                        </control>
-                    </control>
-                    <control type="label">
-                        <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
-                        <left>40</left>
-                        <top>130</top>
-                        <width>400</width>
-                        <height>300</height>
-                        <angle>45</angle>
-                        <font>font20</font>
-                        <textcolor>FF606060</textcolor>
-                        <align>left</align>
-                        <aligny>center</aligny>
-                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                     </control>
 
                     <control type="group">
@@ -763,13 +818,23 @@
                     <control type="group">
                         <posx>-30</posx>
                         <posy>300</posy>
+                        <control type="image">
+                            <visible>String.IsEmpty(ListItem.Property(type)) + String.IsEmpty(ListItem.Property(first)) + String.IsEmpty(ListItem.Property(last))</visible>
+                            <posx>61</posx>
+                            <posy>68</posy>
+                            <width>22</width>
+                            <height>4</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+
                         <control type="group">
                             <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
                                 <visible>String.IsEmpty(ListItem.Property(almost.last)) + String.IsEmpty(ListItem.Property(second))</visible>
-                                <posx>0</posx>
+                                <posx>-12</posx>
                                 <posy>68</posy>
-                                <width>130</width>
+                                <width>154</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
@@ -787,91 +852,108 @@
                                 <visible>!String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>65</posx>
                                 <posy>68</posy>
-                                <width>65</width>
+                                <width>77</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
                             </control>
 
-                            <control type="image">
-                                <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
-                                <posx>10</posx>
-                                <posy>10</posy>
-                                <width>120</width>
-                                <height>120</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
-                                <aspectratio>stretch</aspectratio>
+                            <control type="group">
+                                <animation effect="zoom" start="113" end="100" time="200" center="76.5,76.5" reversible="false" condition="String.IsEqual(ListItem.Property(selected),0)">Conditional</animation>
+                                <control type="group">
+                                    <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
+                                    <control type="image">
+                                        <posx>-3</posx>
+                                        <posy>-3</posy>
+                                        <width>150</width>
+                                        <height>150</height>
+                                        <texture colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.icon)]">large/script.cinemavision-$INFO[ListItem.Property(type)]_Fill.png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                    </control>
+                                    <control type="image">
+                                        <posx>-3</posx>
+                                        <posy>-3</posy>
+                                        <width>150</width>
+                                        <height>150</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                    </control>
+                                </control>
+                                <control type="group">
+                                    <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
+                                    <control type="image">
+                                        <posx>-3</posx>
+                                        <posy>-3</posy>
+                                        <width>150</width>
+                                        <height>150</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_Fill.png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                        <colordiffuse>FF222222</colordiffuse>
+                                    </control>
+                                    <control type="image">
+                                        <posx>-3</posx>
+                                        <posy>-3</posy>
+                                        <width>150</width>
+                                        <height>150</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                        <colordiffuse>FF606060</colordiffuse>
+                                    </control>
+                                </control>
                             </control>
-                            <control type="image">
-                                <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
-                                <posx>10</posx>
-                                <posy>10</posy>
-                                <width>120</width>
-                                <height>120</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
-                                <aspectratio>stretch</aspectratio>
-                                <colordiffuse>FF606060</colordiffuse>
-                            </control>
-
                         </control>
 
-                        <control type="image">
-                            <visible>String.IsEmpty(ListItem.Property(type)) + String.IsEmpty(ListItem.Property(first)) + String.IsEmpty(ListItem.Property(last))</visible>
-                            <posx>46</posx>
-                            <posy>68</posy>
-                            <width>48</width>
-                            <height>4</height>
-                            <texture>script.cinemavision-white_square.png</texture>
-                            <aspectratio>stretch</aspectratio>
-                        </control>
                     </control>
                 </itemlayout>
 
                 <!-- FOCUSED LAYOUT ####################################### -->
                 <focusedlayout width="80">
                     <control type="group">
-                        <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
-                        <left>40</left>
-                        <top>130</top>
+                        <animation effect="slide" start="[0,10]" end="[0,0]" time="200" reversible="false" condition="String.IsEqual(ListItem.Property(selected),1)">Conditional</animation>
+                        <control type="group">
+                            <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
+                            <left>40</left>
+                            <top>120</top>
+                            <control type="label">
+                                <visible>!String.IsEmpty(ListItem.Property(error))</visible>
+                                <left>0</left>
+                                <top>0</top>
+                                <width>400</width>
+                                <height>300</height>
+                                <angle>45</angle>
+                                <font>font20</font>
+                                <textcolor>FFFF0000</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                            </control>
+                            <control type="label">
+                                <visible>String.IsEmpty(ListItem.Property(error))</visible>
+                                <left>0</left>
+                                <top>0</top>
+                                <width>400</width>
+                                <height>300</height>
+                                <angle>45</angle>
+                                <font>font20</font>
+                                <textcolor>FFFFFFFF</textcolor>
+                                <align>left</align>
+                                <aligny>center</aligny>
+                                <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
+                            </control>
+                        </control>
                         <control type="label">
-                            <visible>!String.IsEmpty(ListItem.Property(error))</visible>
-                            <left>0</left>
-                            <top>0</top>
+                            <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
+                            <left>40</left>
+                            <top>120</top>
                             <width>400</width>
                             <height>300</height>
                             <angle>45</angle>
                             <font>font20</font>
-                            <textcolor>FFFF0000</textcolor>
+                            <textcolor>FF606060</textcolor>
                             <align>left</align>
                             <aligny>center</aligny>
                             <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                         </control>
-                        <control type="label">
-                            <visible>String.IsEmpty(ListItem.Property(error))</visible>
-                            <left>0</left>
-                            <top>0</top>
-                            <width>400</width>
-                            <height>300</height>
-                            <angle>45</angle>
-                            <font>font20</font>
-                            <textcolor>FFFFFFFF</textcolor>
-                            <align>left</align>
-                            <aligny>center</aligny>
-                            <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
-                        </control>
-                    </control>
-                    <control type="label">
-                        <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
-                        <left>40</left>
-                        <top>130</top>
-                        <width>400</width>
-                        <height>300</height>
-                        <angle>45</angle>
-                        <font>font20</font>
-                        <textcolor>FF606060</textcolor>
-                        <align>left</align>
-                        <aligny>center</aligny>
-                        <label>[B]$INFO[ListItem.Label]$INFO[ListItem.Label2, ][/B]</label>
                     </control>
 
                     <control type="group">
@@ -972,9 +1054,9 @@
                             <visible>!String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
                                 <visible>String.IsEmpty(ListItem.Property(almost.last)) + String.IsEmpty(ListItem.Property(second))</visible>
-                                <posx>0</posx>
+                                <posx>-12</posx>
                                 <posy>68</posy>
-                                <width>130</width>
+                                <width>154</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
@@ -992,58 +1074,10 @@
                                 <visible>!String.IsEmpty(ListItem.Property(second))</visible>
                                 <posx>65</posx>
                                 <posy>68</posy>
-                                <width>65</width>
+                                <width>77</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
-                            </control>
-                        </control>
-
-                        <control type="group">
-                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
-                            <posx>-5</posx>
-                            <posy>-5</posy>
-                            <control type="image">
-                                <visible>String.IsEmpty(ListItem.Property(moving))</visible>
-                                <posx>0</posx>
-                                <posy>0</posy>
-                                <width>150</width>
-                                <height>150</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                            <control type="image">
-                                <visible>!String.IsEmpty(ListItem.Property(moving))</visible>
-                                <posx>0</posx>
-                                <posy>0</posy>
-                                <width>150</width>
-                                <height>150</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_selected.png</texture>
-                                <colordiffuse>FF00FF00</colordiffuse>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                        </control>
-
-                        <control type="group">
-                            <visible>!String.IsEmpty(ListItem.Property(type))</visible>
-                            <control type="image">
-                                <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
-                                <posx>10</posx>
-                                <posy>10</posy>
-                                <width>120</width>
-                                <height>120</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
-                                <aspectratio>stretch</aspectratio>
-                            </control>
-                            <control type="image">
-                                <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
-                                <posx>10</posx>
-                                <posy>10</posy>
-                                <width>120</width>
-                                <height>120</height>
-                                <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
-                                <aspectratio>stretch</aspectratio>
-                                <colordiffuse>FF606060</colordiffuse>
                             </control>
                         </control>
 
@@ -1051,14 +1085,86 @@
                             <visible>String.IsEmpty(ListItem.Property(type))</visible>
                             <control type="image">
                                 <visible>String.IsEmpty(ListItem.Property(first)) + String.IsEmpty(ListItem.Property(last))</visible>
-                                <posx>46</posx>
+                                <posx>61</posx>
                                 <posy>68</posy>
-                                <width>48</width>
+                                <width>22</width>
                                 <height>4</height>
                                 <texture>script.cinemavision-white_square.png</texture>
                                 <aspectratio>stretch</aspectratio>
                             </control>
+                        </control>
 
+                        <control type="group">
+                            <animation effect="zoom" start="88" end="100" time="200" center="76.5,76.5" reversible="false" condition="String.IsEqual(ListItem.Property(selected),1)">Conditional</animation>
+                            <control type="group">
+                                <visible>!String.IsEmpty(ListItem.Property(type))</visible>
+                                <posx>-13</posx>
+                                <posy>-13</posy>
+                                <control type="image">
+                                    <visible>String.IsEmpty(ListItem.Property(moving))</visible>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>170</width>
+                                    <height>170</height>
+                                    <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_Selected.png</texture>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                                <control type="image">
+                                    <visible>!String.IsEmpty(ListItem.Property(moving))</visible>
+                                    <posx>0</posx>
+                                    <posy>0</posy>
+                                    <width>170</width>
+                                    <height>170</height>
+                                    <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_Selected.png</texture>
+                                    <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.move)]</colordiffuse>
+                                    <aspectratio>stretch</aspectratio>
+                                </control>
+                            </control>
+
+                            <control type="group">
+                                <visible>!String.IsEmpty(ListItem.Property(type))</visible>
+                                <control type="group">
+                                    <visible>!String.IsEmpty(ListItem.Property(enabled))</visible>
+                                    <control type="image">
+                                        <posx>-13</posx>
+                                        <posy>-13</posy>
+                                        <width>170</width>
+                                        <height>170</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_Fill.png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                        <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.icon)]</colordiffuse>
+                                    </control>
+                                    <control type="image">
+                                        <posx>-13</posx>
+                                        <posy>-13</posy>
+                                        <width>170</width>
+                                        <height>170</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                    </control>
+                                </control>
+                                <control type="group">
+                                    <visible>String.IsEmpty(ListItem.Property(enabled))</visible>
+                                    <control type="image">
+                                        <posx>-13</posx>
+                                        <posy>-13</posy>
+                                        <width>170</width>
+                                        <height>170</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)]_Fill.png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                        <colordiffuse>FF222222</colordiffuse>
+                                    </control>
+                                    <control type="image">
+                                        <posx>-13</posx>
+                                        <posy>-13</posy>
+                                        <width>170</width>
+                                        <height>170</height>
+                                        <texture>large/script.cinemavision-$INFO[ListItem.Property(type)].png</texture>
+                                        <aspectratio>stretch</aspectratio>
+                                        <colordiffuse>FF606060</colordiffuse>
+                                    </control>
+                                </control>
+                            </control>
                         </control>
                     </control>
                 </focusedlayout>

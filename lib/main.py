@@ -17,6 +17,18 @@ import cvutil  # noqa E402
 
 from lib import cinemavision  # noqa E402
 
+THEME = {
+    'theme.color.icon': 'FF9C2A2D',
+    'theme.color.setting': 'FF9C2A2D',
+    'theme.color.move': 'FF9C2A2D'
+}
+
+
+def setTheme():
+    kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
+    kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
+    kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
+
 
 class ItemSettingsWindow(kodigui.BaseDialog):
     xmlFile = 'script.cinemavision-sequence-item-settings.xml'
@@ -317,6 +329,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     SEQUENCE_LIST_ID = 201
     ADD_ITEM_LIST_ID = 202
     ITEM_OPTIONS_LIST_ID = 203
+    DUMMY_BUTTON_ID = 900
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
@@ -342,7 +355,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     def onAction(self, action):
         try:
             if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
-                if self.handleClose():
+                if self.move:
+                    return self.cancelMove()
+                elif self.handleClose():
                     return
 
             if self.move:
@@ -351,6 +366,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos1 = pos2 - 2
                     if self.sequenceControl.swapItems(pos1, pos2):
                         self.selectSequenceItem(pos1)
+                    self.updateFirstLast()
                     self.updateSpecials()
                     return
                 elif action == xbmcgui.ACTION_MOVE_RIGHT:
@@ -358,6 +374,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                     pos2 = pos1 + 2
                     if self.sequenceControl.swapItems(pos1, pos2):
                         self.selectSequenceItem(pos2)
+                    self.updateFirstLast()
                     self.updateSpecials()
                     return
             else:
@@ -365,25 +382,27 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
-                    pos = self.sequenceControl.getSelectedPosition()
-                    pos -= 1
+                    oldPos = self.sequenceControl.getSelectedPosition()
+                    pos = oldPos - 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = self.sequenceControl.size() - 1
                         self.selectSequenceItem(pos)
                     else:
                         self.selectSequenceItem(pos)
                         self.updateFocus(pos=pos)
+                    self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
                 elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
                     if self.sequenceControl.size() < 2:
                         return
-                    pos = self.sequenceControl.getSelectedPosition()
-                    pos += 1
+                    oldPos = self.sequenceControl.getSelectedPosition()
+                    pos  = oldPos + 1
                     if not self.sequenceControl.positionIsValid(pos):
                         pos = 0
                         self.selectSequenceItem(pos)
                     else:
                         self.selectSequenceItem(pos)
                         self.updateFocus(pos=pos)
+                    self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
                 elif action == xbmcgui.ACTION_CONTEXT_MENU:
                         self.doMenu()
 
@@ -394,6 +413,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def selectSequenceItem(self, pos):
         self.sequenceControl.selectItem(pos)
+        self.sequenceControl.getListItem(pos).setProperty('selected', '1')
         dataSource = self.sequenceControl[pos].dataSource
         kodiutil.setGlobalProperty('sequence.item.enabled', dataSource and dataSource.enabled and '1' or '')
 
@@ -451,37 +471,38 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 thumbnailImage='small/script.cinemavision-{0}.png'.format(i[2]),
                 data_source=i[0]
             )
-            item.setProperty('thumb.focus', 'small/script.cinemavision-{0}_selected.png'.format(i[2]))
+            item.setProperty('thumb.focus', 'small/script.cinemavision-{0}_Selected.png'.format(i[2]))
+            item.setProperty('thumb.fill', 'small/script.cinemavision-{0}_Fill.png'.format(i[2]))
             self.addItemControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage='small/script.cinemavision-edit.png', data_source='edit')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-edit.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage='options/script.cinemavision-ModuleEdit.png', data_source='edit')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleEdit.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32532, 'Rename'), T(32532, 'Rename'), thumbnailImage='small/script.cinemavision-rename.png', data_source='rename')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-rename.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32532, 'Rename'), T(32532, 'Rename'), thumbnailImage='options/script.cinemavision-ModuleRename.png', data_source='rename')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleRename.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32533, 'Copy'), T(32533, 'Copy'), thumbnailImage='small/script.cinemavision-copy.png', data_source='copy')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-copy.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32533, 'Copy'), T(32533, 'Copy'), thumbnailImage='options/script.cinemavision-ModuleCopy.png', data_source='copy')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleCopy.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32534, 'Move'), T(32534, 'Move'), thumbnailImage='small/script.cinemavision-move.png', data_source='move')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-move.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32534, 'Move'), T(32534, 'Move'), thumbnailImage='options/script.cinemavision-ModuleMove.png', data_source='move')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleMove.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage='small/script.cinemavision-disable.png', data_source='enable')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-enable.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage='options/script.cinemavision-ModuleEnabled.png', data_source='enable')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleDisabled.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32536, 'Remove'), T(32536, 'Remove'), thumbnailImage='small/script.cinemavision-minus.png', data_source='remove')
-        item.setProperty('alt.thumb', 'small/script.cinemavision-minus.png')
-        item.setProperty('thumb.focus', 'small/script.cinemavision-A_selected.png')
+        item = kodigui.ManagedListItem(T(32536, 'Remove'), T(32536, 'Remove'), thumbnailImage='options/script.cinemavision-ModuleRemove.png', data_source='remove')
+        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleRemove.png')
+        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
     def fillSequence(self):
@@ -674,9 +695,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.insertItem(sItem, item.pos() + 1)
 
     def moveItem(self):
-        item = self.sequenceControl.getSelectedItem()
-        if not item:
-            return
         if self.move:
             kodiutil.DEBUG_LOG('Move item: Finished')
             self.move.setProperty('moving', '')
@@ -684,8 +702,43 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.modified = True
         else:
             kodiutil.DEBUG_LOG('Move item: Started')
+            item = self.sequenceControl.getSelectedItem()
+            if not item:
+                return
             self.move = item
-            self.move.setProperty('moving', '1')
+            self.move.setProperty('moving', str(self.sequenceControl.getSelectedPosition()))
+            self.setFocusId(self.DUMMY_BUTTON_ID)
+
+    def cancelMove(self):
+        kodiutil.DEBUG_LOG('Move item: Canceled')
+
+        self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
+
+        try:
+            oldPos = int(self.move.getProperty('moving'))
+        except:
+            oldPos = -1
+
+        pos = self.sequenceControl.getSelectedPosition()
+
+        self.move.setProperty('moving', '')
+
+        if oldPos > -1 and oldPos != pos:
+            if oldPos < pos:
+                self.insertItem(self.move.dataSource, oldPos - 1)
+                self.sequenceControl.removeItem(pos + 1)
+                self.sequenceControl.removeItem(pos + 1)
+            elif oldPos > pos:
+                self.insertItem(self.move.dataSource, oldPos + 1)
+                self.sequenceControl.removeItem(pos - 1)
+                self.sequenceControl.removeItem(pos - 1)
+
+            self.updateFirstLast()
+            self.updateSpecials()
+
+            self.selectSequenceItem(oldPos)
+
+        self.move = None
 
     def editItem(self):
         item = self.sequenceControl.getSelectedItem()
@@ -1080,6 +1133,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
 
 def main():
+    setTheme()
     kodiutil.setScope()
     kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
     kodiutil.LOG('Sequence editor: OPENING')
