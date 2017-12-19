@@ -1056,3 +1056,7 @@ msgstr ""
 msgctxt "#32612"
 msgid "Sequence settings"
 msgstr ""
+
+msgctxt "#32613"
+msgid "Theme"
+msgstr ""

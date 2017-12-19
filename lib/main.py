@@ -20,7 +20,8 @@ from lib import cinemavision  # noqa E402
 THEME = {
     'theme.color.icon': 'FF9C2A2D',
     'theme.color.setting': 'FF9C2A2D',
-    'theme.color.move': 'FF9C2A2D'
+    'theme.color.move': 'FF9C2A2D',
+    'theme.color.button.selected': 'FF9C2A2D'
 }
 
 
@@ -28,6 +29,7 @@ def setTheme():
     kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
     kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
     kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
+    kodiutil.setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
 
 
 class ItemSettingsWindow(kodigui.BaseDialog):
@@ -331,6 +333,20 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     ITEM_OPTIONS_LIST_ID = 203
     DUMMY_BUTTON_ID = 900
 
+    MENU_EDIT_BUTTON_ID = 401
+    MENU_PLAY_BUTTON_ID = 403
+    MENU_SEQUENCE_SETTINGS_BUTTON_ID = 404
+    MENU_ADDON_SETTINGS_BUTTON_ID = 405
+
+    MENU_NEW_BUTTON_ID = 411
+    MENU_LOAD_BUTTON_ID = 412
+    MENU_SAVE_BUTTON_ID = 413
+    MENU_SAVE_AS_BUTTON_ID = 414
+
+    MENU_IMPORT_BUTTON_ID = 421
+    MENU_EXPORT_BUTTON_ID = 422
+    MENU_THEME_BUTTON_ID = 424
+
     def __init__(self, *args, **kwargs):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
         self.move = None
@@ -338,6 +354,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.setName('')
         self.path = ''
         self.sequenceData = None
+        self.editing = False
 
     def onFirstInit(self):
         self.sequenceControl = kodigui.ManagedControlList(self, self.SEQUENCE_LIST_ID, 22)
@@ -346,70 +363,87 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.start()
 
     def onClick(self, controlID):
-        if self.focusedOnItem():
-            self.itemOptions()
+        if self.editing:
+            if self.focusedOnItem():
+                self.itemOptions()
+            else:
+                self.addItem()
+                self.updateFocus()
         else:
-            self.addItem()
-            self.updateFocus()
+            if controlID == self.MENU_EDIT_BUTTON_ID:
+                self.setEditMode()
+            elif 400 < controlID < 430:
+                self.doMenu(controlID)
 
     def onAction(self, action):
         try:
-            if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
-                if self.move:
-                    return self.cancelMove()
-                elif self.handleClose():
-                    return
+            if self.editing:
+                if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+                    if self.move:
+                        return self.cancelMove()
+                    elif self.editing:
+                        return self.setEditMode(False)
 
-            if self.move:
-                if action == xbmcgui.ACTION_MOVE_LEFT:
-                    pos2 = self.sequenceControl.getSelectedPosition()
-                    pos1 = pos2 - 2
-                    if self.sequenceControl.swapItems(pos1, pos2):
-                        self.selectSequenceItem(pos1)
-                    self.updateFirstLast()
-                    self.updateSpecials()
-                    return
-                elif action == xbmcgui.ACTION_MOVE_RIGHT:
-                    pos1 = self.sequenceControl.getSelectedPosition()
-                    pos2 = pos1 + 2
-                    if self.sequenceControl.swapItems(pos1, pos2):
-                        self.selectSequenceItem(pos2)
-                    self.updateFirstLast()
-                    self.updateSpecials()
-                    return
+                if self.move:
+                    if action == xbmcgui.ACTION_MOVE_LEFT:
+                        pos2 = self.sequenceControl.getSelectedPosition()
+                        pos1 = pos2 - 2
+                        if self.sequenceControl.swapItems(pos1, pos2):
+                            self.selectSequenceItem(pos1)
+                        self.updateFirstLast()
+                        self.updateSpecials()
+                        return
+                    elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                        pos1 = self.sequenceControl.getSelectedPosition()
+                        pos2 = pos1 + 2
+                        if self.sequenceControl.swapItems(pos1, pos2):
+                            self.selectSequenceItem(pos2)
+                        self.updateFirstLast()
+                        self.updateSpecials()
+                        return
+                else:
+                    self.updateFocus()
+                    if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
+                        if self.sequenceControl.size() < 2:
+                            return
+                        oldPos = self.sequenceControl.getSelectedPosition()
+                        pos = oldPos - 1
+                        if not self.sequenceControl.positionIsValid(pos):
+                            pos = self.sequenceControl.size() - 1
+                            self.selectSequenceItem(pos)
+                        else:
+                            self.selectSequenceItem(pos)
+                            self.updateFocus(pos=pos)
+                        self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
+                    elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
+                        if self.sequenceControl.size() < 2:
+                            return
+                        oldPos = self.sequenceControl.getSelectedPosition()
+                        pos  = oldPos + 1
+                        if not self.sequenceControl.positionIsValid(pos):
+                            pos = 0
+                            self.selectSequenceItem(pos)
+                        else:
+                            self.selectSequenceItem(pos)
+                            self.updateFocus(pos=pos)
+                        self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
+                    elif action == xbmcgui.ACTION_CONTEXT_MENU:
+                        self.setEditMode(False)
             else:
-                self.updateFocus()
-                if action == xbmcgui.ACTION_MOVE_LEFT or (action == xbmcgui.ACTION_MOUSE_WHEEL_UP and self.mouseYTrans(action.getAmount2()) < 505):
-                    if self.sequenceControl.size() < 2:
+                if action == xbmcgui.ACTION_PREVIOUS_MENU or action == xbmcgui.ACTION_NAV_BACK:
+                    if self.handleClose():
                         return
-                    oldPos = self.sequenceControl.getSelectedPosition()
-                    pos = oldPos - 1
-                    if not self.sequenceControl.positionIsValid(pos):
-                        pos = self.sequenceControl.size() - 1
-                        self.selectSequenceItem(pos)
-                    else:
-                        self.selectSequenceItem(pos)
-                        self.updateFocus(pos=pos)
-                    self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
-                elif action == xbmcgui.ACTION_MOVE_RIGHT or (action == xbmcgui.ACTION_MOUSE_WHEEL_DOWN and self.mouseYTrans(action.getAmount2()) < 505):
-                    if self.sequenceControl.size() < 2:
-                        return
-                    oldPos = self.sequenceControl.getSelectedPosition()
-                    pos  = oldPos + 1
-                    if not self.sequenceControl.positionIsValid(pos):
-                        pos = 0
-                        self.selectSequenceItem(pos)
-                    else:
-                        self.selectSequenceItem(pos)
-                        self.updateFocus(pos=pos)
-                    self.sequenceControl.getListItem(oldPos).setProperty('selected', '0')
-                elif action == xbmcgui.ACTION_CONTEXT_MENU:
-                        self.doMenu()
 
         except Exception:
             kodiutil.ERROR()
 
         kodigui.BaseWindow.onAction(self, action)
+
+    def setEditMode(self, on=True):
+        self.editing = on
+        self.setProperty('editing', on and '1' or '')
+        if not on:
+            self.setFocusId(self.MENU_EDIT_BUTTON_ID)
 
     def selectSequenceItem(self, pos):
         self.sequenceControl.selectItem(pos)
@@ -445,6 +479,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.fillOptions()
         self.fillSequence()
         self.loadDefault()
+        self.setFocusId(self.MENU_EDIT_BUTTON_ID)
 
     def loadContent(self):
         if self.checkForContentDB() and not kodiutil.getSetting('database.autoUpdate', False):
@@ -806,40 +841,28 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             item = self.sequenceControl.getSelectedItem()
         return bool(item.dataSource)
 
-    def doMenu(self):
-        options = []
-        options.append(('settings', T(32540, 'Add-on settings')))
-        options.append(('attributes', T(32612, 'Sequence settings')))
-        options.append(('new', T(32541, 'New')))
-        options.append(('save', T(32542, 'Save')))
-        options.append(('saveas', T(32543, 'Save as...')))
-        options.append(('load', T(32544, 'Load')))
-        options.append(('import', T(32545, 'Import')))
-        options.append(('export', T(32546, 'Export')))
-        options.append(('test', T(32547, 'Play')))
-        idx = xbmcgui.Dialog().select(T(32548, 'Sequence Options'), [o[1] for o in options])
-        if idx < 0:
-            return
-        option = options[idx][0]
-
-        if option == 'settings':
+    def doMenu(self, controlID):
+        if controlID == self.MENU_ADDON_SETTINGS_BUTTON_ID:
             self.settings()
-        elif option == 'new':
+        elif controlID == self.MENU_NEW_BUTTON_ID:
             self.new()
-        elif option == 'save':
+        elif controlID == self.MENU_SAVE_BUTTON_ID:
             self.save()
-        elif option == 'saveas':
+        elif controlID == self.MENU_SAVE_AS_BUTTON_ID:
             self.save(as_new=True)
-        elif option == 'load':
+        elif controlID == self.MENU_LOAD_BUTTON_ID:
             self.load()
-        elif option == 'import':
+        elif controlID == self.MENU_IMPORT_BUTTON_ID:
             self.load(import_=True)
-        elif option == 'export':
+        elif controlID == self.MENU_EXPORT_BUTTON_ID:
             self.save(export=True)
-        elif option == 'attributes':
+        elif controlID == self.MENU_SEQUENCE_SETTINGS_BUTTON_ID:
             self.sequenceOptions()
-        elif option == 'test':
+        elif controlID == self.MENU_PLAY_BUTTON_ID:
             self.test()
+        elif controlID == self.MENU_THEME_BUTTON_ID:
+            pass
+
 
     def settings(self):
         kodiutil.ADDON.openSettings()
@@ -909,7 +932,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
         self.sequenceControl.reset()
         self.fillSequence()
-        self.setFocusId(self.ADD_ITEM_LIST_ID)
 
     def savePath(self, path=None, name=None):
         name = name or self.name
@@ -1087,10 +1109,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if self.sequenceControl.positionIsValid(1):
             self.selectSequenceItem(1)
-            self.setFocusId(self.ITEM_OPTIONS_LIST_ID)
         else:
             self.selectSequenceItem(0)
-            self.setFocusId(self.ADD_ITEM_LIST_ID)
 
         self.modified = False
 
@@ -1120,7 +1140,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 )
                 if new:
                     self.setName('')
-                    self.setFocusId(self.ADD_ITEM_LIST_ID)
                     return
                 else:
                     savePath = self.defaultSavePath()
