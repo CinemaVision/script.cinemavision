@@ -335,8 +335,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     MENU_EDIT_BUTTON_ID = 401
     MENU_PLAY_BUTTON_ID = 403
-    MENU_SEQUENCE_SETTINGS_BUTTON_ID = 404
-    MENU_ADDON_SETTINGS_BUTTON_ID = 405
+    MENU_CONDITIONS_BUTTON_ID = 404
+    MENU_SHOW_OPTION_BUTTON_ID = 405
 
     MENU_NEW_BUTTON_ID = 411
     MENU_LOAD_BUTTON_ID = 412
@@ -346,6 +346,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     MENU_IMPORT_BUTTON_ID = 421
     MENU_EXPORT_BUTTON_ID = 422
     MENU_THEME_BUTTON_ID = 424
+    MENU_ADDON_SETTINGS_BUTTON_ID = 425
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseWindow.__init__(self, *args, **kwargs)
@@ -856,12 +857,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.load(import_=True)
         elif controlID == self.MENU_EXPORT_BUTTON_ID:
             self.save(export=True)
-        elif controlID == self.MENU_SEQUENCE_SETTINGS_BUTTON_ID:
-            self.sequenceOptions()
         elif controlID == self.MENU_PLAY_BUTTON_ID:
             self.test()
         elif controlID == self.MENU_THEME_BUTTON_ID:
             pass
+        elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
+            self.setAttributes()
+        elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
+            self.sequenceData.visibleInDialog(not self.sequenceData.visibleInDialog())
+            kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
+            self.modified = True
 
 
     def settings(self):
@@ -886,29 +891,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         e = experience.ExperiencePlayer().create(from_editor=True)
         e.start(savePath)
 
-    def sequenceOptions(self):
-        while True:
-            options = []
-            options.append(('conditions', 'Conditions: [B]{0}[/B]'.format(self.sequenceData._attrs.get('active') and 'ACTIVE' or 'INACTIVE')))
-            options.append((
-                'show_in_dialog',
-                'Show in selection dialog: [B]{0}[/B]'.format(self.sequenceData._settings.get('show_in_dialog') == False and 'NO' or 'YES')
-            ))
-            options.append(('close', '[B]Close[/B]'))
-
-            idx = xbmcgui.Dialog().select(T(32612, 'Sequence settings'), [o[1] for o in options])
-            if idx < 0:
-                return
-            option = options[idx][0]
-
-            if option == 'close':
-                return
-            elif option == 'conditions':
-                self.setAttributes()
-            elif option == 'show_in_dialog':
-                self.sequenceData.visibleInDialog(not self.sequenceData.visibleInDialog())
-                self.modified = True
-
     def setAttributes(self):
         self.modified = seqattreditor.setAttributes(self.sequenceData) or self.modified
 
@@ -930,6 +912,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.sequenceData = cinemavision.sequence.SequenceData()
         self.setName('')
         kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
+        kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
         self.sequenceControl.reset()
         self.fillSequence()
 
@@ -1105,6 +1088,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         self.sequenceData = sData
         kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
+        kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
         self.addItems(sData)
 
         if self.sequenceControl.positionIsValid(1):

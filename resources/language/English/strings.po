@@ -766,7 +766,7 @@ msgid "Enter a name for this item"
 msgstr ""
 
 msgctxt "#32540"
-msgid "Add-on settings"
+msgid "Preferences"
 msgstr ""
 
 msgctxt "#32541"
@@ -1059,4 +1059,12 @@ msgstr ""
 
 msgctxt "#32613"
 msgid "Theme"
+msgstr ""
+
+msgctxt "#32614"
+msgid "Conditions"
+msgstr ""
+
+msgctxt "#32615"
+msgid "Show in dialog"
 msgstr ""

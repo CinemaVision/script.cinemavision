@@ -174,7 +174,7 @@
                             <posy>5</posy>
                             <width>370</width>
                             <height>70</height>
-                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32612][/UPPERCASE][/B]</label>
+                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32614][/UPPERCASE][/B]</label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>center</align>
@@ -203,14 +203,33 @@
                             <posy>5</posy>
                             <width>370</width>
                             <height>70</height>
-                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32540][/UPPERCASE][/B]</label>
+                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32615][/UPPERCASE][/B]</label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
-                            <align>center</align>
+                            <align>right</align>
+                            <textoffsetx>20</textoffsetx>
                             <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                             <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                             <onup>404</onup>
-                            <onright>414</onright>
+                            <onright>425</onright>
+                        </control>
+                        <control type="image">
+                            <visible>String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.visible.dialog))</visible>
+                            <posx>8</posx>
+                            <posy>2.5</posy>
+                            <width>75</width>
+                            <height>75</height>
+                            <texture>options/script.cinemavision-ModuleDisabled.png</texture>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="image">
+                            <visible>!String.IsEmpty(Window(10000).Property(script.cinemavision.sequence.visible.dialog))</visible>
+                            <posx>8</posx>
+                            <posy>2.5</posy>
+                            <width>75</width>
+                            <height>75</height>
+                            <texture>options/script.cinemavision-ModuleEnabled.png</texture>
+                            <aspectratio>stretch</aspectratio>
                         </control>
                     </control>
                 </control>
@@ -409,7 +428,6 @@
                             <aspectratio>stretch</aspectratio>
                         </control>
                         <control type="button" id="424">
-                            <enable>false</enable>
                             <posx>5</posx>
                             <posy>5</posy>
                             <width>300</width>
@@ -422,6 +440,35 @@
                             <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                             <onup>422</onup>
                             <onleft>414</onleft>
+                            <ondown>405</ondown>
+                        </control>
+                    </control>
+
+                    <control type="group">
+                        <posx>0</posx>
+                        <posy>420</posy>
+                        <control type="image">
+                            <posx>0</posx>
+                            <posy>0</posy>
+                            <width>310</width>
+                            <height>80</height>
+                            <texture>script.cinemavision-white_square.png</texture>
+                            <colordiffuse>FF151515</colordiffuse>
+                            <aspectratio>stretch</aspectratio>
+                        </control>
+                        <control type="button" id="425">
+                            <posx>5</posx>
+                            <posy>5</posy>
+                            <width>300</width>
+                            <height>70</height>
+                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32540][/UPPERCASE][/B]</label>
+                            <font>font13</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <align>center</align>
+                            <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
+                            <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
+                            <onup>424</onup>
+                            <onleft>405</onleft>
                         </control>
                     </control>
                 </control>
