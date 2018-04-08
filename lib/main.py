@@ -1,4 +1,5 @@
 import os
+import json
 
 import xbmcgui
 import xbmcvfs
@@ -17,19 +18,39 @@ import cvutil  # noqa E402
 
 from lib import cinemavision  # noqa E402
 
-THEME = {
-    'theme.color.icon': 'FF9C2A2D',
-    'theme.color.setting': 'FF9C2A2D',
-    'theme.color.move': 'FF9C2A2D',
-    'theme.color.button.selected': 'FF9C2A2D'
-}
+THEME = None
 
+def setTheme(theme_path=None):
+    global THEME
 
-def setTheme():
+    default = os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes', 'default') + '/'
+
+    if theme_path is not None:
+        kodiutil.setSetting('theme.path', theme_path)
+    else:
+        theme_path = kodiutil.getSetting('theme.path', default)
+
+    cfg = cinemavision.util.pathJoin(theme_path, 'theme.json')
+    try:
+        with cinemavision.util.vfs.File(cfg, 'r') as f:
+            THEME = json.loads(f.read().decode('utf-8'))
+            THEME['theme.path'] = theme_path
+    except:
+        kodiutil.ERROR('Could not read {0}'.format(cfg))
+        THEME = {
+            'theme.name': '[I]Default[/I]',
+            'theme.color.icon': 'FF9C2A2D',
+            'theme.color.setting': 'FF9C2A2D',
+            'theme.color.move': 'FF9C2A2D',
+            'theme.color.button.selected': 'FF9C2A2D',
+            'theme.path': default
+        }
+
     kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
     kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
     kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
     kodiutil.setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
+    kodiutil.setGlobalProperty('theme.path', THEME['theme.path'])
 
 
 class ItemSettingsWindow(kodigui.BaseDialog):
@@ -504,41 +525,44 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         for i in cinemavision.sequence.ITEM_TYPES:
             item = kodigui.ManagedListItem(
                 '{0}: {1}'.format(T(32530, 'Add'), i[1]),
-                thumbnailImage='small/script.cinemavision-{0}.png'.format(i[2]),
+                thumbnailImage='{0}small/script.cinemavision-{1}.png'.format(THEME['theme.path'], i[2]),
                 data_source=i[0]
             )
-            item.setProperty('thumb.focus', 'small/script.cinemavision-{0}_Selected.png'.format(i[2]))
-            item.setProperty('thumb.fill', 'small/script.cinemavision-{0}_Fill.png'.format(i[2]))
+            kodiutil.TEST('{0}small/script.cinemavision-{1}_Selected.png'.format(THEME['theme.path'], i[2]))
+            item.setProperty('thumb.focus', '{0}small/script.cinemavision-{1}_Selected.png'.format(THEME['theme.path'], i[2]))
+            item.setProperty('thumb.fill', '{0}small/script.cinemavision-{1}_Fill.png'.format(THEME['theme.path'], i[2]))
             self.addItemControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage='options/script.cinemavision-ModuleEdit.png', data_source='edit')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleEdit.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        basePath = THEME['theme.path'] + 'options/script.cinemavision-'
+
+        item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage=basePath + 'ModuleEdit.png', data_source='edit')
+        item.setProperty('alt.thumb', basePath + 'ModuleEdit.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32532, 'Rename'), T(32532, 'Rename'), thumbnailImage='options/script.cinemavision-ModuleRename.png', data_source='rename')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleRename.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        item = kodigui.ManagedListItem(T(32532, 'Rename'), T(32532, 'Rename'), thumbnailImage=basePath + 'ModuleRename.png', data_source='rename')
+        item.setProperty('alt.thumb', basePath + 'ModuleRename.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32533, 'Copy'), T(32533, 'Copy'), thumbnailImage='options/script.cinemavision-ModuleCopy.png', data_source='copy')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleCopy.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        item = kodigui.ManagedListItem(T(32533, 'Copy'), T(32533, 'Copy'), thumbnailImage=basePath + 'ModuleCopy.png', data_source='copy')
+        item.setProperty('alt.thumb', basePath + 'ModuleCopy.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32534, 'Move'), T(32534, 'Move'), thumbnailImage='options/script.cinemavision-ModuleMove.png', data_source='move')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleMove.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        item = kodigui.ManagedListItem(T(32534, 'Move'), T(32534, 'Move'), thumbnailImage=basePath + 'ModuleMove.png', data_source='move')
+        item.setProperty('alt.thumb', basePath + 'ModuleMove.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage='options/script.cinemavision-ModuleEnabled.png', data_source='enable')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleDisabled.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        item = kodigui.ManagedListItem(T(32535, 'Disable'), T(32610, 'Enable'), thumbnailImage=basePath + 'ModuleEnabled.png', data_source='enable')
+        item.setProperty('alt.thumb', basePath + 'ModuleDisabled.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
-        item = kodigui.ManagedListItem(T(32536, 'Remove'), T(32536, 'Remove'), thumbnailImage='options/script.cinemavision-ModuleRemove.png', data_source='remove')
-        item.setProperty('alt.thumb', 'options/script.cinemavision-ModuleRemove.png')
-        item.setProperty('thumb.focus', 'options/script.cinemavision-Module_Selected.png')
+        item = kodigui.ManagedListItem(T(32536, 'Remove'), T(32536, 'Remove'), thumbnailImage=basePath + 'ModuleRemove.png', data_source='remove')
+        item.setProperty('alt.thumb', basePath + 'ModuleRemove.png')
+        item.setProperty('thumb.focus', basePath + 'Module_Selected.png')
         self.itemOptionsControl.addItem(item)
 
     def fillSequence(self):
@@ -563,6 +587,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         mli.setProperty('type', sItem.fileChar)
         mli.setProperty('type.name', sItem.displayName)
         mli.setProperty('enabled', sItem.enabled and '1' or '')
+        mli.setProperty('theme.path', THEME['theme.path'])
 
         if not self.updateItemSettings(mli):
             mli.setProperty('error', '1')
@@ -581,6 +606,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             mli.setProperty('type', sItem.fileChar)
             mli.setProperty('type.name', sItem.displayName)
             mli.setProperty('enabled', sItem.enabled and '1' or '')
+            mli.setProperty('theme.path', THEME['theme.path'])
 
             if not self.updateItemSettings(mli):
                 mli.setProperty('error', '1')
@@ -860,7 +886,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif controlID == self.MENU_PLAY_BUTTON_ID:
             self.test()
         elif controlID == self.MENU_THEME_BUTTON_ID:
-            pass
+            self.themeMenu()
         elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
             self.setAttributes()
         elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
@@ -868,6 +894,42 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
             self.modified = True
 
+
+    def themeMenu(self):
+        themes = sorted(self.getThemes(os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes')), key=lambda x: x["theme.path"])
+        if kodiutil.getPathSetting('content.path'):
+            themes += self.getThemes()
+
+        idx = xbmcgui.Dialog().select('Choose Theme', [x['theme.name'] for x in themes])
+        if idx < 0:
+            return False
+
+        setTheme(themes[idx]['theme.path'])
+
+        for mli in self.sequenceControl:
+            if mli.getProperty('theme.path'):
+                mli.setProperty('theme.path', THEME['theme.path'])
+
+        self.itemOptionsControl.reset()
+        self.addItemControl.reset()
+        self.fillOptions()
+
+    def getThemes(self, themes_path=None):
+        themesPath = themes_path or cinemavision.util.pathJoin(kodiutil.getPathSetting('content.path'), 'Themes')
+        themePaths = [cinemavision.util.pathJoin(themesPath, p) for p in cinemavision.util.vfs.listdir(themesPath)]
+
+        themes = []
+        for tp in themePaths:
+            cfg = cinemavision.util.pathJoin(tp, 'theme.json')
+            try:
+                with cinemavision.util.vfs.File(cfg, 'r') as f:
+                    themeInfo = json.loads(f.read().decode('utf-8'))
+                    themeInfo['theme.path'] = tp + '/'
+                themes.append(themeInfo)
+            except Exception:
+                kodiutil.ERROR('Failed to load: {0}'.format(kodiutil.strRepr(cfg)))
+
+        return themes
 
     def settings(self):
         kodiutil.ADDON.openSettings()

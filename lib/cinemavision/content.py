@@ -68,6 +68,7 @@ class UserContent:
             'DEJUS',
             'FSK'
         )),
+        'Themes',
         'Trailers',
         'Trivia',
         ('Video Bumpers', (
