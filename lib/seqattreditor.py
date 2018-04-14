@@ -35,7 +35,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
 
     def fillAttributeList(self, update=False):
         self.options = []
-        self.options.append(('active', 'Active'))
+        # self.options.append(('active', 'Active'))
         self.options.append(('type', 'Type'))
         self.options.append(('ratings', 'Rating(s)'))
         self.options.append(('year', 'Year(s)'))

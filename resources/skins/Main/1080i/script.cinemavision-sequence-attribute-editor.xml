@@ -29,7 +29,7 @@
                 <posx>-20</posx>
                 <posy>-20</posy>
                 <width>1360</width>
-                <height>980</height>
+                <height>900</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>60000000</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -38,7 +38,7 @@
                 <posx>-5</posx>
                 <posy>-5</posy>
                 <width>1330</width>
-                <height>950</height>
+                <height>870</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FFA0A0A0</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -47,7 +47,7 @@
                 <posx>0</posx>
                 <posy>0</posy>
                 <width>1320</width>
-                <height>940</height>
+                <height>860</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>FF303030</colordiffuse>
                 <aspectratio>stretch</aspectratio>
@@ -59,7 +59,7 @@
                     <posx>20</posx>
                     <posy>20</posy>
                     <width>1280</width>
-                    <height>940</height>
+                    <height>860</height>
                     <scrolltime>200</scrolltime>
                     <orientation>vertical</orientation>
                     <!-- <onleft>201</onleft>

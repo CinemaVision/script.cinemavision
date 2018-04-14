@@ -356,12 +356,13 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     MENU_EDIT_BUTTON_ID = 401
     MENU_PLAY_BUTTON_ID = 403
+    MENU_SEQUENCE_ACTIVE_BUTTON_ID = 402
     MENU_CONDITIONS_BUTTON_ID = 404
     MENU_SHOW_OPTION_BUTTON_ID = 405
 
     MENU_NEW_BUTTON_ID = 411
-    MENU_LOAD_BUTTON_ID = 412
-    MENU_SAVE_BUTTON_ID = 413
+    MENU_LOAD_BUTTON_ID = 432
+    MENU_SAVE_BUTTON_ID = 433
     MENU_SAVE_AS_BUTTON_ID = 414
 
     MENU_IMPORT_BUTTON_ID = 421
@@ -394,7 +395,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         else:
             if controlID == self.MENU_EDIT_BUTTON_ID:
                 self.setEditMode()
-            elif 400 < controlID < 430:
+            elif 400 < controlID < 440:
                 self.doMenu(controlID)
 
     def onAction(self, action):
@@ -460,6 +461,28 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             kodiutil.ERROR()
 
         kodigui.BaseWindow.onAction(self, action)
+
+    def onFocus(self, controlID):
+        if controlID == self.MENU_ADDON_SETTINGS_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Preferences[/B]: Customize CinemaVision to your needs')
+        elif controlID == self.MENU_NEW_BUTTON_ID:
+           kodiutil.setGlobalProperty('option.hint', '[B]New[/B]: Create a new empty sequence')
+        elif controlID == self.MENU_SAVE_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Save Options[/B]: Save or export the current sequence')
+        elif controlID == self.MENU_LOAD_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Load Options[/B]: Load or import a sequence')
+        elif controlID == self.MENU_PLAY_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Play[/B]: Test the current sequence with a dummy feature')
+        elif controlID == self.MENU_THEME_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Theme[/B]: Set the colors and icons for the sequence editor')
+        elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Conditions[/B]: Set the conditions for auto-selecting the current sequence')
+        elif controlID == self.MENU_SEQUENCE_ACTIVE_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Active[/B]: Whether this sequnce is active for auto-selection')
+        elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog')
+        elif controlID == self.MENU_EDIT_BUTTON_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Edit[/B]: Bring up the sequence editor for the current sequence')
 
     def setEditMode(self, on=True):
         self.editing = on
@@ -528,7 +551,6 @@ class SequenceEditorWindow(kodigui.BaseWindow):
                 thumbnailImage='{0}small/script.cinemavision-{1}.png'.format(THEME['theme.path'], i[2]),
                 data_source=i[0]
             )
-            kodiutil.TEST('{0}small/script.cinemavision-{1}_Selected.png'.format(THEME['theme.path'], i[2]))
             item.setProperty('thumb.focus', '{0}small/script.cinemavision-{1}_Selected.png'.format(THEME['theme.path'], i[2]))
             item.setProperty('thumb.fill', '{0}small/script.cinemavision-{1}_Fill.png'.format(THEME['theme.path'], i[2]))
             self.addItemControl.addItem(item)
@@ -874,26 +896,54 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif controlID == self.MENU_NEW_BUTTON_ID:
             self.new()
         elif controlID == self.MENU_SAVE_BUTTON_ID:
-            self.save()
-        elif controlID == self.MENU_SAVE_AS_BUTTON_ID:
-            self.save(as_new=True)
+            self.saveMenu()
         elif controlID == self.MENU_LOAD_BUTTON_ID:
-            self.load()
-        elif controlID == self.MENU_IMPORT_BUTTON_ID:
-            self.load(import_=True)
-        elif controlID == self.MENU_EXPORT_BUTTON_ID:
-            self.save(export=True)
+            self.loadMenu()
         elif controlID == self.MENU_PLAY_BUTTON_ID:
             self.test()
         elif controlID == self.MENU_THEME_BUTTON_ID:
             self.themeMenu()
         elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
             self.setAttributes()
+        elif controlID == self.MENU_SEQUENCE_ACTIVE_BUTTON_ID:
+            val = not self.sequenceData.active
+            self.sequenceData.active = val
+            kodiutil.setGlobalProperty('ACTIVE', self.sequenceData.active and '1' or '0')
+            self.modified = True
         elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
             self.sequenceData.visibleInDialog(not self.sequenceData.visibleInDialog())
             kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
             self.modified = True
 
+    def loadMenu(self):
+        options = [('load', 'Load'), ('import', 'Import')]
+
+        idx = xbmcgui.Dialog().select('Loading Options', [x[1] for x in options])
+        if idx < 0:
+            return
+
+        choice = options[idx][0]
+
+        if choice == 'load':
+            self.load()
+        elif choice == 'import':
+            self.load(import_=True)
+
+    def saveMenu(self):
+        options = [('save', 'Save'), ('saveas', 'Save as...'), ('export', 'Export')]
+
+        idx = xbmcgui.Dialog().select('Loading Options', [x[1] for x in options])
+        if idx < 0:
+            return
+
+        choice = options[idx][0]
+
+        if choice == 'save':
+            self.save()
+        elif choice == 'saveas':
+            self.save(as_new=True)
+        elif choice == 'export':
+            self.save(export=True)
 
     def themeMenu(self):
         themes = sorted(self.getThemes(os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes')), key=lambda x: x["theme.path"])
@@ -1201,6 +1251,7 @@ def main():
     setTheme()
     kodiutil.setScope()
     kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
+    kodiutil.setGlobalProperty('option.hint', '')
     kodiutil.LOG('Sequence editor: OPENING')
     w = SequenceEditorWindow.open()
     del w
