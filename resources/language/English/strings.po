@@ -1068,3 +1068,7 @@ msgstr ""
 msgctxt "#32615"
 msgid "Show in dialog"
 msgstr ""
+
+msgctxt "#32616"
+msgid "Rename current sequence"
+msgstr ""

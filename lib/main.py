@@ -363,7 +363,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
     MENU_NEW_BUTTON_ID = 411
     MENU_LOAD_BUTTON_ID = 432
     MENU_SAVE_BUTTON_ID = 433
-    MENU_SAVE_AS_BUTTON_ID = 414
+    MENU_EDIT_SEQ_NAME_ID = 434
 
     MENU_IMPORT_BUTTON_ID = 421
     MENU_EXPORT_BUTTON_ID = 422
@@ -483,6 +483,8 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             kodiutil.setGlobalProperty('option.hint', '[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog')
         elif controlID == self.MENU_EDIT_BUTTON_ID:
             kodiutil.setGlobalProperty('option.hint', '[B]Edit[/B]: Bring up the sequence editor for the current sequence')
+        elif controlID == self.MENU_EDIT_SEQ_NAME_ID:
+            kodiutil.setGlobalProperty('option.hint', '[B]Name[/B]: Name or rename this sequence')
 
     def setEditMode(self, on=True):
         self.editing = on
@@ -914,6 +916,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             self.sequenceData.visibleInDialog(not self.sequenceData.visibleInDialog())
             kodiutil.setGlobalProperty('sequence.visible.dialog', self.sequenceData.visibleInDialog() and "1" or "")
             self.modified = True
+        elif controlID == self.MENU_EDIT_SEQ_NAME_ID:
+            name = xbmcgui.Dialog().input(T(32616, 'Rename current sequence'), self.sequenceData.name)
+            if not name:
+                return
+            self.sequenceData.name = name
+            self.setName(name)
+            self.modified = True
+
 
     def loadMenu(self):
         options = [('load', 'Load'), ('import', 'Import')]
@@ -1028,8 +1038,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.sequenceControl.reset()
         self.fillSequence()
 
-    def savePath(self, path=None, name=None):
-        name = name or self.name
+    def savePath(self, path=None, pathName=None):
+        if pathName is None and self.sequenceData is not None:
+            pathName = self.sequenceData.pathName
+
         if not path:
             contentPath = kodiutil.getPathSetting('content.path')
             if not contentPath:
@@ -1037,11 +1049,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
             path = cinemavision.util.pathJoin(contentPath, 'Sequences')
 
-        if not name or not path:
+        if not pathName or not path:
             return None
-        if name.endswith('.cvseq'):
-            name = name[:-6]
-        return cinemavision.util.pathJoin(path, name) + '.cvseq'
+        if pathName.endswith('.cvseq'):
+            pathName = pathName[:-6]
+        return cinemavision.util.pathJoin(path, pathName) + '.cvseq'
 
     def setName(self, name):
         self.name = name
@@ -1063,17 +1075,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
             path = cinemavision.util.pathJoin(contentPath, 'Sequences')
 
-        name = self.name
+        pathName = self.sequenceData.pathName
 
-        if not name or as_new or export:
-            name = xbmcgui.Dialog().input(T(32554, 'Enter name for file'), name)
-            if not name:
+        if not pathName or as_new or export:
+            pathName = xbmcgui.Dialog().input(T(32554, 'Enter name for file'), pathName)
+            if not pathName:
                 return
 
-            if not export:
-                self.setName(name)
-
-        fullPath = self.savePath(path, name)
+        fullPath = self.savePath(path, pathName)
 
         self._save(fullPath, temp=export)
 
@@ -1159,9 +1168,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         sep = cinemavision.util.getSep(path)
 
-        self.path, name = path.rsplit(sep, 1)
+        self.path, pathName = path.rsplit(sep, 1)
         self.path += sep
-        self.setName(name.rsplit('.', 1)[0])
+        self.setName(self.sequenceData.name)
 
         self.saveDefault()
 
@@ -1211,18 +1220,23 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         self.modified = False
 
     def saveDefault(self, force=True):
-        if (not self.name or not self.path) and not force:
+        if (self.sequenceData is None or not self.path) and not force:
             return
-        kodiutil.setSetting('save.name', self.name)
+
+        savePathName = ''
+        if self.sequenceData is not None:
+            savePathName = self.sequenceData.pathName
+
         kodiutil.setSetting('save.path', self.path)
+        kodiutil.setSetting('save.path.name', savePathName)
 
     def loadDefault(self):
-        self.setName(kodiutil.getSetting('save.name', ''))
+        savePathName = kodiutil.getSetting('save.path.name', '')
 
-        if not self.name:
+        if not savePathName:
             savePath = self.defaultSavePath()
         else:
-            savePath = self.savePath()
+            savePath = self.savePath(pathName=savePathName)
             if not xbmcvfs.exists(savePath):
                 self.setName('')
                 self.saveDefault(force=True)
@@ -1243,6 +1257,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         kodiutil.DEBUG_LOG('Loading previous save: {0}'.format(savePath))
 
         self._load(savePath)
+        self.setName(self.sequenceData.name)
 
         kodiutil.DEBUG_LOG('Previous save loaded')
 

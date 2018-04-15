@@ -139,8 +139,9 @@ def _getConditionValueString(itype, val):
     return util.strRepr(val)
 
 class SequenceData(object):
-    def __init__(self, data_string='', name=''):
-        self.name = name
+    def __init__(self, data_string='', path_name=''):
+        self.pathName = path_name
+        self.name = path_name
         self.active = False
         self._items = []
         self._attrs = {}
@@ -158,7 +159,7 @@ class SequenceData(object):
         return self._items[idx]
 
     def __repr__(self):
-        return 'SequenceData [{0}]({1}): {2}'.format(repr(self.name), len(self._items), repr(self._attrs))
+        return 'SequenceData [{0}]({1}): {2}'.format(repr(self.pathName), len(self._items), repr(self._attrs))
 
     def _process(self, data_string):
         if not data_string:
@@ -181,17 +182,18 @@ class SequenceData(object):
             self._attrs = data.get('attributes', {})
             self._settings = data.get('settings', {})
             self.active = data.get('active', False)
+            self.name = data.get('name') or self.pathName
         except (ValueError, TypeError):
             if dstring.startswith('{'):
                 util.DEBUG_LOG(repr(dstring))
-                util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
+                util.ERROR('Error parsing sequence: {0}'.format(repr(self.pathName)))
                 raise exceptions.BadSequenceFileException()
             else:
                 try:
                     self._items = self._getItemsFromXMLString(dstring)
                 except:
                     util.DEBUG_LOG(repr(dstring[:100]))
-                    util.ERROR('Error parsing sequence: {0}'.format(repr(self.name)))
+                    util.ERROR('Error parsing sequence: {0}'.format(repr(self.pathName)))
                     raise exceptions.BadSequenceFileException()
 
         self._attrs['type'] = self._attrs.get('type')
@@ -223,7 +225,7 @@ class SequenceData(object):
         if not dstring:
             raise exceptions.EmptySequenceFileException()
 
-        obj = cls(dstring, name=re.split(r'[/\\]', path)[-1][:-6])
+        obj = cls(dstring, path_name=re.split(r'[/\\]', path)[-1][:-6])
         obj._loadPath = path
         return obj
 
@@ -262,6 +264,7 @@ class SequenceData(object):
         return json.dumps(
             {
                 'version': SAVE_VERSION,
+                'name': self.name,
                 'active': self.active,
                 'items': data,
                 'attributes': attrs,

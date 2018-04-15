@@ -66,7 +66,14 @@ def selectSequence(active=True, for_dialog=False):
 
     sequences = getActiveSequences(active=active, for_dialog=for_dialog)
 
-    options = [('{0}.cvseq'.format(s.name), s.name) for s in sequences]
+    dupNames = {}
+    for s in sequences:
+        if s.name in dupNames:
+            dupNames[s.name] = True
+        else:
+            dupNames[s.name] = False
+
+    options = [('{0}.cvseq'.format(s.pathName), '{0} ({1})'.format(s.name, s.pathName) if dupNames[s.name] else s.name) for s in sequences]
     options.append((default2D, u'[ {0} ]'.format(T(32599, 'Default 2D'))))
     options.append((default3D, u'[ {0} ]'.format(T(32600, 'Default 3D'))))
 
