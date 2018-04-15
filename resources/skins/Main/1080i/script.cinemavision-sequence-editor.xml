@@ -1319,7 +1319,7 @@
                             <posy>5</posy>
                             <width>70</width>
                             <height>70</height>
-                            <texture>icons/script.cinemavision-New1.png</texture>
+                            <texture>icons/script.cinemavision-New.png</texture>
                             <colordiffuse>FFFFFFFF</colordiffuse>
                             <aspectratio>stretch</aspectratio>
                         </control>
@@ -1458,15 +1458,39 @@
                             <posy>5</posy>
                             <width>270</width>
                             <height>110</height>
-                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32531][/UPPERCASE][/B]</label>
+                            <label> </label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
-                            <align>center</align>
+                            <align>right</align>
+                            <textoffsetx>24</textoffsetx>
                             <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                             <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                             <onup>432</onup>
                             <ondown>403</ondown>
                             <onright>402</onright>
+                        </control>
+                        <control type="grouplist">
+                            <posx>-4</posx>
+                            <posy>25</posy>
+                            <width>270</width>
+                            <height>70</height>
+                            <itemgap>0</itemgap>
+                            <orientation>horizontal</orientation>
+                            <align>center</align>
+                            <control type="image">
+                                <width>70</width>
+                                <height>70</height>
+                                <texture>icons/script.cinemavision-Edit.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="label">
+                                <width>auto</width>
+                                <height>70</height>
+                                <font>font30</font>
+                                <textcolor>FFFFFFFF</textcolor>
+                                <aligny>center</aligny>
+                                <label>[B][UPPERCASE]$ADDON[script.cinemavision 32531][/UPPERCASE][/B]</label>
+                            </control>
                         </control>
                     </control>
 
@@ -1487,15 +1511,39 @@
                             <posy>5</posy>
                             <width>270</width>
                             <height>70</height>
-                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32547][/UPPERCASE][/B]</label>
+                            <label> </label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
-                            <align>center</align>
+                            <align>right</align>
+                            <textoffsetx>24</textoffsetx>
                             <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                             <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                             <onup>401</onup>
                             <ondown>425</ondown>
                             <onright>402</onright>
+                        </control>
+                        <control type="grouplist">
+                            <posx>-4</posx>
+                            <posy>5</posy>
+                            <width>270</width>
+                            <height>70</height>
+                            <itemgap>0</itemgap>
+                            <orientation>horizontal</orientation>
+                            <align>center</align>
+                            <control type="image">
+                                <width>70</width>
+                                <height>70</height>
+                                <texture>icons/script.cinemavision-Play.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="label">
+                                <width>auto</width>
+                                <height>70</height>
+                                <font>font30</font>
+                                <textcolor>FFFFFFFF</textcolor>
+                                <aligny>center</aligny>
+                                <label>[B][UPPERCASE]$ADDON[script.cinemavision 32547][/UPPERCASE][/B]</label>
+                            </control>
                         </control>
                     </control>
 
@@ -1516,7 +1564,7 @@
                             <posy>5</posy>
                             <width>400</width>
                             <height>70</height>
-                            <label>[B][UPPERCASE]Active[/UPPERCASE][/B]</label>
+                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32608][/UPPERCASE][/B]</label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
                             <align>right</align>
@@ -1563,14 +1611,38 @@
                             <posy>5</posy>
                             <width>400</width>
                             <height>70</height>
-                            <label>[B][UPPERCASE]$ADDON[script.cinemavision 32614][/UPPERCASE][/B]</label>
+                            <label> </label>
                             <font>font13</font>
                             <textcolor>FFFFFFFF</textcolor>
-                            <align>center</align>
+                            <align>right</align>
+                            <textoffsetx>24</textoffsetx>
                             <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                             <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                             <onleft>402</onleft>
                             <onright>405</onright>
+                        </control>
+                        <control type="grouplist">
+                            <posx>-4</posx>
+                            <posy>5</posy>
+                            <width>400</width>
+                            <height>70</height>
+                            <itemgap>0</itemgap>
+                            <orientation>horizontal</orientation>
+                            <align>center</align>
+                            <control type="image">
+                                <width>70</width>
+                                <height>70</height>
+                                <texture>icons/script.cinemavision-Conditions.png</texture>
+                                <aspectratio>stretch</aspectratio>
+                            </control>
+                            <control type="label">
+                                <width>auto</width>
+                                <height>70</height>
+                                <font>font30</font>
+                                <textcolor>FFFFFFFF</textcolor>
+                                <aligny>center</aligny>
+                                <label>[B][UPPERCASE]$ADDON[script.cinemavision 32614][/UPPERCASE][/B]</label>
+                            </control>
                         </control>
                     </control>
 

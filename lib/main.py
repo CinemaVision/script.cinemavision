@@ -476,9 +476,9 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         elif controlID == self.MENU_THEME_BUTTON_ID:
             kodiutil.setGlobalProperty('option.hint', '[B]Theme[/B]: Set the colors and icons for the sequence editor')
         elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Conditions[/B]: Set the conditions for auto-selecting the current sequence')
+            kodiutil.setGlobalProperty('option.hint', '[B]Set Conditions[/B]: Set the conditions for auto-selecting the current sequence')
         elif controlID == self.MENU_SEQUENCE_ACTIVE_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Active[/B]: Whether this sequnce is active for auto-selection')
+            kodiutil.setGlobalProperty('option.hint', '[B]Auto Select[/B]: Whether this sequnce is active for auto-selection')
         elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
             kodiutil.setGlobalProperty('option.hint', '[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog')
         elif controlID == self.MENU_EDIT_BUTTON_ID:
