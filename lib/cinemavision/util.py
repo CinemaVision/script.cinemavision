@@ -242,6 +242,7 @@ try:
         for stype, scraper, default in (
             ('trailers', 'iTunes', True),
             ('trailers', 'KodiDB', True),
+            ('trailers', 'TMDB', True),
             ('trailers', 'StereoscopyNews', False),
             ('trailers', 'Content', False)
         ):

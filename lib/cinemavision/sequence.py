@@ -901,6 +901,7 @@ class Trailer(Item):
         ['Content', T(32326, 'Trailers Folder'), 'content'],
         ['KodiDB', T(32318, 'Kodi Database'), 'kodidb'],
         ['iTunes', 'Apple iTunes', 'itunes'],
+        ['TMDB', 'The Movie Database', 'tmdb'],
         ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
     ]
 
