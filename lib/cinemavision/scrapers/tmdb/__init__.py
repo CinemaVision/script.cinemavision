@@ -105,6 +105,8 @@ class Trailer(_scrapers.Trailer):
 
 
 class TMDBTrailerScraper(_scrapers.Scraper):
+    ONLY_KEEP_VERIFIED = False
+    REMOVE_DAYS_OLD = 120
     LAST_UPDATE_FILE = os.path.join(util.STORAGE_PATH, 'tmdb.last')
 
     RES = {
@@ -124,18 +126,32 @@ class TMDBTrailerScraper(_scrapers.Scraper):
 
         details = ts.getDetails(ID)
 
-        trailers = [t for t in details['videos']['results'] if t['type'] == 'Trailer']
+        if details is None:
+            return ''
+
+        videos = details.get('videos')
+
+        if not videos:
+            return ''
+
+        trailers = [t for t in videos['results'] if t['type'] == 'Trailer']
 
         url = None
         if not trailers:
             return ''
 
+        trailerID = ''
         try:
             trailerID = [t['key'] for t in trailers if t['size'] == res][0]
+        except IndexError:
+            pass
         except:
             import traceback
             traceback.print_exc()
             return ''
+
+        if not trailerID:
+            trailerID = trailers[0]['key']
 
         return 'plugin://plugin.video.youtube/play/?video_id={id}'.format(id=trailerID)
 
@@ -155,15 +171,14 @@ class TMDBTrailerScraper(_scrapers.Scraper):
             f.write('{0}\n{1}'.format(int(self.lastAllUpdate), int(self.lastRecentUpdate)))
 
     def allIsDue(self):
-        return True
-        if time.time() - self.lastAllUpdate > 2592000:  # One month
+        if time.time() - self.lastAllUpdate > 21600:  # 6 Hours
             self.lastAllUpdate = time.time()
             self.saveTimes()
             return True
         return False
 
     def recentIsDue(self):
-        if time.time() - self.lastRecentUpdate > 86400:  # One day
+        if time.time() - self.lastRecentUpdate > 21600:  # 6 Hours
             self.lastRecentUpdate = time.time()
             self.saveTimes()
             return True
@@ -178,9 +193,4 @@ class TMDBTrailerScraper(_scrapers.Scraper):
         return []
 
     def updateTrailers(self):
-        ms = scraper.Scraper()
-        if self.recentIsDue():
-            util.DEBUG_LOG(' - Fetching recent trailers')
-            return [Trailer(t) for t in ms.getTrailers()]
-
-        return []
+        return self.getTrailers()

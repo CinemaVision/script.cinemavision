@@ -510,8 +510,16 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if yes:
             return False
-
-        self.save(as_new=True)
+        else:
+            yes = xbmcgui.Dialog().yesno(
+                'Options',
+                'Would you like to save and exit or abort',
+                yeslabel='Save and exit',
+                nolabel='Abort'
+            )
+            if yes:
+                self.save()
+                return False
 
         return True
 
@@ -1135,6 +1143,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
         if not temp:
             self.modified = False
+            self.setName(self.sequenceData.name)
             self.saveDefault()
 
             # sequence2D = kodiutil.getSetting('sequence.2D')

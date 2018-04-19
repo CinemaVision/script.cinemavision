@@ -150,7 +150,7 @@ class SequenceData(object):
         self._process(data_string)
 
     def __nonzero__(self):
-        return bool(self._items)
+        return bool(self.pathName)
 
     def __len__(self):
         return len(self._items)
@@ -178,11 +178,12 @@ class SequenceData(object):
     def _getItemsFromString(self, dstring):
         try:
             data = json.loads(dstring)
-            self._items = [Item.fromDict(ddict) for ddict in data['items']]
             self._attrs = data.get('attributes', {})
             self._settings = data.get('settings', {})
             self.active = data.get('active', False)
             self.name = data.get('name') or self.pathName
+            if 'items' in data:
+                self._items = [Item.fromDict(ddict) for ddict in data['items']]
         except (ValueError, TypeError):
             if dstring.startswith('{'):
                 util.DEBUG_LOG(repr(dstring))
@@ -250,6 +251,9 @@ class SequenceData(object):
             raise exceptions.SequenceWriteReadEmptyException()
         except:
             raise exceptions.SequenceWriteReadUnknownException()
+
+        self.pathName = self.pathName or re.split(r'[/\\]', path)[-1][:-6]
+        self.name = self.name or self.pathName
 
         return success
 

@@ -862,11 +862,11 @@ msgid "Please queue some features and try again."
 msgstr ""
 
 msgctxt "#32564"
-msgid "Removed watched status from all trailers."
+msgid "Removed watched status from {0} trailers."
 msgstr ""
 
 msgctxt "#32565"
-msgid "Removed broken status from all trailers."
+msgid "Removed broken status from {0} trailers."
 msgstr ""
 
 msgctxt "#32566"
