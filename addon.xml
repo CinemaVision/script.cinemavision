@@ -36,16 +36,16 @@
             <screenshot>resources/screenshots/screenshot01.png</screenshot>
             <screenshot>resources/screenshots/screenshot02.png</screenshot>
         </assets>
-        <news>change:  Enhanced user interface
-add:     Ability to change interface theme
-add:     TMDB trailer scraper
-fix:     Compatibility fixes for Kodi v18
-add:     Actions: Added ID to http requests to help match request to response
-add:     Actions: Improve sleep:// handling
-add:     Actions: Improve testing
-add:     Actions: Add rawpython:// allowing inline python statements
-add:     Trailers: Content scraper will now read genre and rating from .nfo files
-add:     Support for special:// content paths - Issue #124
+        <news>change: Enhanced user interface
+add: Ability to change interface theme
+add: TMDB trailer scraper
+fix: Compatibility fixes for Kodi v18
+add: Actions: Added ID to http requests to help match request to response
+add: Actions: Improve sleep:// handling
+add: Actions: Improve testing
+change: Actions: python:// is now used for inline python statements, script:// for executing a python file
+add: Trailers: Content scraper will now read genre and rating from .nfo files
+add: Support for special:// content paths - Issue #124
         </news>
     </extension>
 </addon>
