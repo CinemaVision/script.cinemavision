@@ -199,7 +199,7 @@
                         <width>1010</width>
                         <height>180</height>
                         <texture>script.cinemavision-white_square.png</texture>
-                        <colordiffuse>FF26539B</colordiffuse>
+                        <colordiffuse>$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]</colordiffuse>
                         <aspectratio>stretch</aspectratio>
                     </control>
                     <control type="image">
@@ -347,7 +347,7 @@
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
-                    <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
+                    <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                     <onleft>300</onleft>
                     <ondown>201</ondown>
@@ -372,7 +372,7 @@
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
-                    <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
+                    <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                     <onleft>300</onleft>
                     <ondown>202</ondown>
@@ -397,7 +397,7 @@
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
-                    <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
+                    <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                     <onleft>300</onleft>
                     <onup>201</onup>
@@ -422,7 +422,7 @@
                     <font>font13</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <align>center</align>
-                    <texturefocus colordiffuse="FF26539B">script.cinemavision-white_square.png</texturefocus>
+                    <texturefocus colordiffuse="$INFO[Window(10000).Property(script.cinemavision.theme.color.button.selected)]">script.cinemavision-white_square.png</texturefocus>
                     <texturenofocus colordiffuse="FF252525">script.cinemavision-white_square.png</texturenofocus>
                     <onleft>300</onleft>
                     <onup>202</onup>
