@@ -32,9 +32,9 @@
         <source>https://github.com/CinemaVision/script.cinemavision</source>
         <assets>
             <icon>icon.png</icon>
-            <screenshot>resources/screenshots/screenshot1.png</screenshot>
-            <screenshot>resources/screenshots/screenshot2.png</screenshot>
-            <screenshot>resources/screenshots/screenshot3.png</screenshot>
+            <screenshot>resources/screenshots/screenshot00.png</screenshot>
+            <screenshot>resources/screenshots/screenshot01.png</screenshot>
+            <screenshot>resources/screenshots/screenshot02.png</screenshot>
         </assets>
         <news>change:  Enhanced user interface
 add:     Ability to change interface theme
