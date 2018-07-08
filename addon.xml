@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.cinemavision" name="CinemaVision" version="1.1.1a7" provider-name="CinemaVision">
+<addon id="script.cinemavision" name="CinemaVision" version="1.1.1a8" provider-name="CinemaVision">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.youtube.dl" version="15.318.0"/>
@@ -36,7 +36,16 @@
             <screenshot>resources/screenshots/screenshot2.png</screenshot>
             <screenshot>resources/screenshots/screenshot3.png</screenshot>
         </assets>
-        <news>
+        <news>change:  Enhanced user interface
+add:     Ability to change interface theme
+add:     TMDB trailer scraper
+fix:     Compatibility fixes for Kodi v18
+add:     Actions: Added ID to http requests to help match request to response
+add:     Actions: Improve sleep:// handling
+add:     Actions: Improve testing
+add:     Actions: Add rawpython:// allowing inline python statements
+add:     Trailers: Content scraper will now read genre and rating from .nfo files
+add:     Support for special:// content paths - Issue #124
         </news>
     </extension>
 </addon>
