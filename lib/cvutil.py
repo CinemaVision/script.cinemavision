@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import xbmc
 import kodiutil
 import cinemavision
@@ -11,6 +12,39 @@ DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL
 
 cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T, kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE))
 
+THEME = None
+
+def setTheme(theme_path=None):
+    global THEME
+
+    default = os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes', 'default') + '/'
+
+    if theme_path is not None:
+        kodiutil.setSetting('theme.path', theme_path)
+    else:
+        theme_path = kodiutil.getSetting('theme.path', default)
+
+    cfg = cinemavision.util.pathJoin(theme_path, 'theme.json')
+    try:
+        with cinemavision.util.vfs.File(cfg, 'r') as f:
+            THEME = json.loads(f.read().decode('utf-8'))
+            THEME['theme.path'] = theme_path
+    except:
+        kodiutil.ERROR('Could not read {0}'.format(cfg))
+        THEME = {
+            'theme.name': '[I]Default[/I]',
+            'theme.color.icon': 'FF9C2A2D',
+            'theme.color.setting': 'FF9C2A2D',
+            'theme.color.move': 'FF9C2A2D',
+            'theme.color.button.selected': 'FF9C2A2D',
+            'theme.path': default
+        }
+
+    kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
+    kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
+    kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
+    kodiutil.setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
+    kodiutil.setGlobalProperty('theme.path', THEME['theme.path'])
 
 def defaultSavePath(for_3D=False):
     return os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.default{0}.cvseq'.format(for_3D and '3D' or '2D'))

@@ -18,39 +18,7 @@ import cvutil  # noqa E402
 
 from lib import cinemavision  # noqa E402
 
-THEME = None
 
-def setTheme(theme_path=None):
-    global THEME
-
-    default = os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes', 'default') + '/'
-
-    if theme_path is not None:
-        kodiutil.setSetting('theme.path', theme_path)
-    else:
-        theme_path = kodiutil.getSetting('theme.path', default)
-
-    cfg = cinemavision.util.pathJoin(theme_path, 'theme.json')
-    try:
-        with cinemavision.util.vfs.File(cfg, 'r') as f:
-            THEME = json.loads(f.read().decode('utf-8'))
-            THEME['theme.path'] = theme_path
-    except:
-        kodiutil.ERROR('Could not read {0}'.format(cfg))
-        THEME = {
-            'theme.name': '[I]Default[/I]',
-            'theme.color.icon': 'FF9C2A2D',
-            'theme.color.setting': 'FF9C2A2D',
-            'theme.color.move': 'FF9C2A2D',
-            'theme.color.button.selected': 'FF9C2A2D',
-            'theme.path': default
-        }
-
-    kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
-    kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
-    kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
-    kodiutil.setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
-    kodiutil.setGlobalProperty('theme.path', THEME['theme.path'])
 
 
 class ItemSettingsWindow(kodigui.BaseDialog):
@@ -558,14 +526,14 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         for i in cinemavision.sequence.ITEM_TYPES:
             item = kodigui.ManagedListItem(
                 '{0}: {1}'.format(T(32530, 'Add'), i[1]),
-                thumbnailImage='{0}small/script.cinemavision-{1}.png'.format(THEME['theme.path'], i[2]),
+                thumbnailImage='{0}small/script.cinemavision-{1}.png'.format(cvutil.THEME['theme.path'], i[2]),
                 data_source=i[0]
             )
-            item.setProperty('thumb.focus', '{0}small/script.cinemavision-{1}_Selected.png'.format(THEME['theme.path'], i[2]))
-            item.setProperty('thumb.fill', '{0}small/script.cinemavision-{1}_Fill.png'.format(THEME['theme.path'], i[2]))
+            item.setProperty('thumb.focus', '{0}small/script.cinemavision-{1}_Selected.png'.format(cvutil.THEME['theme.path'], i[2]))
+            item.setProperty('thumb.fill', '{0}small/script.cinemavision-{1}_Fill.png'.format(cvutil.THEME['theme.path'], i[2]))
             self.addItemControl.addItem(item)
 
-        basePath = THEME['theme.path'] + 'options/script.cinemavision-'
+        basePath = cvutil.THEME['theme.path'] + 'options/script.cinemavision-'
 
         item = kodigui.ManagedListItem(T(32531, 'Edit'), T(32531, 'Edit'), thumbnailImage=basePath + 'ModuleEdit.png', data_source='edit')
         item.setProperty('alt.thumb', basePath + 'ModuleEdit.png')
@@ -619,7 +587,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         mli.setProperty('type', sItem.fileChar)
         mli.setProperty('type.name', sItem.displayName)
         mli.setProperty('enabled', sItem.enabled and '1' or '')
-        mli.setProperty('theme.path', THEME['theme.path'])
+        mli.setProperty('theme.path', cvutil.THEME['theme.path'])
 
         if not self.updateItemSettings(mli):
             mli.setProperty('error', '1')
@@ -638,7 +606,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             mli.setProperty('type', sItem.fileChar)
             mli.setProperty('type.name', sItem.displayName)
             mli.setProperty('enabled', sItem.enabled and '1' or '')
-            mli.setProperty('theme.path', THEME['theme.path'])
+            mli.setProperty('theme.path', cvutil.THEME['theme.path'])
 
             if not self.updateItemSettings(mli):
                 mli.setProperty('error', '1')
@@ -972,11 +940,11 @@ class SequenceEditorWindow(kodigui.BaseWindow):
         if idx < 0:
             return False
 
-        setTheme(themes[idx]['theme.path'])
+        cvutil.setTheme(themes[idx]['theme.path'])
 
         for mli in self.sequenceControl:
             if mli.getProperty('theme.path'):
-                mli.setProperty('theme.path', THEME['theme.path'])
+                mli.setProperty('theme.path', cvutil.THEME['theme.path'])
 
         self.itemOptionsControl.reset()
         self.addItemControl.reset()
@@ -1272,7 +1240,7 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
 
 def main():
-    setTheme()
+    cvutil.setTheme()
     kodiutil.setScope()
     kodiutil.setGlobalProperty('VERSION', kodiutil.ADDON.getAddonInfo('version'))
     kodiutil.setGlobalProperty('option.hint', '')
