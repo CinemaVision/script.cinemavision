@@ -744,6 +744,17 @@ class ExperiencePlayer(xbmc.Player):
 
         self.features = []
 
+        feature = self.featureFromId(movieid, episodeid)
+        if feature:
+            self.features.append(feature)
+
+        if not self.features:
+            return False
+
+        return True
+
+
+    def featureFromId(self, movieid=None, episodeid=None):
         if movieid:
             for movieid in str(movieid).split('|'):  # ID could be int or \ seperated int string
                 movieid = kodiutil.intOrZero(movieid)
@@ -756,8 +767,7 @@ class ExperiencePlayer(xbmc.Player):
                 )['moviedetails']
                 r['type'] = 'movie'
 
-                feature = self.featureFromJSON(r)
-                self.features.append(feature)
+                return self.featureFromJSON(r)
         elif episodeid:
             for episodeid in str(episodeid).split('|'):  # ID could be int or \ seperated int string
                 episodeid = kodiutil.intOrZero(episodeid)
@@ -769,13 +779,9 @@ class ExperiencePlayer(xbmc.Player):
                     properties=['file', 'streamdetails', 'title', 'thumbnail', 'runtime']
                 )['episodedetails']
                 r['type'] = 'tvshow'
-                feature = self.featureFromJSON(r)
-                self.features.append(feature)
+                return self.featureFromJSON(r)
 
-        if not self.features:
-            return False
-
-        return True
+        return None
 
     def addDBFeature(self, dbtype, dbid):
         return self.addFromID(dbtype=dbtype, dbid=dbid)

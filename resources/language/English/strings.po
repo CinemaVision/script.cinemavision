@@ -446,15 +446,15 @@ msgid "Update every... (hours)"
 msgstr ""
 
 msgctxt "#32108"
-msgid "Update when Kodi starts (requires service add-on)"
+msgid "Background updating: Requires service add-on (Beta)"
 msgstr ""
 
 msgctxt "#32109"
-msgid "Update after library scan (requires service add-on)"
+msgid "Always use CinemaVision when playing movies"
 msgstr ""
 
 msgctxt "#32110"
-msgid "Update every... (hours) (requires service add-on)"
+msgid "Always use CinemaVision when playing movies (requires service add-on)"
 msgstr ""
 
 msgctxt "#32111"
