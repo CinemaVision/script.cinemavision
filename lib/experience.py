@@ -876,7 +876,6 @@ class ExperiencePlayer(xbmc.Player):
         if volume != 100:
             self.volume.set(volume, relative=True)
 
-        self.playlist.add(self.fakeFilePrev)
         if features:
             for feature in features:
                 self.addFeatureToPlaylist(feature)
@@ -885,7 +884,11 @@ class ExperiencePlayer(xbmc.Player):
                 pli = self.getPathAndListItemFromVideo(video)
                 self.playlist.add(*pli)
 
+        # Something possibly broke in Kodi 18. Adding the video after the dummy removed the dummy.
+        # Inserting the dummy here works.
         self.playlist.add(self.fakeFileNext)
+        self.playlist.add(self.fakeFilePrev, index=0)
+
         self.videoPreDelay()
         rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1}, options={'shuffled': False, 'resume': False, 'repeat': 'off'})
         xbmc.sleep(100)
