@@ -963,14 +963,6 @@ class ExperiencePlayer(xbmc.Player):
         if not xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
             xbmc.sleep(500)
 
-        print '{0} {1} {2} {3} {4}'.format(
-            self.isPlayingVideo(),
-            xbmc.getCondVisibility('Player.Playing'),
-            self.playStatus,
-            xbmc.getCondVisibility('VideoPlayer.IsFullscreen'),
-            xbmcgui.getCurrentWindowId()
-        )
-
         return not xbmc.getCondVisibility('VideoPlayer.IsFullscreen')
 
     def start(self, sequence_path):

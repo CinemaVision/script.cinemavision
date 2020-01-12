@@ -461,8 +461,6 @@ msgctxt "#32111"
 msgid "Auto Update"
 msgstr ""
 
-
-#Sequence
 msgctxt "#32300"
 msgid "3D Intro"
 msgstr ""
@@ -602,8 +600,6 @@ msgstr ""
 msgctxt "#32334"
 msgid "Video Bumpers"
 msgstr ""
-
-#Dialogs, etc.
 
 msgctxt "#32500"
 msgid "Not Found"

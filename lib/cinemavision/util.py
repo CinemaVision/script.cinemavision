@@ -21,17 +21,19 @@ class Progress:
         self.heading = ''
 
     def __enter__(self):
-        print '[- {0} -]'.format(self.title)
+        msg = '[- {0} -]'.format(self.title)
+        print(msg)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        print 'DONE'
+        print('DONE')
 
     def msg(self, message=None, heading=None, pct=None):
         self.pct = pct is not None and pct or self.pct
         self.heading = heading is not None and heading or self.heading
         self.message = message is not None and message or self.message
-        print '{0}% {1}: {2}'.format(self.pct, self.heading, self.message)
+        msg = '{0}% {1}: {2}'.format(self.pct, self.heading, self.message)
+        print(msg)
         return True
 
 
@@ -262,7 +264,6 @@ try:
     imageExtensions = tuple(xbmc.getSupportedMedia('picture').split('|'))
 
 except:
-    raise
     import zipfile
 
     STORAGE_PATH = '~'
@@ -336,7 +337,8 @@ except:
         return path
 
     def LOG(msg):
-        print '[- CinemaVison -] (API): {0}'.format(msg)
+        prefixedMsg = '[- CinemaVison -] (API): {0}'.format(msg)
+        print(prefixedMsg)
 
     def wait(timeout):
         time.sleep(timeout)
