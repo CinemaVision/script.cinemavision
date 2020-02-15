@@ -1068,3 +1068,59 @@ msgstr ""
 msgctxt "#32616"
 msgid "Rename current sequence"
 msgstr ""
+
+msgctxt "#32617"
+msgid "[B]Preferences[/B]: Customize CinemaVision to your needs"
+msgstr ""
+
+msgctxt "#32618"
+msgid "[B]New[/B]: Create a new empty sequence"
+msgstr ""
+
+msgctxt "#32619"
+msgid "[B]Save Options[/B]: Save or export the current sequence"
+msgstr ""
+
+msgctxt "#32620"
+msgid "[B]Load Options[/B]: Load or import a sequence"
+msgstr ""
+
+msgctxt "#32621"
+msgid "[B]Play[/B]: Test the current sequence with a dummy feature"
+msgstr ""
+
+msgctxt "#32622"
+msgid "[B]Theme[/B]: Set the colors and icons for the sequence editor"
+msgstr ""
+
+msgctxt "#32623"
+msgid "[B]Set Conditions[/B]: Set the conditions for auto-selecting the current sequence"
+msgstr ""
+
+msgctxt "#32624"
+msgid "[B]Auto Select[/B]: Whether this sequnce is active for auto-selection"
+msgstr ""
+
+msgctxt "#32625"
+msgid "[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog"
+msgstr ""
+
+msgctxt "#32626"
+msgid "[B]Edit[/B]: Bring up the sequence editor for the current sequence"
+msgstr ""
+
+msgctxt "#32627"
+msgid "[B]Name[/B]: Name or rename this sequence"
+msgstr ""
+
+msgctxt "#32628"
+msgid "Would you like to save and exit or abort"
+msgstr ""
+
+msgctxt "#32629"
+msgid "Save and exit"
+msgstr ""
+
+msgctxt "#32630"
+msgid "Abort"
+msgstr ""

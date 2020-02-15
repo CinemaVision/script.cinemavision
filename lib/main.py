@@ -432,27 +432,27 @@ class SequenceEditorWindow(kodigui.BaseWindow):
 
     def onFocus(self, controlID):
         if controlID == self.MENU_ADDON_SETTINGS_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Preferences[/B]: Customize CinemaVision to your needs')
+            kodiutil.setGlobalProperty('option.hint', T(32617, '[B]Preferences[/B]: Customize CinemaVision to your needs'))
         elif controlID == self.MENU_NEW_BUTTON_ID:
-           kodiutil.setGlobalProperty('option.hint', '[B]New[/B]: Create a new empty sequence')
+           kodiutil.setGlobalProperty('option.hint', T(32618, '[B]New[/B]: Create a new empty sequence'))
         elif controlID == self.MENU_SAVE_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Save Options[/B]: Save or export the current sequence')
+            kodiutil.setGlobalProperty('option.hint', T(32619, '[B]Save Options[/B]: Save or export the current sequence'))
         elif controlID == self.MENU_LOAD_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Load Options[/B]: Load or import a sequence')
+            kodiutil.setGlobalProperty('option.hint', T(32620, '[B]Load Options[/B]: Load or import a sequence'))
         elif controlID == self.MENU_PLAY_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Play[/B]: Test the current sequence with a dummy feature')
+            kodiutil.setGlobalProperty('option.hint', T(32621, '[B]Play[/B]: Test the current sequence with a dummy feature'))
         elif controlID == self.MENU_THEME_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Theme[/B]: Set the colors and icons for the sequence editor')
+            kodiutil.setGlobalProperty('option.hint', T(32622, '[B]Theme[/B]: Set the colors and icons for the sequence editor'))
         elif controlID == self.MENU_CONDITIONS_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Set Conditions[/B]: Set the conditions for auto-selecting the current sequence')
+            kodiutil.setGlobalProperty('option.hint', T(32623, '[B]Set Conditions[/B]: Set the conditions for auto-selecting the current sequence'))
         elif controlID == self.MENU_SEQUENCE_ACTIVE_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Auto Select[/B]: Whether this sequnce is active for auto-selection')
+            kodiutil.setGlobalProperty('option.hint', T(32624, '[B]Auto Select[/B]: Whether this sequnce is active for auto-selection'))
         elif controlID == self.MENU_SHOW_OPTION_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog')
+            kodiutil.setGlobalProperty('option.hint', T(32625, '[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog'))
         elif controlID == self.MENU_EDIT_BUTTON_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Edit[/B]: Bring up the sequence editor for the current sequence')
+            kodiutil.setGlobalProperty('option.hint', T(32626, '[B]Edit[/B]: Bring up the sequence editor for the current sequence'))
         elif controlID == self.MENU_EDIT_SEQ_NAME_ID:
-            kodiutil.setGlobalProperty('option.hint', '[B]Name[/B]: Name or rename this sequence')
+            kodiutil.setGlobalProperty('option.hint', T(32627, '[B]Name[/B]: Name or rename this sequence'))
 
     def setEditMode(self, on=True):
         self.editing = on
@@ -480,10 +480,10 @@ class SequenceEditorWindow(kodigui.BaseWindow):
             return False
         else:
             yes = xbmcgui.Dialog().yesno(
-                'Options',
-                'Would you like to save and exit or abort',
-                yeslabel='Save and exit',
-                nolabel='Abort'
+                T(32523, 'Options'),
+                T(32628, 'Would you like to save and exit or abort'),
+                yeslabel=T(32629, 'Save and exit'),
+                nolabel=T(32630, 'Abort')
             )
             if yes:
                 self.save()
