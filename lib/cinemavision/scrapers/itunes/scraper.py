@@ -15,17 +15,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import re
-import urllib2
-import urlparse
-import json
-import time
 import datetime
-from email.utils import parsedate_tz
+import json
+import re
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 import xml.etree.ElementTree as ET
+from email.utils import parsedate_tz
 
-BASE_URL = 'http://trailers.apple.com/trailers'
-COVER_BASE_URL = 'http://trailers.apple.com'
+import xbmc
+DEBUG = True
+
+BASE_URL = 'https://trailers.apple.com/trailers'
+COVER_BASE_URL = 'https://trailers.apple.com'
 MOVIES_URL = BASE_URL + '/home/feeds/%s.json'
 TRAILERS_URL = BASE_URL + '/feeds/data/%s.json'
 XML_URL = BASE_URL + '/home/xml/current.xml'
@@ -95,10 +99,11 @@ class Scraper(object):
             meta['plot'] = meta['plotoutline'] = extras.get('plot', '')
             if 'duration' in extras and extras['duration']:
                 meta['duration'] = extras['duration']
+            #xbmc.log(str(meta),xbmc.LOGINFO)
             yield meta
 
     def get_trailers(self, location, movie_id):
-        page_url = urlparse.urljoin(BASE_URL, location)
+        page_url = urllib.parse.urljoin(BASE_URL, location)
         if not movie_id.isdigit():
             movie_id = self.__get_movie_id(page_url)
 
@@ -142,6 +147,7 @@ class Scraper(object):
 
     def __get_extras(self):
         xml = self.__get_url(XML_URL)
+        xml = xml.decode()
         xml = re.sub('[^\x00-\x7F]', '', xml)
         xml = re.sub('[\x01-\x08\x0B-\x0C\x0E-\x1F]', '', xml)
         root = ET.fromstring(xml)
@@ -190,7 +196,8 @@ class Scraper(object):
             genre = self.__get_genre(details['genres'])
         except:
             genre = []
-        return {'plot': plot, 'director': ', '.join(directors), 'writer': ', '.join(writers), 'cast': cast, 'genre': ', '.join(genre)}
+        return {'plot': plot, 'director': ', '.join(directors), 'writer': ', '.join(writers), 'cast': cast,
+                'genre': ', '.join(genre)}
 
     def __get_reviews(self, reviews):
         rating = reviews.get('rating', '')
@@ -226,19 +233,24 @@ class Scraper(object):
         return duration
 
     def __date(self, date_str):
-            if date_str:
-                d = parsedate_tz(date_str)
-                return '%02d.%02d.%04d' % (d[2], d[1], d[0])
-            return ''
+        if date_str:
+            d = parsedate_tz(date_str)
+            return '%02d.%02d.%04d' % (d[2], d[1], d[0])
+        return ''
 
     def __datetime(self, date_str):
         if date_str:
-            try:
+            if date_str == 'Wed, 31 Dec 1969 16:00:00 -0800':
+                date_str = 'Thu, 01 Jan 1970 16:00:00 -0800'
                 d = parsedate_tz(date_str)
                 return datetime.datetime.fromtimestamp(time.mktime(d[:9]))
-            except:
-                import traceback
-                traceback.print_exc()
+            else:
+                try:
+                    d = parsedate_tz(date_str)
+                    return datetime.datetime.fromtimestamp(time.mktime(d[:9]))
+                except:
+                    import traceback
+                    traceback.print_exc()
 
         return None
 
@@ -248,12 +260,12 @@ class Scraper(object):
 
     def __make_poster(self, url):
         if not url.startswith('http'):
-            url = urlparse.urljoin(COVER_BASE_URL, url)
+            url = urllib.parse.urljoin(COVER_BASE_URL, url)
         return url.replace('poster', 'poster-xlarge')
 
     def __make_background(self, url):
         if not url.startswith('http'):
-            url = urlparse.urljoin(COVER_BASE_URL, url)
+            url = urllib.parse.urljoin(COVER_BASE_URL, url)
         return url.replace('poster', 'background')
 
     def __get_json(self, url, headers=None):
@@ -266,7 +278,6 @@ class Scraper(object):
     def __get_url(self, url, headers=None):
         if headers is None:
             headers = {'User-Agent': USER_AGENT}
-
-        req = urllib2.Request(url, None, headers)
-        html = urllib2.urlopen(req).read()
+        req = urllib.request.Request(url, None, headers)
+        html = urllib.request.urlopen(req).read()
         return html

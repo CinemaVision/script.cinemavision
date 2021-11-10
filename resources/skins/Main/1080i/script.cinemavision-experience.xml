@@ -56,7 +56,7 @@
                 <height>90</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>A0FFFFFF</colordiffuse>
-                <aspectratio>scale</aspectratio>
+                <aspectratio>keep</aspectratio> <!-->Test interface<!-->
             </control>
             <control type="image">
                 <posx>0</posx>
@@ -65,7 +65,7 @@
                 <height>80</height>
                 <texture>script.cinemavision-white_square.png</texture>
                 <colordiffuse>A0000000</colordiffuse>
-                <aspectratio>scale</aspectratio>
+                <aspectratio>keep</aspectratio> <!-->Test interface<!-->
             </control>
             <control type="label">
                 <posx>0</posx>

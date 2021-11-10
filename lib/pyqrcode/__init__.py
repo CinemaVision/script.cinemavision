@@ -41,13 +41,13 @@ Examples:
 """
 
 #Imports required for 2.7 support
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+
 
 from . import tables
 from . import builder as builder
 
 try:
-    str = unicode  # Python 2
+    str = str  # Python 2
 except NameError:
     pass
 
@@ -168,7 +168,7 @@ class QRCode:
         else:
             #Python2 vs. Python3 compatibility
             try:
-                self.data = unicode(content)
+                self.data = str(content)
             except NameError:
                 self.data = str(content)
 
@@ -186,7 +186,7 @@ class QRCode:
             #Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
-        elif mode not in tables.modes.keys():
+        elif mode not in list(tables.modes.keys()):
             #Unknown mode
             raise ValueError('{0} is not a valid mode.'.format(mode))
         elif guessed_content_type == 'binary' and \
@@ -207,7 +207,7 @@ class QRCode:
             self.mode_num = tables.modes[self.mode]
 
         #Check that the user passed in a valid error level
-        if error in tables.error_level.keys():
+        if error in list(tables.error_level.keys()):
             self.error = tables.error_level[error]
         else:
             raise ValueError('{0} is not a valid error '
@@ -267,13 +267,13 @@ class QRCode:
 
         #See if that data is alphanumeric based on the standards
         #special ASCII table
-        valid_characters = ''.join(tables.ascii_codes.keys())
+        valid_characters = ''.join(list(tables.ascii_codes.keys()))
 
         #Force the characters into a byte array
         valid_characters = valid_characters.encode('ASCII')
 
         try:
-            if all(map(lambda x: x in valid_characters, content)):
+            if all([x in valid_characters for x in content]):
                 return 'alphanumeric'
         except TypeError:
             #This occurs if the content does not contain ASCII characters.
@@ -348,8 +348,8 @@ class QRCode:
         import tempfile
         import webbrowser
         try:  # Python 2
-            from urlparse import urljoin
-            from urllib import pathname2url
+            from urllib.parse import urljoin
+            from urllib.request import pathname2url
         except ImportError:  # Python 3
             from urllib.parse import urljoin
             from urllib.request import pathname2url

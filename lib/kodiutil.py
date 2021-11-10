@@ -4,6 +4,7 @@ import json
 import binascii
 
 import xbmc
+import xbmcvfs
 import xbmcgui
 import xbmcaddon
 
@@ -14,7 +15,7 @@ ADDON = xbmcaddon.Addon(ADDON_ID)
 
 
 def translatePath(path):
-    return xbmc.translatePath(path).decode('utf-8')
+    return xbmcvfs.translatePath(path)
 
 
 PROFILE_PATH = translatePath(ADDON.getAddonInfo('profile'))
@@ -33,7 +34,7 @@ def DEBUG():
 
 
 def LOG(msg):
-    xbmc.log('[- CinemaVision -]: {0}'.format(msg), xbmc.LOGNOTICE)
+    xbmc.log('[- CinemaVision -]: {0}'.format(msg), xbmc.LOGINFO)
 
 
 def DEBUG_LOG(msg):
@@ -46,23 +47,39 @@ def ERROR(msg=''):
     if msg:
         LOG(msg)
     import traceback
-    xbmc.log(traceback.format_exc(), xbmc.LOGNOTICE)
+    xbmc.log(traceback.format_exc(), xbmc.LOGINFO)
 
 
 def TEST(msg):
-    xbmc.log('-- TEST: {0}'.format(repr(msg)), xbmc.LOGNOTICE)
+    xbmc.log('-- TEST: {0}'.format(repr(msg)), xbmc.LOGINFO)
 
 
 def firstRun():
     LOG('FIRST RUN')
+    default = os.path.join(ADDON_PATH, 'resources', 'themes', 'default') + '/'
+    THEME = {
+        'theme.name': '[I]Default[/I]',
+        'theme.color.icon': 'FF9C2A2D',
+        'theme.color.setting': 'FF9C2A2D',
+        'theme.color.move': 'FF9C2A2D',
+        'theme.color.button.selected': 'FF9C2A2D',
+        'theme.path': default
+    }
+
+    setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
+    setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
+    setGlobalProperty('theme.color.move', THEME['theme.color.move'])
+    setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
+    setGlobalProperty('theme.path', THEME['theme.path'])
 
 
 def infoLabel(info):
-    return xbmc.getInfoLabel(info).decode('utf-8')
+    return xbmc.getInfoLabel(info)
 
 
 def checkAPILevel():
     old = getSetting('API_LEVEL', 0)
+
     if not old:
         firstRun()
     elif old == 1:
@@ -75,7 +92,7 @@ def checkAPILevel():
             os.remove(last)
         if os.path.exists(watched):
             os.remove(watched)
-        import cvutil
+        from . import cvutil
         cvutil.loadContent()
         xbmc.sleep(1000)
 
@@ -110,14 +127,14 @@ def strRepr(str_obj):
 
 
 def getSetting(key, default=None):
-    setting = ADDON.getSetting(key).decode('utf-8')
+    setting = ADDON.getSetting(key)
     return _processSetting(setting, default)
 
 
 def getPathSetting(key, default=None):
     path = getSetting(key, default)
     if path and path.startswith('special://'):
-        return xbmc.translatePath(path)
+        return xbmcvfs.translatePath(path)
     return path
 
 def _processSetting(setting, default):
@@ -182,9 +199,9 @@ try:
 except:
     def wait(timeout):
         start = time.time()
-        while not xbmc.abortRequested and time.time() - start < timeout:
+        while not xbmc.Monitor().abortRequested and time.time() - start < timeout:
             xbmc.sleep(100)
-        return xbmc.abortRequested
+        return xbmc.Monitor().abortRequested
 
 
 def getPeanutButter():
@@ -211,11 +228,12 @@ class Progress(object):
 
     def __enter__(self):
         if self.isBackground:
-            heading = u'{0} - {1}'.format(self.heading, self.line1)
-            msg = u'{0} - {1}'.format(self.line2, self.line3)
+            heading = '{0} - {1}'.format(self.heading, self.line1)
+            msg = '{0} - {1}'.format(self.line2, self.line3)
             self.dialog.create(heading, msg)
         else:
-            self.dialog.create(self.heading, self.line1, self.line2, self.line3)
+            # self.dialog.create(self.heading, self.line1, self.line2, self.line3)
+            self.dialog.create(self.heading, self.line1)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -233,11 +251,12 @@ class Progress(object):
         self._update()
 
     def _update(self):
-        self.dialog.update(self.pct, self.line1, self.line2, self.line3)
+        # self.dialog.update(self.pct, self.line1, self.line2, self.line3)
+        self.dialog.update(self.pct, self.line1)
 
     def _updateBG(self):
-        heading = u'{0} - {1}'.format(self.heading, self.line1)
-        msg = u'{0} - {1}'.format(self.line2, self.line3)
+        heading = '{0} - {1}'.format(self.heading, self.line1)
+        msg = '{0} - {1}'.format(self.line2, self.line3)
         self.dialog.update(self.pct, heading, msg)
 
     def msg(self, msg=None, heading=None, pct=None):

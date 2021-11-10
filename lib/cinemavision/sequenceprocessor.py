@@ -3,12 +3,12 @@ import random
 import re
 import time
 import datetime
-import database as DB
-import sequence
-import scrapers
-import ratings
-import actions
-import util
+from . import database as DB
+from . import sequence
+from . import scrapers
+from . import ratings
+from . import actions
+from . import util
 
 TRAILER_FAIL_THRESHOLD = 10
 
@@ -470,7 +470,12 @@ class Feature(Video):
         if not self.runtime:
             return
 
-        return '{0} minutes'.format(self.runtime / 60)
+        sec = self.runtime % (24 * 3600)
+        hour = sec // 3600
+        sec %= 3600
+        min = sec // 60
+        sec %= 60
+        return "%01d:%02d:%02d" % (hour, min, sec)
 
 
 class Action(dict):

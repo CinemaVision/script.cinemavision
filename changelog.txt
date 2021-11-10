@@ -1,5 +1,16 @@
 Changelog for CinemaVision
 
+[- 1.5.1 -]
+-change:    Combined the context menu code within the main plugin
+
+[- 1.5.0 -]
+
+- fix:      Updated code to work with Kodi 19 Matrix / Python3
+- fix:      Resolved issue with demo video urls
+- change:   Updated context menu display for movie run time in hour, min, seconds
+- fix:      Audio fades correctly during trivia slides
+- fix:      Ability to add Action files from a SMB or NFS path
+
 [- 1.1.1 -]
 
 - change:  Enhanced user interface

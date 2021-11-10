@@ -2,10 +2,10 @@ import os
 import re
 from xml.etree import ElementTree as ET
 
-import util
+from . import util
 import mutagen
 import hachoir
-import database as DB
+from . import database as DB
 import datetime
 
 try:
@@ -36,7 +36,7 @@ CONTENT_3D_RE = '\([^\)]*3D[^\)]*\)'
 
 
 def getBumperDir(ID):
-    for dirname, tid in TYPE_IDS.items():
+    for dirname, tid in list(TYPE_IDS.items()):
         if tid == ID:
             break
     else:
@@ -228,8 +228,6 @@ class UserContent:
                 if sub.startswith('_Exclude'):
                     util.DEBUG_LOG('SKIPPING EXCLUDED DIR: {0}'.format(util.strRepr(sub)))
                     continue
-            else:
-                continue
 
             self.log('Processing trivia: {0}'.format(util.strRepr(os.path.basename(path))))
             self.triviaDirectoryHandler(path, prefix=sub)
@@ -327,11 +325,11 @@ class UserContent:
             )
 
     def loadRatingSystem(self, path):
-        import ratings
+        from . import ratings
         with util.vfs.File(path, 'r') as f:
             system = ratings.addRatingSystemFromXML(f.read())
 
-        for context, regEx in system.regEx.items():
+        for context, regEx in list(system.regEx.items()):
             DB.RatingSystem.get_or_create(
                 name=system.name,
                 context=context,
@@ -355,7 +353,7 @@ class UserContent:
             util.ERROR()
 
     def _scrapeContent(self):
-        import scrapers
+        from . import scrapers
         scrapers.setContentPath(self._contentDirectory)
 
         for stype, source in util.contentScrapers():
@@ -385,6 +383,7 @@ class UserContent:
                         except DB.peewee.DoesNotExist:
                             ct += 1
                             url = t.getStaticURL()
+                            #util.DEBUG_LOG(url)
                             DB.Trailers.create(
                                 WID=t.ID,
                                 source=source,
@@ -506,6 +505,7 @@ class TriviaDirectoryHandler:
     def doCall(self, basePath, prefix=None):
         hasSlidesXML = False
         slideXML = util.pathJoin(basePath, self._formatXML)
+        # util.DEBUG_LOG(basePath)
         if util.vfs.exists(slideXML):
             hasSlidesXML = True
 
@@ -593,7 +593,7 @@ class TriviaDirectoryHandler:
             elif ttype == 'c':
                 trivia[name]['c'][clueCount] = path
 
-        for name, data in trivia.items():
+        for name, data in list(trivia.items()):
             questionPath = data['q']
             answerPath = data['a']
 
@@ -609,7 +609,7 @@ class TriviaDirectoryHandler:
 
             defaults = {
                 'type': ttype,
-                'TID': u'{0}:{1}'.format(prefix, name),
+                'TID': '{0}:{1}'.format(prefix, name),
                 'name': name,
                 'rating': rating,
                 'questionPath': questionPath
@@ -663,7 +663,7 @@ class TriviaDirectoryHandler:
                 answerPath=path,
                 defaults={
                     'type': ttype,
-                    'TID': u'{0}:{1}'.format(pack, name),
+                    'TID': '{0}:{1}'.format(pack, name),
                     'name': name,
                     'duration': duration
                 }

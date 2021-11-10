@@ -1,4 +1,4 @@
-import scraper
+from . import scraper
 from lib import cvutil
 from ... import util
 from ... import ratings
@@ -10,11 +10,11 @@ class Trailer(_scrapers.Trailer):
         _scrapers.Trailer.__init__(self, data)
         self._is3D = util.pathIs3D(self.data.get('url', ''))
         if not self.data.get('rating'):
-            self.data['rating'] = u'NR'
+            self.data['rating'] = 'NR'
 
     @property
     def ID(self):
-        return u'kodiDB:{0}'.format(self.data['ID'])
+        return 'kodiDB:{0}'.format(self.data['ID'])
 
     @property
     def title(self):

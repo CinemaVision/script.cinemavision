@@ -1,13 +1,13 @@
 import xbmc
 import xbmcgui
-import kodigui
-import kodiutil
-from kodiutil import T
+from . import kodigui
+from . import kodiutil
+from .kodiutil import T
 
 kodiutil.checkAPILevel()
 
-import experience  # noqa E402
-import cvutil  # noqa E402
+from . import experience  # noqa E402
+from . import cvutil  # noqa E402
 
 
 CHANNEL_STRINGS = {
@@ -31,24 +31,14 @@ def showNoFeaturesDialog():
     import xbmcgui
     xbmcgui.Dialog().ok(
         T(32561, 'No Features'),
-        T(32562, 'No movies are in the Queue.'),
-        '',
-        T(32563, 'Please queue some features and try again.')
+        T(32562, 'No movies are in the Queue.  Please queue some features and try again.')
     )
 
 
-def featureComfirmationDialog(features, args):
-    pd = PlaylistDialog.open(features=features, args=args)
+def featureComfirmationDialog(features):
+    pd = PlaylistDialog.open(features=features)
     if not pd.play:
-        if pd.isIntercepted:
-            if pd.normalPlay:
-                xbmc.executebuiltin('PlayerControl(Play)')
-            else:
-                xbmc.executebuiltin('PlayerControl(Stop)')
         return None, None
-    else:
-        if pd.isIntercepted:
-            xbmc.executebuiltin('PlayerControl(Stop)')
 
     return pd.features, pd.sequencePath
 
@@ -56,19 +46,6 @@ def featureComfirmationDialog(features, args):
 def begin(movieid=None, episodeid=None, dbtype=None, selection=False, args=None):
     e = experience.ExperiencePlayer().create()
     seqPath = None
-
-    feature = None
-    if 'intercept' in args and len(args) >= 3:
-        if args[1] == 'movie':
-            feature = e.featureFromId(movieid=args[2])
-        elif args[1] == 'episode':
-            feature = e.featureFromId(episodeid=args[2])
-
-    if feature is not None:
-        if len(e.features) > 0:
-            e.features[0] = feature
-        else:
-            e.features.append(feature)
 
     if not e.hasFeatures() or selection or movieid or episodeid or dbtype:
         if dbtype:
@@ -82,7 +59,7 @@ def begin(movieid=None, episodeid=None, dbtype=None, selection=False, args=None)
 
     if not kodiutil.getSetting('hide.queue.dialog', False) or (kodiutil.getSetting('hide.queue.dialog.single', False) and len(e.features) > 1):
         if not args or 'nodialog' not in args:
-            e.features, seqPath = featureComfirmationDialog(e.features, args)
+            e.features, seqPath = featureComfirmationDialog(e.features)
 
     if not e.features:
         return
@@ -90,8 +67,7 @@ def begin(movieid=None, episodeid=None, dbtype=None, selection=False, args=None)
     if seqPath:
         kodiutil.DEBUG_LOG('Loading selected sequence: {0}'.format(repr(seqPath)))
     else:
-        if feature is None:
-            feature = e.features[0]
+        feature = e.features[0]
         seqData = cvutil.getMatchedSequence(feature)
         seqPath = seqData['path']
         kodiutil.DEBUG_LOG('Loading sequence for {0}: {1}'.format(feature.is3D and '3D' or '2D', repr(seqPath)))
@@ -118,20 +94,12 @@ class PlaylistDialog(kodigui.BaseDialog):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
         kodiutil.setScope()
         self.features = kwargs.get('features', [])
-        self.isIntercepted = 'intercept' in kwargs.get('args', [])
         self.play = False
-        self.normalPlay = False
         self.moving = None
         self.sequencePath = None
 
-        cvutil.setTheme()
-
     def onFirstInit(self):
         self.videoListControl = kodigui.ManagedControlList(self, self.VIDEOS_LIST_ID, 5)
-
-        if self.isIntercepted:
-            self.getControl(self.CANCEL_BUTTON_ID).setLabel("[B]PLAY NORMAL[/B]")
-
         self.start()
 
     def onClick(self, controlID):
@@ -139,9 +107,6 @@ class PlaylistDialog(kodigui.BaseDialog):
             self.play = True
             self.doClose()
         elif controlID == self.CANCEL_BUTTON_ID:
-            if self.isIntercepted:
-                self.normalPlay = True
-
             self.doClose()
         elif controlID == self.APPLY_BUTTON_ID:
             self.apply()
@@ -179,14 +144,14 @@ class PlaylistDialog(kodigui.BaseDialog):
         items = []
         for f in self.features:
             mli = kodigui.ManagedListItem(f.title, f.durationMinutesDisplay, thumbnailImage=f.thumb, data_source=f)
-            mli.setProperty('rating', str(f.rating or '').replace(':', u' \u2022 '))
+            mli.setProperty('rating', str(f.rating or '').replace(':', ' \u2022 '))
             mli.setProperty('year', str(f.year or ''))
             if f.audioFormat:
                 mli.setProperty('af', f.audioFormat)
             elif f.codec and f.codec in CODEC_IMAGES:
                 mli.setProperty('afcodec', f.codec)
                 mli.setProperty('afchannels', str(f.channels or ''))
-            mli.setProperty('genres', f.genres and u' \u2022 '.join(f.genres) or '')
+            mli.setProperty('genres', f.genres and ' \u2022 '.join(f.genres) or '')
             mli.setProperty('codec', str(f.codec or ''))
             mli.setProperty('channels', CHANNEL_STRINGS.get(f.channels, ''))
             items.append(mli)
@@ -245,7 +210,7 @@ class PlaylistDialog(kodigui.BaseDialog):
                 item.setProperty('moving', '1')
 
     def apply(self):
-        from kodijsonrpc import rpc
+        from .kodijsonrpc import rpc
 
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
 

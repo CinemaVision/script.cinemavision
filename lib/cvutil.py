@@ -1,50 +1,16 @@
 import os
 import re
-import json
 import xbmc
-import kodiutil
-import cinemavision
+from . import kodiutil
+from . import cinemavision
 
-from kodiutil import T
+from .kodiutil import T
 
 DEFAULT_3D_RE = '(?i)3DSBS|3D.SBS|HSBS|H.SBS|H-SBS|[\. _]SBS[\. _]|FULL-SBS|FULL.SBS|FULLSBS|FSBS|HALF-SBS|' +\
     '3DTAB|3D.TAB|HTAB|H.TAB|3DOU|3D.OU|3D.HOU|[\. _]HOU[\. _]|[\. _]OU[\. _]|HALF-TAB|[\. _]TAB[\. _]'
 
 cinemavision.init(kodiutil.DEBUG(), kodiutil.Progress, kodiutil.T, kodiutil.getSetting('3D.tag.regex', DEFAULT_3D_RE))
 
-THEME = None
-
-def setTheme(theme_path=None):
-    global THEME
-
-    default = os.path.join(kodiutil.ADDON_PATH, 'resources', 'themes', 'default') + '/'
-
-    if theme_path is not None:
-        kodiutil.setSetting('theme.path', theme_path)
-    else:
-        theme_path = kodiutil.getSetting('theme.path', default)
-
-    cfg = cinemavision.util.pathJoin(theme_path, 'theme.json')
-    try:
-        with cinemavision.util.vfs.File(cfg, 'r') as f:
-            THEME = json.loads(f.read().decode('utf-8'))
-            THEME['theme.path'] = theme_path
-    except:
-        kodiutil.ERROR('Could not read {0}'.format(cfg))
-        THEME = {
-            'theme.name': '[I]Default[/I]',
-            'theme.color.icon': 'FF9C2A2D',
-            'theme.color.setting': 'FF9C2A2D',
-            'theme.color.move': 'FF9C2A2D',
-            'theme.color.button.selected': 'FF9C2A2D',
-            'theme.path': default
-        }
-
-    kodiutil.setGlobalProperty('theme.color.icon', THEME['theme.color.icon'])
-    kodiutil.setGlobalProperty('theme.color.setting', THEME['theme.color.setting'])
-    kodiutil.setGlobalProperty('theme.color.move', THEME['theme.color.move'])
-    kodiutil.setGlobalProperty('theme.color.button.selected', THEME['theme.color.button.selected'])
-    kodiutil.setGlobalProperty('theme.path', THEME['theme.path'])
 
 def defaultSavePath(for_3D=False):
     return os.path.join(kodiutil.ADDON_PATH, 'resources', 'script.cinemavision.default{0}.cvseq'.format(for_3D and '3D' or '2D'))
@@ -65,9 +31,9 @@ def getSavePath(name):
 
 def getSequenceName(path):
     if 'script.cinemavision.default2D.cvseq' in path:
-        return u'[ {0} ]'.format(T(32599, 'Default 2D'))
+        return '[ {0} ]'.format(T(32599, 'Default 2D'))
     elif 'script.cinemavision.default3D.cvseq' in path:
-        return u'[ {0} ]'.format(T(32600, 'Default 3D'))
+        return '[ {0} ]'.format(T(32600, 'Default 3D'))
 
     return re.split(r'[/\\]', path)[-1][:-6]
 
@@ -95,7 +61,7 @@ def selectSequence(active=True, for_dialog=False):
 
     contentPath = getSequencesContentPath()
     if not contentPath:
-        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), T(32501, 'No sequences found.'))
         return None
 
     sequences = getActiveSequences(active=active, for_dialog=for_dialog)
@@ -108,11 +74,11 @@ def selectSequence(active=True, for_dialog=False):
             dupNames[s.name] = False
 
     options = [('{0}.cvseq'.format(s.pathName), '{0} ({1})'.format(s.name, s.pathName) if dupNames[s.name] else s.name) for s in sequences]
-    options.append((default2D, u'[ {0} ]'.format(T(32599, 'Default 2D'))))
-    options.append((default3D, u'[ {0} ]'.format(T(32600, 'Default 3D'))))
+    options.append((default2D, '[ {0} ]'.format(T(32599, 'Default 2D'))))
+    options.append((default3D, '[ {0} ]'.format(T(32600, 'Default 3D'))))
 
     if not options:
-        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), T(32501, 'No sequences found.'))
         return None
 
     idx = xbmcgui.Dialog().select(T(32502, 'Choose Sequence'), [o[1] for o in options])
@@ -135,7 +101,7 @@ def getSequencesContentPath():
     import xbmcgui
     contentPath = kodiutil.getPathSetting('content.path')
     if not contentPath:
-        xbmcgui.Dialog().ok(T(32500, 'Not Found'), ' ', T(32501, 'No sequences found.'))
+        xbmcgui.Dialog().ok(T(32500, 'Not Found'), T(32501, 'No sequences found.'))
         return None
 
     return contentPath
@@ -216,7 +182,7 @@ def getMatchedSequence(feature):
 def getDefaultSequenceData(feature):
     path = defaultSavePath(for_3D=feature.is3D)
     seqData = cinemavision.sequence.SequenceData.load(path)
-    seqData.name = u'[ {0} ]'.format(T(32600, 'Default 3D') if feature.is3D else T(32599, 'Default 2D'))
+    seqData.name = '[ {0} ]'.format(T(32600, 'Default 3D') if feature.is3D else T(32599, 'Default 2D'))
 
     return {'path': path, 'sequence': seqData}
 
@@ -247,7 +213,7 @@ def loadContent(from_settings=False, bg=False):
     import xbmcgui
 
     if from_settings and not kodiutil.getPathSetting('content.path'):
-        xbmcgui.Dialog().ok(T(32503, 'No Content Path'), ' ', T(32504, 'Content path not set or not applied'))
+        xbmcgui.Dialog().ok(T(32503, 'No Content Path'), T(32504, 'Content path not set or not applied'))
         return
 
     contentPath = getContentPath(from_load=True)
@@ -272,7 +238,7 @@ def createSettingsRSDirs():
 
     defaultSystem = kodiutil.getSetting('rating.system.default', 'MPAA')
 
-    for system in cinemavision.ratings.RATINGS_SYSTEMS.values():
+    for system in list(cinemavision.ratings.RATINGS_SYSTEMS.values()):
         systemPaths = [os.path.join(base, system.name)]
         if system.name == defaultSystem:
             systemPaths.append(defaultPath)
@@ -338,7 +304,7 @@ def setRatingBumperStyle():
     styles = cinemavision.sequence.Feature.DBChoices('ratingStyle')
 
     if not styles:
-        xbmcgui.Dialog().ok(T(32508, 'No Content'), '', T(32509, 'No content found for current rating system.'))
+        xbmcgui.Dialog().ok(T(32508, 'No Content'), T(32509, 'No content found for current rating system.'))
         return
 
     idx = xbmcgui.Dialog().select(T(32510, 'Select Style'), [x[1] for x in styles])
@@ -371,14 +337,14 @@ def evalActionFile(paths, test=True):
 
     for path in paths:
         processor = cinemavision.actions.ActionFileProcessor(path, test=True)
-        messages.append(u'[B]VALIDATE ({0}):[/B]'.format(os.path.basename(path)))
+        messages.append('[B]VALIDATE ({0}):[/B]'.format(os.path.basename(path)))
         messages.append('')
         parseMessages = []
         hasParseMessages = False
         hasErrors = False
 
         if not processor.fileExists:
-            messages.append(u'{0} - [COLOR FFFF0000]{1}[/COLOR]'.format(os.path.basename(path), T(32513, 'MISSING!')))
+            messages.append('{0} - [COLOR FFFF0000]{1}[/COLOR]'.format(os.path.basename(path), T(32513, 'MISSING!')))
             messages.append('')
             continue
 
@@ -386,7 +352,7 @@ def evalActionFile(paths, test=True):
             hasParseMessages = True
             for type_, msg in processor.parserLog:
                 hasErrors = hasErrors or type_ == 'ERROR'
-                parseMessages .append(u'[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg))
+                parseMessages .append('[COLOR {0}]{1}[/COLOR]'.format(type_ == 'ERROR' and 'FFFF0000' or 'FFFFFF00', msg))
         else:
             parseMessages.append('[COLOR FF00FF00]OK[/COLOR]')
 
@@ -395,17 +361,17 @@ def evalActionFile(paths, test=True):
 
         if test:
             if hasErrors:
-                messages += [u'[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
-                messages.append(u'[COLOR FFFF0000]{0}[/COLOR]'.format('SKIPPED DUE TO ERRORS'))
+                messages += ['[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
+                messages.append('[COLOR FFFF0000]{0}[/COLOR]'.format('SKIPPED DUE TO ERRORS'))
             else:
                 with kodiutil.Progress('Testing', 'Executing actions...'):
-                    messages += [u'[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
+                    messages += ['[B]TEST ({0}):[/B]'.format(os.path.basename(path)), '']
                     for line in processor.test():
                         if line.startswith('Action ('):
                             lsplit = line.split(': ', 1)
-                            line = u'[COLOR FFAAAAFF]{0}:[/COLOR] {1}'.format(lsplit[0], lsplit[1])
+                            line = '[COLOR FFAAAAFF]{0}:[/COLOR] {1}'.format(lsplit[0], lsplit[1])
                         elif line.startswith('ERROR:'):
-                            line = u'[COLOR FFFF0000]{0}[/COLOR]'.format(line)
+                            line = '[COLOR FFFF0000]{0}[/COLOR]'.format(line)
                         messages.append(line)
             messages.append('')
 
@@ -478,7 +444,7 @@ class RatingParser:
             return 'UNKNOWN:NR'
 
         # Try a definite match
-        for system, ratingRE in self.SYSTEM_RATING_REs.items():
+        for system, ratingRE in list(self.SYSTEM_RATING_REs.items()):
             m = re.search(ratingRE, rating)
             if m:
                 return '{0}:{1}'.format(system, m.group('rating'))
@@ -493,7 +459,7 @@ class RatingParser:
                 return '{0}:{1}'.format(defaultSystem, m.group('rating'))
 
         # Try to extract rating from know ratings systems
-        for system, ratingRE in self.RATING_REs.items():
+        for system, ratingRE in list(self.RATING_REs.items()):
             m = re.search(ratingRE, rating)
             if m:
                 return m.group('rating')
@@ -503,7 +469,7 @@ class RatingParser:
 
 
 def multiSelect(options, default=False):
-    import kodigui
+    from . import kodigui
 
     class ModuleMultiSelectDialog(kodigui.MultiSelectDialog):
         xmlFile = 'script.cinemavision-multi-select-dialog.xml'
@@ -529,7 +495,7 @@ def multiSelect(options, default=False):
 
 
 def showText(heading, text):
-    import kodigui
+    from . import kodigui
 
     class TextView(kodigui.BaseDialog):
         xmlFile = 'script.cinemavision-text-dialog.xml'

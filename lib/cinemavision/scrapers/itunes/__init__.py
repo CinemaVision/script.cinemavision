@@ -1,4 +1,6 @@
-import scraper
+import xbmc
+
+from . import scraper
 import os
 import re
 import time
@@ -10,10 +12,12 @@ from .. import _scrapers
 
 class Trailer(_scrapers.Trailer):
     def __init__(self, data):
+        #util.DEBUG_LOG(data)
         self.data = data
-        if self.data.get('rating', '').lower().startswith('not'):
+        if self.data.get('rating', '').lower().startswith('Not'):
             self.data['rating'] = 'NR'
-        self.rating = ratings.getRating('MPAA', self.data.get('mpaa', ''))
+        #util.DEBUG_LOG(ratings.getRating('MPAA', self.data.get('mpaa', '')))
+        self.data['rating'] = ratings.getRating('MPAA', self.data.get('mpaa', ''))
 
     @property
     def ID(self):
@@ -22,6 +26,10 @@ class Trailer(_scrapers.Trailer):
     @property
     def title(self):
         return self.data['title']
+
+    @property
+    def rating(self):
+        return self.data['rating']
 
     @property
     def thumb(self):
@@ -74,6 +82,8 @@ class ItunesTrailerScraper(_scrapers.Scraper):
         ts = scraper.Scraper()
         id_location = ID.split('.', 1)
         all_ = [t for t in ts.get_trailers(id_location[-1], id_location[0]) if t]
+
+        #util.DEBUG_LOG(all_)
 
         if not all_:
             return None
