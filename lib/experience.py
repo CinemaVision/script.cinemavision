@@ -7,17 +7,16 @@ import json
 import xbmc
 import xbmcgui
 
-from kodijsonrpc import rpc
+from .kodijsonrpc import rpc
 
-import kodigui
-import kodiutil
+from . import kodigui
+from . import kodiutil
 
 kodiutil.LOG('Version: {0}'.format(kodiutil.ADDON.getAddonInfo('version')))
 
-import cvutil  # noqa E402
+from . import cvutil  # noqa E402
 
-import cinemavision  # noqa E402
-
+from . import cinemavision  # noqa E402
 
 AUDIO_FORMATS = {
     "dts": "DTS",
@@ -31,6 +30,7 @@ AUDIO_FORMATS = {
     "a_truehd": "Dolby TrueHD",
     "truehd": "Dolby TrueHD"
 }
+
 
 # aac, ac3, cook, dca, dtshd_hra, dtshd_ma, eac3, mp1, mp2, mp3, pcm_s16be, pcm_s16le, pcm_u8, truehd, vorbis, wmapro, wmav2
 
@@ -87,8 +87,8 @@ class KodiVolumeControl:
         return self._fader.isAlive()
 
     def _set(self, volume):
-        xbmc.executebuiltin("XBMC.SetVolume({0})".format(volume))
-        # rpc.Application.SetVolume(volume=volume)  # This works but displays the volume indicator :(
+        xbmc.executebuiltin("SetVolume({0})".format(volume))
+        #rpc.Application.SetVolume(volume=volume)  # This works but displays the volume indicator :(
 
     def store(self):
         if self.saved:
@@ -161,9 +161,11 @@ class KodiVolumeControl:
             while xbmc.getCondVisibility('Player.Paused') and not kodiutil.wait(0.1):
                 endTime = time.time() + left
 
-            if xbmc.abortRequested or not xbmc.getCondVisibility('Player.Playing') or self.abortFlag.isSet() or self._stop():
+            if xbmc.Monitor().abortRequested() or not xbmc.getCondVisibility(
+                    'Player.Playing') or self.abortFlag.is_set() or self._stop():
                 DEBUG_LOG(
-                    'Fade ended early({0}): {1}'.format(vol, not xbmc.getCondVisibility('Player.Playing') and 'NOT_PLAYING' or 'ABORT')
+                    'Fade ended early({0}): {1}'.format(vol, not xbmc.getCondVisibility(
+                        'Player.Playing') and 'NOT_PLAYING' or 'ABORT')
                 )
                 return
             left = endTime - time.time()
@@ -230,7 +232,7 @@ class ExperienceWindow(kodigui.BaseWindow):
         self.initialized = True
 
     def join(self):
-        while not kodiutil.wait(0.1) and not self.abortFlag.isSet():
+        while not kodiutil.wait(0.1) and not self.abortFlag.is_set():
             if self.initialized:
                 return
 
@@ -441,7 +443,8 @@ class ExperienceWindow(kodigui.BaseWindow):
 
     def setSkipNotice(self, msg):
         kodiutil.setGlobalProperty('number', msg)
-        self.skipNotice.setAnimations([('Conditional', 'effect=fade start=100 end=0 time=500 delay=1000 condition=true')])
+        self.skipNotice.setAnimations(
+            [('Conditional', 'effect=fade start=100 end=0 time=500 delay=1000 condition=true')])
 
 
 def requiresStart(func):
@@ -470,7 +473,8 @@ class ExperiencePlayer(xbmc.Player):
         self.playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         self.fakeFilePrev = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', self.DUMMY_FILE_PREV)
         self.fakeFileNext = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', self.DUMMY_FILE_NEXT)
-        self.featureStub = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos', 'script.cinemavision.feature_stub.mp4')
+        self.featureStub = os.path.join(kodiutil.ADDON_PATH, 'resources', 'videos',
+                                        'script.cinemavision.feature_stub.mp4')
         self.playStatus = self.NOT_PLAYING
         self.hasFullscreened = False
         self.loadActions()
@@ -499,7 +503,7 @@ class ExperiencePlayer(xbmc.Player):
 
         if self.playStatus == self.PLAYING_MUSIC or self.playStatus == self.MUSIC_STOPPED:
             self.setPlayStatus(self.NOT_PLAYING)
-            self.log('MUSIC ENDED')
+            DEBUG_LOG('MUSIC ENDED')
             return
         elif self.playStatus == self.NOT_PLAYING:
             return self.onPlayBackFailed()
@@ -613,7 +617,8 @@ class ExperiencePlayer(xbmc.Player):
 
         result = rpc.Playlist.GetItems(
             playlistid=xbmc.PLAYLIST_VIDEO,
-            properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast', 'tag']
+            properties=['file', 'genre', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio',
+                        'director', 'cast', 'tag']
         )
         for r in result.get('items', []):
             feature = self.featureFromJSON(r)
@@ -715,7 +720,8 @@ class ExperiencePlayer(xbmc.Player):
                 try:
                     r = rpc.VideoLibrary.GetMovieDetails(
                         movieid=m['movieid'],
-                        properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
+                        properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime',
+                                    'year', 'studio', 'director', 'cast']
                     )['moviedetails']
                     feature = self.featureFromJSON(r)
                     self.features.append(feature)
@@ -760,7 +766,6 @@ class ExperiencePlayer(xbmc.Player):
 
         return True
 
-
     def featureFromId(self, movieid=None, episodeid=None):
         if movieid:
             for movieid in str(movieid).split('|'):  # ID could be int or \ seperated int string
@@ -770,11 +775,13 @@ class ExperiencePlayer(xbmc.Player):
 
                 r = rpc.VideoLibrary.GetMovieDetails(
                     movieid=movieid,
-                    properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime', 'year', 'studio', 'director', 'cast']
+                    properties=['file', 'genre', 'tag', 'mpaa', 'streamdetails', 'title', 'thumbnail', 'runtime',
+                                'year', 'studio', 'director', 'cast']
                 )['moviedetails']
                 r['type'] = 'movie'
 
-                return self.featureFromJSON(r)
+                feature = self.featureFromJSON(r)
+                self.features.append(feature)
         elif episodeid:
             for episodeid in str(episodeid).split('|'):  # ID could be int or \ seperated int string
                 episodeid = kodiutil.intOrZero(episodeid)
@@ -786,7 +793,8 @@ class ExperiencePlayer(xbmc.Player):
                     properties=['file', 'streamdetails', 'title', 'thumbnail', 'runtime']
                 )['episodedetails']
                 r['type'] = 'tvshow'
-                return self.featureFromJSON(r)
+                feature = self.featureFromJSON(r)
+                self.features.append(feature)
 
         return None
 
@@ -869,15 +877,17 @@ class ExperiencePlayer(xbmc.Player):
             if video.userAgent:
                 path += '|User-Agent=' + video.userAgent
 
-        li = xbmcgui.ListItem(video.title, 'CinemaVision', thumbnailImage=video.thumb, path=path)
+        li = xbmcgui.ListItem(video.title, 'CinemaVision', path=path)
+        li.setArt({'thumb': video.thumb, 'icon': video.thumb})
         li.setInfo('video', {'title': video.title})
-        li.setIconImage(video.thumb)
 
         return path, li
 
     def playVideos(self, videos, features=None):
         self.playlist.clear()
         rpc.Playlist.Clear(playlistid=xbmc.PLAYLIST_VIDEO)
+
+        xbmc.sleep(100)
 
         volume = (features or videos)[0].volume
         if volume != 100:
@@ -899,9 +909,11 @@ class ExperiencePlayer(xbmc.Player):
             self.playlist.add(self.fakeFilePrev, index=0)
 
         self.videoPreDelay()
-        rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1}, options={'shuffled': False, 'resume': False, 'repeat': 'off'})
+        rpc.Player.Open(item={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1},
+                        options={'shuffled': False, 'resume': False, 'repeat': 'off'})
         xbmc.sleep(100)
-        while not xbmc.getCondVisibility('VideoPlayer.IsFullscreen') and not xbmc.abortRequested and not self.abortFlag.isSet() and self.isPlaying():
+        while not xbmc.getCondVisibility(
+                'VideoPlayer.IsFullscreen') and not xbmc.Monitor().abortRequested() and not self.abortFlag.is_set() and self.isPlaying():
             xbmc.executebuiltin('ActivateWindow(fullscreenvideo)')
             xbmc.sleep(100)
         self.hasFullscreened = True
@@ -936,7 +948,8 @@ class ExperiencePlayer(xbmc.Player):
             xbmc.sleep(delay)
 
     def isPlayingMinimized(self):
-        if not xbmc.getCondVisibility('Player.Playing'):  # isPlayingVideo() returns True before video actually plays (ie. is fullscreen)
+        if not xbmc.getCondVisibility(
+                'Player.Playing'):  # isPlayingVideo() returns True before video actually plays (ie. is fullscreen)
             return False
 
         if xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):  # If all is good, let's return now
@@ -983,9 +996,10 @@ class ExperiencePlayer(xbmc.Player):
             self.initSkinVars()
 
     def _start(self, sequence_path):
-        import cvutil
+        from . import cvutil
 
-        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path, content_path=cvutil.getContentPath())
+        self.processor = cinemavision.sequenceprocessor.SequenceProcessor(sequence_path,
+                                                                          content_path=cvutil.getContentPath())
         [self.processor.addFeature(f) for f in self.features]
 
         kodiutil.DEBUG_LOG('\n.')
@@ -1076,7 +1090,7 @@ class ExperiencePlayer(xbmc.Player):
 
             if image_queue and image_queue.music:
                 self.volume.set(1, fade_time=int(image_queue.musicFadeOut * 1000))
-                while self.volume.fading() and not self.abortFlag.isSet() and not kodiutil.wait(0.1):
+                while self.volume.fading() and not self.abortFlag.is_set() and not kodiutil.wait(0.1):
                     if self.window.hasAction() and self.window.action != 'RESUME':
                         break
 
@@ -1089,11 +1103,11 @@ class ExperiencePlayer(xbmc.Player):
 
     def waitForPlayStart(self, timeout=10000):
         giveUpTime = time.time() + timeout / 1000.0
-        while not xbmc.getCondVisibility('Player.Playing') and time.time() < giveUpTime and not self.abortFlag.isSet():
+        while not xbmc.getCondVisibility('Player.Playing') and time.time() < giveUpTime and not self.abortFlag.is_set():
             xbmc.sleep(100)
 
     def waitForPlayStop(self):
-        while self.isPlaying() and not self.abortFlag.isSet():
+        while self.isPlaying() and not self.abortFlag.is_set():
             xbmc.sleep(100)
 
     def showImage(self, image):
@@ -1175,7 +1189,7 @@ class ExperiencePlayer(xbmc.Player):
 
         start = time.time()
         end = time.time() + image_queue.duration
-        musicEnd = [end - image_queue.musicFadeOut]
+        musicEnd = end + image_queue.musicFadeOut
 
         info = self.ImageQueueInfo(image_queue, musicEnd)
 
@@ -1232,7 +1246,7 @@ class ExperiencePlayer(xbmc.Player):
             kodiutil.setGlobalProperty('paused', '')
             xbmc.enableNavSounds(True)
             self.stopMusic(action != 'BACK' and image_queue or None)
-            if self. window.hasAction():
+            if self.window.hasAction():
                 if self.window.getAction() == 'BACK':
                     return False
             self.window.clear()
@@ -1269,6 +1283,8 @@ class ExperiencePlayer(xbmc.Player):
             self.abort()
             return
 
+        xbmc.sleep(100)  # TEST
+
         if prev:
             playable = self.processor.prev()
         else:
@@ -1283,8 +1299,10 @@ class ExperiencePlayer(xbmc.Player):
         if playable.type not in ('ACTION', 'COMMAND'):
             kodiutil.setGlobalProperty('module.current', playable.module._type)
             kodiutil.setGlobalProperty('module.current.name', playable.module.displayRaw())
-            kodiutil.setGlobalProperty('module.next', self.processor.upNext() and self.processor.upNext().module._type or '')
-            kodiutil.setGlobalProperty('module.next.name', self.processor.upNext() and self.processor.upNext().module.displayRaw() or '')
+            kodiutil.setGlobalProperty('module.next',
+                                       self.processor.upNext() and self.processor.upNext().module._type or '')
+            kodiutil.setGlobalProperty('module.next.name',
+                                       self.processor.upNext() and self.processor.upNext().module.displayRaw() or '')
 
         if playable.type == 'IMAGE':
             try:

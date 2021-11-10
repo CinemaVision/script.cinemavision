@@ -1,5 +1,5 @@
 import xml
-import scraper
+from . import scraper
 from .. import _scrapers
 from ... import util
 from ... import ratings
@@ -34,7 +34,7 @@ class Trailer(_scrapers.Trailer):
 
     @property
     def ID(self):
-        return u'content:{0}'.format(self.data['ID'])
+        return 'content:{0}'.format(self.data['ID'])
 
     @property
     def title(self):

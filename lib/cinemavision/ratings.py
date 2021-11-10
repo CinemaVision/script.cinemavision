@@ -1,5 +1,5 @@
-import util
-import database as DB
+from . import util
+from . import database as DB
 from xml.etree import ElementTree as ET
 
 COUNTRY_SYSTEMS = {
@@ -47,6 +47,7 @@ class RatingSystem:
         return self.ratings[idx]
 
     def getRatingByName(self, name):
+        name = str(name)
         name = name.upper()
         for r in self.ratings:
             if r.name == name:
@@ -91,7 +92,7 @@ class Rating:
     def __str__(self):
         return self.system and '{0}:{1}'.format(self.system, self.name) or 'Unknown'
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.system)
 
     @classmethod
@@ -167,13 +168,15 @@ NO_RATING = Rating('', 1000)
 
 
 def getRatingsSystem(name):
-    name = name.upper()
-    return RATINGS_SYSTEMS.get(name)
+    #util.DEBUG_LOG(name)
+    name = str(name)
+    system = name.upper()
+    return RATINGS_SYSTEMS.get(system)
 
 
 def getRating(system_or_name, name=None):
     system = system_or_name
-
+    #util.DEBUG_LOG(system)
     if not name:
         if ':' in system_or_name:
             system, name = system_or_name.split(':', 1)
@@ -189,6 +192,7 @@ def getRating(system_or_name, name=None):
     if not system:
         return NO_RATING
 
+    #util.DEBUG_LOG(system)
     return system.getRatingByName(name)
 
 
@@ -202,7 +206,7 @@ def addRatingSystemFromXML(xml):
 
 def getRegExs(context=None):
     ret = {}
-    for system in RATINGS_SYSTEMS.values():
+    for system in list(RATINGS_SYSTEMS.values()):
         regEx = system.getRegEx(context)
         if regEx:
             ret[system.name] = regEx
@@ -263,7 +267,7 @@ def load():
     loadFromDB()
 
     util.DEBUG_LOG('Rating Systems:')
-    for rs in RATINGS_SYSTEMS.values():
+    for rs in list(RATINGS_SYSTEMS.values()):
         util.DEBUG_LOG('  {0}'.format(repr(rs)))
 
 

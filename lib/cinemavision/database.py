@@ -16,7 +16,7 @@ except TypeError:
     datetime.datetime = new_datetime
 
 from peewee import peewee # pylint: disable=E0401
-import util
+from . import util
 
 DATABASE_VERSION = 6
 

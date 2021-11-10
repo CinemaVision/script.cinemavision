@@ -1,4 +1,4 @@
-import scraper
+from . import scraper
 import os
 import re
 import time

@@ -2,12 +2,12 @@ import time
 import calendar
 
 import xbmcgui
-import kodigui
-import kodiutil
-import cvutil
-import cinemavision
+from . import kodigui
+from . import kodiutil
+from . import cvutil
+from . import cinemavision
 
-from kodijsonrpc import rpc
+from .kodijsonrpc import rpc
 
 cvutil.ratingParser()
 
@@ -102,7 +102,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
             else:
                 val = self.sequenceData.get('type') == '2D' and '3D' or ''
         else:
-            val = xbmcgui.Dialog().input(u'Enter {0}'.format(label), self.sequenceData.get(option))
+            val = xbmcgui.Dialog().input('Enter {0}'.format(label), self.sequenceData.get(option))
 
         if val is None:
             return
@@ -143,24 +143,24 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         try:
             if itype == 'year':
                 if len(val) > 1:
-                    return u'{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
+                    return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
                 else:
-                    return u'{0}'.format(val[0])
+                    return '{0}'.format(val[0])
             elif itype == 'ratings':
                 if len(val) > 1:
-                    return u'{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
+                    return '{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
                 else:
-                    return u'{0}'.format(val[0])
+                    return '{0}'.format(val[0])
             elif itype == 'dates':
                 if len(val) > 1:
-                    return u'{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
+                    return '{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
                 else:
-                    return u'{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
+                    return '{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
             elif itype == 'times':
                 if len(val) > 1:
-                    return u'{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
+                    return '{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
                 else:
-                    return u'{0:02d}'.format(val[0][0])
+                    return '{0:02d}'.format(val[0][0])
         except Exception:
             kodiutil.ERROR()
 
@@ -201,13 +201,13 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                 yStart = yStart or None
 
                 if itype == 'year':
-                    prefix = u'{0} thru '.format(yStart)
+                    prefix = '{0} thru '.format(yStart)
                 elif itype == 'ratings':
-                    prefix = u'{0} - '.format(yStart)
+                    prefix = '{0} - '.format(yStart)
                 elif itype == 'dates':
-                    prefix = u'{0} {1} thru '.format(calendar.month_abbr[yStart[0]], yStart[1])
+                    prefix = '{0} {1} thru '.format(calendar.month_abbr[yStart[0]], yStart[1])
                 elif itype == 'times':
-                    prefix = u'{0:02d}:{1:02d} thru '.format(*yStart)
+                    prefix = '{0:02d}:{1:02d} thru '.format(*yStart)
 
                 yEnd = func(yStart, remove=ret, disp='End', prefix=prefix)
                 if yEnd is None:
@@ -224,7 +224,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         if dlist is None:
             dlist = ilist
         mod = ' ({0})'.format(mod) if mod else ''
-        idx = xbmcgui.Dialog().select(u'Select {0}{1}'.format(disp, mod), [str(i) for i in dlist])
+        idx = xbmcgui.Dialog().select('Select {0}{1}'.format(disp, mod), [str(i) for i in dlist])
         if idx < 0:
             return None
         return ilist[idx]
@@ -252,7 +252,7 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                         break
             else:
                 years.append([y, str(y)])
-        idx = xbmcgui.Dialog().select(u'Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
+        idx = xbmcgui.Dialog().select('Select Year{0}'.format(mod), ['{0}{1}'.format(prefix, y[1]) for y in years])
         if idx < 0:
             return None
 
@@ -271,19 +271,19 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         return rating
 
     def getDate(self, start=None, remove=None, single=False, disp='', prefix=''):
-        month = self.chooseFromList(range(1, 13), 'Month', disp, [u'{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
+        month = self.chooseFromList(list(range(1, 13)), 'Month', disp, ['{0}{1}'.format(prefix, calendar.month_abbr[m]) for m in range(1, 13)])
         if month is None:
             return None
 
         if month in [4, 6, 9, 11]:
-            dlist = range(1, 31)
+            dlist = list(range(1, 31))
         elif month == 2:
-            dlist = range(1, 30)
+            dlist = list(range(1, 30))
         else:
-            dlist = range(1, 32)
+            dlist = list(range(1, 32))
 
         monthName = calendar.month_abbr[month]
-        day = self.chooseFromList(dlist, 'Day', disp, [u'{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
+        day = self.chooseFromList(dlist, 'Day', disp, ['{0}{1} {2}'.format(prefix, monthName, d) for d in dlist])
         if day is None:
             return None
 
@@ -294,15 +294,15 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
         if single and remove:
             hours = [h for h in range(24) if [[h, None]] not in remove]
         else:
-            hours = range(24)
-        hour = self.chooseFromList(hours, 'Hour', disp, [u'{0}{1:02d}'.format(prefix, h) for h in hours])
+            hours = list(range(24))
+        hour = self.chooseFromList(hours, 'Hour', disp, ['{0}{1:02d}'.format(prefix, h) for h in hours])
         if hour is None:
             return None
 
         if single:
             return [hour, None]
 
-        minute = self.chooseFromList(range(60), 'Minute', disp, [u'{0}{1:02d}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
+        minute = self.chooseFromList(list(range(60)), 'Minute', disp, ['{0}{1:02d}:{2:02d}'.format(prefix, hour, m) for m in range(60)])
         if minute is None:
             return None
 
@@ -370,14 +370,14 @@ class SeqAttrEditorDialog(kodigui.BaseDialog):
                     continue
                 ret.pop(idx)
             elif choice == 'manual':
-                val = xbmcgui.Dialog().input(u'Enter {0} {1}'.format(disp, len(ret) + 1))
+                val = xbmcgui.Dialog().input('Enter {0} {1}'.format(disp, len(ret) + 1))
                 if not val:
                     continue
                 ret.append(val)
                 if val in allitems:
                     allitems.remove(val)
             else:
-                idx = xbmcgui.Dialog().select(u'Choose {0} {1}'.format(disp, len(ret) + 1), allitems)
+                idx = xbmcgui.Dialog().select('Choose {0} {1}'.format(disp, len(ret) + 1), allitems)
                 if idx < 0:
                     continue
                 val = allitems[idx]

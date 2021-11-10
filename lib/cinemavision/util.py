@@ -21,8 +21,7 @@ class Progress:
         self.heading = ''
 
     def __enter__(self):
-        msg = '[- {0} -]'.format(self.title)
-        print(msg)
+        print('[- {0} -]'.format(self.title))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -32,8 +31,7 @@ class Progress:
         self.pct = pct is not None and pct or self.pct
         self.heading = heading is not None and heading or self.heading
         self.message = message is not None and message or self.message
-        msg = '{0}% {1}: {2}'.format(self.pct, self.heading, self.message)
-        print(msg)
+        print('{0}% {1}: {2}'.format(self.pct, self.heading, self.message))
         return True
 
 
@@ -80,7 +78,7 @@ def _getSettingDefault(key):
         'audioformat.format': 'Other',
         'audioformat.volume': 100,
         'video.volume': 100,
-        # Non-sequence defualts
+        # Non-sequence defaults
         'bumper.fallback2D': False,
         'trivia.music': 'content',
         'trivia.musicVolume': 75,
@@ -101,7 +99,7 @@ try:
     import stat
     import time
 
-    STORAGE_PATH = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')).decode('utf-8')
+    STORAGE_PATH = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
     _T = xbmcaddon.Addon().getLocalizedString
 
     def T(ID, eng=''):
@@ -113,7 +111,7 @@ try:
 
         def listdir(self, path):
             lists = xbmcvfs.listdir(path)
-            return [x.decode('utf-8') for x in lists[0] + lists[1]]
+            return [x for x in lists[0] + lists[1]]
 
         class File(xbmcvfs.File):
             def __init__(self, *args, **kwargs):
@@ -177,12 +175,12 @@ try:
 
     def translatePath(path):
         if path.startswith('special://'):
-            return xbmc.translatePath(path)
+            return xbmcvfs.translatePath(path)
 
         return path
 
     def LOG(msg):
-        xbmc.log('[- CinemaVision -] (API): {0}'.format(msg), xbmc.LOGNOTICE)
+        xbmc.log('[- CinemaVision -] (API): {0}'.format(msg), xbmc.LOGINFO)
 
     try:
         xbmc.Monitor().waitForAbort
@@ -192,9 +190,9 @@ try:
     except:
         def wait(timeout):
             start = time.time()
-            while not xbmc.abortRequested and time.time() - start < timeout:
+            while not xbmc.Monitor().abortRequested and time.time() - start < timeout:
                 xbmc.sleep(100)
-            return xbmc.abortRequested
+            return xbmc.Monitor().abortRequested
 
     def getSettingDefault(key):
         default = xbmcaddon.Addon().getSetting(key)
@@ -245,7 +243,6 @@ try:
             ('trailers', 'iTunes', True),
             ('trailers', 'KodiDB', True),
             ('trailers', 'TMDB', True),
-            ('trailers', 'StereoscopyNews', False),
             ('trailers', 'Content', False)
         ):
             sett = xbmcaddon.Addon().getSetting('scraper.{0}.{1}'.format(stype, scraper))
@@ -264,6 +261,7 @@ try:
     imageExtensions = tuple(xbmc.getSupportedMedia('picture').split('|'))
 
 except:
+    raise
     import zipfile
 
     STORAGE_PATH = '~'
@@ -337,8 +335,7 @@ except:
         return path
 
     def LOG(msg):
-        prefixedMsg = '[- CinemaVison -] (API): {0}'.format(msg)
-        print(prefixedMsg)
+        print('[- CinemaVison -] (API): {0}'.format(msg))
 
     def wait(timeout):
         time.sleep(timeout)

@@ -3,7 +3,7 @@
 .. moduleauthor:: Ferdinand Silva <ferdinandsilva@ferdinandsilva.com>
 
 """
-from pastebin import PastebinPython
+from .pastebin import PastebinPython
 
 __version__ = "1.2"
 __app_name__ = "pastebin_python"

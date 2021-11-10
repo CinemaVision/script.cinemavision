@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 import struct
 
-from mutagen._compat import PY2
+from mutagen._util import convert_error
 
 # This is not an exhaustive list of container atoms, but just the
 # ones this module needs to peek inside.
@@ -27,6 +26,7 @@ class Atom(object):
     Attributes:
     children -- list child atoms (or None for non-container atoms)
     length -- length of this atom, including length and name
+    datalength = -- length of this atom without length, name
     name -- four byte name of the atom, as a str
     offset -- location in the constructor-given fileobj of this atom
 
@@ -35,6 +35,7 @@ class Atom(object):
 
     children = None
 
+    @convert_error(IOError, AtomError)
     def __init__(self, fileobj, level=0):
         """May raise AtomError"""
 
@@ -74,13 +75,16 @@ class Atom(object):
         else:
             fileobj.seek(self.offset + self.length, 0)
 
+    @property
+    def datalength(self):
+        return self.length - (self._dataoffset - self.offset)
+
     def read(self, fileobj):
         """Return if all data could be read and the atom payload"""
 
         fileobj.seek(self._dataoffset, 0)
-        length = self.length - (self._dataoffset - self.offset)
-        data = fileobj.read(length)
-        return len(data) == length, data
+        data = fileobj.read(self.datalength)
+        return len(data) == self.datalength, data
 
     @staticmethod
     def render(name, data):
@@ -138,6 +142,7 @@ class Atoms(object):
     This structure should only be used internally by Mutagen.
     """
 
+    @convert_error(IOError, AtomError)
     def __init__(self, fileobj):
         self.atoms = []
         fileobj.seek(0, 2)
@@ -173,12 +178,8 @@ class Atoms(object):
         specifying the complete path ('moov.udta').
         """
 
-        if PY2:
-            if isinstance(names, basestring):
-                names = names.split(b".")
-        else:
-            if isinstance(names, bytes):
-                names = names.split(b".")
+        if isinstance(names, bytes):
+            names = names.split(b".")
 
         for child in self.atoms:
             if child.name == names[0]:

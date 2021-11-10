@@ -3,10 +3,10 @@ import os
 import re
 import datetime
 import calendar
-import ratings
-import exceptions
-import util
-from util import T
+from . import ratings
+from . import exceptions
+from . import util
+from .util import T
 
 SAVE_VERSION = 2
 
@@ -70,7 +70,7 @@ SETTINGS_DISPLAY = {
 
 
 def settingDisplay(setting):
-    if setting is None or setting is 0:
+    if setting == None or setting == 0:
         return 'Default'
 
     try:
@@ -86,7 +86,7 @@ def strToBool(val):
 
 
 def strToBoolWithDefault(val):
-    if val is None:
+    if val == None:
         return None
     return bool(val == 'True')
 
@@ -115,24 +115,24 @@ def _getConditionValueString(itype, val):
     try:
         if itype == 'year':
             if len(val) > 1:
-                return u'{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
+                return '{0} - {1}'.format(val[0], val[1] if val[1] else 'Now')
             else:
-                return u'{0}'.format(val[0])
+                return '{0}'.format(val[0])
         elif itype == 'ratings':
             if len(val) > 1:
-                return u'{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
+                return '{0} - {1}'.format(val[0] if val[0] else 'Any', val[1] if val[1] else 'Any')
             else:
-                return u'{0}'.format(val[0])
+                return '{0}'.format(val[0])
         elif itype == 'dates':
             if len(val) > 1:
-                return u'{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
+                return '{0} {1} - {2} {3}'.format(calendar.month_abbr[val[0][0]], val[0][1], calendar.month_abbr[val[1][0]], val[1][1])
             else:
-                return u'{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
+                return '{0} {1}'.format(calendar.month_abbr[val[0][0]], val[0][1])
         elif itype == 'times':
             if len(val) > 1:
-                return u'{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
+                return '{0:02d}:{1:02d} - {2:02d}:{3:02d}'.format(val[0][0], val[0][1], val[1][0], val[1][1])
             else:
-                return u'{0:02d}'.format(val[0][0])
+                return '{0:02d}'.format(val[0][0])
     except Exception:
         util.ERROR()
 
@@ -149,7 +149,7 @@ class SequenceData(object):
         self._loadPath = ''
         self._process(data_string)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.pathName)
 
     def __len__(self):
@@ -210,7 +210,7 @@ class SequenceData(object):
 
     def conditionsStr(self):
         ret = 'Sequence [{0}]:\n'.format(util.strRepr(self.name))
-        for key, val in self._attrs.items():
+        for key, val in list(self._attrs.items()):
             if val:
                 if isinstance(val, list):
                     ret += '    {0} = {1}\n'.format(key, ', '.join([getConditionValueString(key, v) for v in val]))
@@ -221,7 +221,7 @@ class SequenceData(object):
     @classmethod
     def load(cls, path):
         with util.vfs.File(path, 'r') as f:
-            dstring = f.read().decode('utf-8')
+            dstring = f.read()
 
         if not dstring:
             raise exceptions.EmptySequenceFileException()
@@ -493,7 +493,7 @@ class Item(object):
             val = getattr(self, e['attr'])
             if not val and val is not False:
                 continue
-            sub.text = unicode(val)
+            sub.text = str(val)
             item.append(sub)
         return item
 
@@ -574,7 +574,7 @@ class Item(object):
 
     def getLive(self, attr):
         val = self.getSetting(attr)
-        if val is None or val is 0:
+        if val == None or val == 0:
             return util.getSettingDefault('{0}.{1}'.format(self._type, attr))
         return val
 
@@ -606,13 +606,13 @@ class Item(object):
         limits = self.getLimits(setting)
         if limits == LIMIT_BOOL_DEFAULT:
             if val is None:
-                return u'{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
+                return '{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
             return val is True and T(32320, 'Yes') or T(32321, 'No')
 
-        if val is None or val is 0:
-            return u'{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
+        if val == None or val == 0:
+            return '{0} ({1})'.format(T(32322, 'Default'), settingDisplay(util.getSettingDefault('{0}.{1}'.format(self._type, setting))))
 
-        return unicode(settingDisplay(val))
+        return str(settingDisplay(val))
 
     def DBChoices(self, attr):
         return None
@@ -677,7 +677,7 @@ class Feature(Item):
     def display(self):
         name = self.name or self.displayName
         if self.count > 1:
-            return u'{0} x {1}'.format(name, self.count)
+            return '{0} x {1}'.format(name, self.count)
         return name
 
     def elementVisible(self, e):
@@ -691,7 +691,7 @@ class Feature(Item):
 
     @staticmethod
     def DBChoices(attr):
-        import database as DB
+        from . import database as DB
         DB.initialize()
 
         ratingSystem = util.getSettingDefault('rating.system.default')
@@ -779,7 +779,7 @@ class Trivia(Item):
     def display(self):
         name = self.name or self.displayName
         if self.duration > 0:
-            return u'{0} ({1}m)'.format(name, self.duration)
+            return '{0} ({1}m)'.format(name, self.duration)
         return name
 
     def getLive(self, attr):
@@ -824,28 +824,28 @@ class Trailer(Item):
             'attr': 'scrapers',
             'type': None,
             'limits': LIMIT_MULTI_SELECT,
-            'name': u'- {0}'.format(T(32323, 'Scrapers filter (scrapers)')),
+            'name': '- {0}'.format(T(32323, 'Scrapers filter (scrapers)')),
             'default': None
         },
         {
             'attr': 'order',
             'type': None,
             'limits': [None, 'newest', 'random'],
-            'name': u'- {0}'.format(T(32324, 'Content order')),
+            'name': '- {0}'.format(T(32324, 'Content order')),
             'default': None
         },
         {
             'attr': 'file',
             'type': None,
             'limits': LIMIT_FILE_DEFAULT,
-            'name': u'- {0}'.format(T(32325, 'Path')),
+            'name': '- {0}'.format(T(32325, 'Path')),
             'default': ''
         },
         {
             'attr': 'dir',
             'type': None,
             'limits': LIMIT_DIR,
-            'name': u'- {0}'.format(T(32325, 'Path')),
+            'name': '- {0}'.format(T(32325, 'Path')),
             'default': ''
         },
         {
@@ -866,7 +866,7 @@ class Trailer(Item):
             'attr': 'ratingMax',
             'type': None,
             'limits': LIMIT_DB_CHOICE,
-            'name': u'- {0}'.format(T(32062, 'Max')),
+            'name': '- {0}'.format(T(32062, 'Max')),
             'default': None
         },
         {
@@ -905,15 +905,14 @@ class Trailer(Item):
         ['Content', T(32326, 'Trailers Folder'), 'content'],
         ['KodiDB', T(32318, 'Kodi Database'), 'kodidb'],
         ['iTunes', 'Apple iTunes', 'itunes'],
-        ['TMDB', 'The Movie Database', 'tmdb'],
-        ['StereoscopyNews', 'StereoscopyNews.com', 'stereoscopynews']
+        ['TMDB', 'The Movie Database', 'tmdb']
     ]
 
     _settingsDisplay = {
         'Content': T(32326, 'Trailers Folder'),
         'KodiDB': T(32318, 'Kodi Database'),
         'iTunes': 'Apple iTunes',
-        'StereoscopyNews': 'StereoscopyNews.com',
+        'THMDB': 'The Movie Database'
     }
 
     def __init__(self):
@@ -934,7 +933,7 @@ class Trailer(Item):
     def display(self):
         name = self.name or self.displayName
         if self.count > 1:
-            return u'{0} x {1}'.format(name, self.count)
+            return '{0} x {1}'.format(name, self.count)
         return name
 
     def liveScrapers(self):
@@ -968,11 +967,11 @@ class Trailer(Item):
     @staticmethod
     def DBChoices(attr):
         default = util.getSettingDefault('rating.system.default')
-        import ratings
+        from . import ratings
         system = ratings.getRatingsSystem(default)
         if not system:
             return None
-        return [(u'{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
+        return [('{0}.{1}'.format(r.system, r.name), str(r)) for r in system.ratings]
 
     def Select(self, attr):
         selected = [s.strip().lower() for s in self.liveScrapers()]
@@ -1003,7 +1002,7 @@ class Trailer(Item):
     def getSettingDisplay(self, setting):
         if setting == 'scrapers':
             val = getattr(self, setting) or ''
-            return u','.join([self._settingsDisplay.get(v, v) for v in val.split(',')])
+            return ','.join([self._settingsDisplay.get(v, v) for v in val.split(',')])
 
         return Item.getSettingDisplay(self, setting)
 
@@ -1126,12 +1125,12 @@ class Video(Item):
             name = settingDisplay(self.vtype)
 
         if self.count > 1 and (self.vtype == 'dir' or (self.vtype != 'file' and self.random)):
-            return u'{0} x {1}'.format(name, self.count)
+            return '{0} x {1}'.format(name, self.count)
 
         return name
 
     def DBChoices(self, attr):
-        import database as DB
+        from . import database as DB
         DB.initialize()
 
         DB.connect()
@@ -1228,8 +1227,8 @@ class Action(Item):
         {
             'attr': 'file',
             'type': None,
-            'limits': LIMIT_FILE,
-            'name': T(32085, 'Action file path'),
+            'limits': LIMIT_FILE_DEFAULT,
+            'name': T(32085, 'Action File Path'),
             'default': ''
         },
         {
@@ -1343,8 +1342,8 @@ class Command(Item):
 
     def display(self):
         name = self.name or self.displayName
-        command = self.command and u' ({0}:{1})'.format(self.command, self.arg) or ''
-        return u'{0}{1}'.format(name, command)
+        command = self.command and ' ({0}:{1})'.format(self.command, self.arg) or ''
+        return '{0}{1}'.format(name, command)
 
 
 CONTENT_CLASSES = {

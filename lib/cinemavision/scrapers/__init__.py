@@ -1,11 +1,10 @@
-import _scrapers
+from . import _scrapers
 from .. import util
 
 _SOURCES = {
     'itunes': 'iTunes',
     'kodidb': 'kodiDB',
     'tmdb': 'TMDB',
-    'stereoscopynews': 'StereoscopyNews',
     'content': 'Content'
 }
 
@@ -14,19 +13,16 @@ def getScraper(source=None):
     source = _SOURCES.get(source.lower().strip())
 
     if source == 'iTunes':
-        import itunes
+        from . import itunes
         return itunes.ItunesTrailerScraper()
     elif source == 'kodiDB':
-        import kodidb
+        from . import kodidb
         return kodidb.KodiDBTrailerScraper()
-    elif source == 'StereoscopyNews':
-        import stereoscopynews
-        return stereoscopynews.StereoscopyNewsTrailerScraper()
     elif source == 'Content':
-        import content
+        from . import content
         return content.ContentTrailerScraper()
     elif source == 'TMDB':
-        import tmdb
+        from . import tmdb
         return tmdb.TMDBTrailerScraper()
     return None
 

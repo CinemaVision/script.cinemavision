@@ -28,7 +28,7 @@ builds the code. While the various output methods draw the code into a file.
 """
 
 #Imports required for 2.7 support
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+
 
 from . import tables as tables
 import io
@@ -63,13 +63,13 @@ class QRCodeBuilder:
         self.data = data
 
         #Check that the user passed in a valid mode
-        if mode in tables.modes.keys():
+        if mode in list(tables.modes.keys()):
             self.mode = tables.modes[mode]
         else:
             raise ValueError('{0} is not a valid mode.'.format(mode))
 
         #Check that the user passed in a valid error level
-        if error in tables.error_level.keys():
+        if error in list(tables.error_level.keys()):
             self.error = tables.error_level[error]
         else:
             raise ValueError('{0} is not a valid error '
@@ -105,7 +105,7 @@ class QRCodeBuilder:
         args = [iter(iterable)] * n
         if hasattr(itertools, 'zip_longest'):
             return itertools.zip_longest(*args, fillvalue=fillvalue)
-        return itertools.izip_longest(*args, fillvalue=fillvalue)
+        return itertools.zip_longest(*args, fillvalue=fillvalue)
 
     def binary_string(self, data, length):
         """This method returns a string of length n that is the binary

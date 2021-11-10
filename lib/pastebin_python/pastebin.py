@@ -8,9 +8,9 @@
 import re
 import requests
 from xml.dom.minidom import parseString
-from pastebin_options import OPTION_PASTE, OPTION_LIST, OPTION_TRENDS, OPTION_DELETE, OPTION_USER_DETAILS
-from pastebin_constants import PASTEBIN_API_POST_URL, PASTEBIN_API_LOGIN_URL, PASTEBIN_RAW_URL
-from pastebin_exceptions import PastebinBadRequestException, PastebinNoPastesException, PastebinFileException, PastebinHTTPErrorException
+from .pastebin_options import OPTION_PASTE, OPTION_LIST, OPTION_TRENDS, OPTION_DELETE, OPTION_USER_DETAILS
+from .pastebin_constants import PASTEBIN_API_POST_URL, PASTEBIN_API_LOGIN_URL, PASTEBIN_RAW_URL
+from .pastebin_exceptions import PastebinBadRequestException, PastebinNoPastesException, PastebinFileException, PastebinHTTPErrorException
 import binascii
 
 
@@ -89,7 +89,7 @@ class PastebinPython(object):
 
         localVar = locals()
 
-        for k, v in localVar.items():
+        for k, v in list(localVar.items()):
             if re.search('^api_',k) and v != "":
                 postData[k] = v
 
@@ -394,4 +394,4 @@ class PastebinPython(object):
         except PastebinBadRequestException as e:
             retMsg = str(e)
 
-        return retMsg.decode('utf-8')
+        return retMsg

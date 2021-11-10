@@ -6,7 +6,7 @@ Create a completely customizable sequence of trivia slides, video bumpers, trail
 ## Getting Started
 
 ## Prerequisites
-You must have a working install of [Kodi](http://kodi.tv/) to use this add-on.
+You must have a working install of [Kodi](http://kodi.tv/) 19 or above to use this version of the add-on.
 
 ## Installing
 All of the CinemaVision add-ons are available for download via the official Kodi repository. Development releases can be downloaded from the [CinemaVision.tv](http://cinemavision.tv/) website, which contain work-in-progress features and fixes.

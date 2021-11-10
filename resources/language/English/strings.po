@@ -446,21 +446,23 @@ msgid "Update every... (hours)"
 msgstr ""
 
 msgctxt "#32108"
-msgid "Background updating: Requires service add-on (Beta)"
+msgid "Update when Kodi starts (requires service add-on)"
 msgstr ""
 
 msgctxt "#32109"
-msgid "Always use CinemaVision when playing movies"
+msgid "Update after library scan (requires service add-on)"
 msgstr ""
 
 msgctxt "#32110"
-msgid "Always use CinemaVision when playing movies (requires service add-on)"
+msgid "Update every... (hours) (requires service add-on)"
 msgstr ""
 
 msgctxt "#32111"
 msgid "Auto Update"
 msgstr ""
 
+
+#Sequence
 msgctxt "#32300"
 msgid "3D Intro"
 msgstr ""
@@ -601,6 +603,8 @@ msgctxt "#32334"
 msgid "Video Bumpers"
 msgstr ""
 
+#Dialogs, etc.
+
 msgctxt "#32500"
 msgid "Not Found"
 msgstr ""
@@ -714,7 +718,7 @@ msgid "Confirm"
 msgstr ""
 
 msgctxt "#32528"
-msgid "Sequence was modified."
+msgid "Sequence was modified.  Do you really want to exit without saving changes?"
 msgstr ""
 
 msgctxt "#32529"
@@ -798,7 +802,7 @@ msgid "Sequence Options"
 msgstr ""
 
 msgctxt "#32549"
-msgid "Sequence is modified."
+msgid "Sequence has been modified.  This will delete all changes.  Do you really want to do this?"
 msgstr ""
 
 msgctxt "#32550"
@@ -838,9 +842,10 @@ msgid "Missing"
 msgstr ""
 
 msgctxt "#32559"
-msgid "Previous save not found."
+msgid "Previous save not found.  Load the default or start a new sequence?"
 msgstr ""
 
+# Merged with line 32559 for Kodi 19 - Matrix
 msgctxt "#32560"
 msgid "Load the default or start a new sequence?"
 msgstr ""
@@ -850,9 +855,10 @@ msgid "No Features"
 msgstr ""
 
 msgctxt "#32562"
-msgid "No movies are in the Queue."
+msgid "No movies are in the Queue.  Please queue some features and try again."
 msgstr ""
 
+# Merged with line 32562 for Kodi 19 - Matrix
 msgctxt "#32563"
 msgid "Please queue some features and try again."
 msgstr ""
@@ -866,9 +872,10 @@ msgid "Removed broken status from {0} trailers."
 msgstr ""
 
 msgctxt "#32566"
-msgid "Would you like to paste the current old log?"
+msgid "Would you like to paste the current old log?  Paste the old log if you are in a new session, ie. after a Kodi crash."
 msgstr ""
 
+# # Merged with line 32566 for Kodi 19 - Matrix
 msgctxt "#32567"
 msgid "Paste the old log if you are in a new session, ie. after a Kodi crash."
 msgstr ""
@@ -1018,17 +1025,19 @@ msgid "No Feature"
 msgstr ""
 
 msgctxt "#32604"
-msgid "Sequence does not have a feature module, which is required to play items selected in Kodi."
+msgid "Sequence does not have a feature module, which is required to play items selected in Kodi.  Do you wish to continue?"
 msgstr ""
 
+# Merged with line 32604 for Kodi 19 - Matrix
 msgctxt "#32605"
 msgid "Continue?"
 msgstr ""
 
 msgctxt "#32606"
-msgid "Failed to write sequence file!"
+msgid "Failed to write sequence file!  Kodi may be unable to save to this location."
 msgstr ""
 
+# Merged with line 32606 for Kodi 19 - Matrix
 msgctxt "#32607"
 msgid "Kodi may be unable to write to this location."
 msgstr ""
@@ -1067,60 +1076,4 @@ msgstr ""
 
 msgctxt "#32616"
 msgid "Rename current sequence"
-msgstr ""
-
-msgctxt "#32617"
-msgid "[B]Preferences[/B]: Customize CinemaVision to your needs"
-msgstr ""
-
-msgctxt "#32618"
-msgid "[B]New[/B]: Create a new empty sequence"
-msgstr ""
-
-msgctxt "#32619"
-msgid "[B]Save Options[/B]: Save or export the current sequence"
-msgstr ""
-
-msgctxt "#32620"
-msgid "[B]Load Options[/B]: Load or import a sequence"
-msgstr ""
-
-msgctxt "#32621"
-msgid "[B]Play[/B]: Test the current sequence with a dummy feature"
-msgstr ""
-
-msgctxt "#32622"
-msgid "[B]Theme[/B]: Set the colors and icons for the sequence editor"
-msgstr ""
-
-msgctxt "#32623"
-msgid "[B]Set Conditions[/B]: Set the conditions for auto-selecting the current sequence"
-msgstr ""
-
-msgctxt "#32624"
-msgid "[B]Auto Select[/B]: Whether this sequnce is active for auto-selection"
-msgstr ""
-
-msgctxt "#32625"
-msgid "[B]Show In Dialog[/B]: Whether this sequence will be shown on the sequence selection dialog"
-msgstr ""
-
-msgctxt "#32626"
-msgid "[B]Edit[/B]: Bring up the sequence editor for the current sequence"
-msgstr ""
-
-msgctxt "#32627"
-msgid "[B]Name[/B]: Name or rename this sequence"
-msgstr ""
-
-msgctxt "#32628"
-msgid "Would you like to save and exit or abort"
-msgstr ""
-
-msgctxt "#32629"
-msgid "Save and exit"
-msgstr ""
-
-msgctxt "#32630"
-msgid "Abort"
 msgstr ""
